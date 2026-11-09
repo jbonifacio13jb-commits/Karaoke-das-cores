@@ -22,41 +22,396 @@ jobs:
           fi
           ls -la
 
-      - name: Aplicar correcao da intro (sem piscar tela)
+      - name: Aplicar transicao cinematografica e melhorias visuais
         run: |
-          python3 -c '
-          import os
+          cat << 'EOF' > patch_karaoke.py
+          import os, re
 
-          for root, dirs, files in os.walk("."):
-              if "index.html" in files:
-                  p_html = os.path.join(root, "index.html")
-                  with open(p_html, "r", encoding="utf-8") as f:
-                      h = f.read()
+          def achar(nome):
+              res = []
+              for root, dirs, files in os.walk("."):
+                  if nome in files:
+                      res.append(os.path.join(root, nome))
+              return res
 
-                  # 1. Faz a tela iniciar preta cobrindo os botoes
-                  h = h.replace("<div id=\"intro-screen\">", "<div id=\"intro-screen\" class=\"active\">")
-                  h = h.replace("<source src=\"intro.mp4\" type=\"video/mp4\">", "")
+          # ==============================================================
+          # 1. ATUALIZA MAINACTIVITY.JAVA (3 Intros + Deletar Duplicados)
+          # ==============================================================
+          for p_java in achar("MainActivity.java"):
+              with open(p_java, "r", encoding="utf-8") as f:
+                  j = f.read()
 
-                  # 2. Tira o atraso de 700ms para disparar imediatamente
-                  h = h.replace("setTimeout(() => selectFolder(), 700)", "selectFolder()")
-
-                  # 3. Seguranca: se nao houver intro ou seletor, libera a tela em 5s
-                  trava_seguranca = """
-                      // Seguranca: libera a tela se nao houver intro
-                      setTimeout(function() {
-                          var sc = document.getElementById(\"intro-screen\");
-                          var vd = document.getElementById(\"intro-video\");
-                          if (sc && (!vd || !vd.src || vd.paused)) {
-                              sc.classList.remove(\"active\");
-                          }
-                      }, 5000);
+              if "deleteFile" not in j:
+                  metodo_delete = """
+                  @JavascriptInterface public boolean deleteFile(String uriStr) {
+                      try {
+                          return DocumentsContract.deleteDocument(getContentResolver(), Uri.parse(uriStr));
+                      } catch (Exception e) { return false; }
+                  }
                   """
-                  h = h.replace("selectFolder();", "selectFolder();\n" + trava_seguranca)
+                  j = j.replace("public final class AndroidHost {", "public final class AndroidHost {" + metodo_delete)
 
-                  with open(p_html, "w", encoding="utf-8") as f:
-                      f.write(h)
-                  print(f"[OK] index.html corrigido com sucesso em: {p_html}")
-          '
+              idx_inicio = j.find("if (cursor == null) return;")
+              idx_fim = j.find("} catch (Exception ignored) {}", idx_inicio)
+              if idx_inicio != -1 and idx_fim != -1:
+                  bloco_multi_intro = """
+                  java.util.List<String> intros = new java.util.ArrayList<>();
+                  while (cursor.moveToNext()) {
+                      String id = cursor.getString(0);
+                      String name = cursor.getString(1);
+                      String mime = cursor.getString(2);
+                      if (name == null || Document.MIME_TYPE_DIR.equals(mime)) continue;
+                      String n = name.toLowerCase();
+                      if (n.equals("intro.mp4") || n.equals("intro2.mp4") || n.equals("intro3.mp4")) {
+                          intros.add(DocumentsContract.buildDocumentUriUsingTree(treeUri, id).toString());
+                      }
+                  }
+                  if (!intros.isEmpty()) {
+                      int r = new java.util.Random().nextInt(intros.size());
+                      final String introUri = intros.get(r);
+                      runOnUiThread(new Runnable() {
+                          @Override public void run() {
+                              if (webView != null) webView.evaluateJavascript(
+                                  "window.onIntroFoundDuringScan && window.onIntroFoundDuringScan(" + JSONObject.quote(introUri) + ")", null);
+                          }
+                      });
+                  }
+              """
+                  pos_sub = idx_inicio + len("if (cursor == null) return;")
+                  j = j[:pos_sub] + bloco_multi_intro + j[idx_fim:]
+
+              with open(p_java, "w", encoding="utf-8") as f:
+                  f.write(j)
+              print(f"[OK] MainActivity.java: {p_java}")
+
+          # ==============================================================
+          # 2. ATUALIZA INDEX.HTML (Transicao Cinematografica + UI)
+          # ==============================================================
+          for p_html in achar("index.html"):
+              with open(p_html, "r", encoding="utf-8") as f:
+                  h = f.read()
+
+              # Estilo das fotos do cantor com transicao de palco cinematografica
+              css_cinematografico = """
+              /* Transicao Cinematografica das fotos do Cantor */
+              #bg-singer-layer,
+              #bg-singer-layer-2 {
+                  position: absolute; width: 100%; height: 100%;
+                  background-color: transparent;
+                  background-size: contain;
+                  background-position: center center;
+                  background-repeat: no-repeat;
+                  z-index: 2; opacity: 0;
+                  transform: scale(0.98) translateZ(0);
+                  transition: opacity 0.85s cubic-bezier(0.25, 1, 0.5, 1), transform 1.9s cubic-bezier(0.1, 0.8, 0.2, 1) !important;
+                  filter: drop-shadow(0 0 35px rgba(0, 255, 255, 0.4)) drop-shadow(0 0 70px rgba(255, 0, 255, 0.25)) !important;
+                  will-change: opacity, transform;
+              }
+              #bg-singer-layer.ativo-zoom,
+              #bg-singer-layer-2.ativo-zoom {
+                  opacity: 1 !important;
+                  transform: scale(1.06) translateZ(0) !important;
+              }
+
+              /* Botoes PARAR e LIMPAR sem icones, harmoniosos e elegantes */
+              .btn-control svg { display: none !important; }
+              .btn-control {
+                  height: 58px !important;
+                  display: flex !important;
+                  align-items: center !important;
+                  justify-content: center !important;
+                  letter-spacing: 3px !important;
+                  font-size: 15px !important;
+                  font-weight: 900 !important;
+                  text-align: center !important;
+                  border-radius: 16px !important;
+              }
+              .btn-control span {
+                  font-size: 15px !important;
+                  letter-spacing: 2px !important;
+              }
+
+              /* Tela de Logo pos-intro (2 segundos) */
+              #intro-logo-overlay {
+                  position: fixed; inset: 0; z-index: 9999999;
+                  background: #050508; display: none; align-items: center; justify-content: center;
+                  flex-direction: column; opacity: 0; transition: opacity 0.5s ease;
+              }
+              #intro-logo-overlay.ativo {
+                  display: flex !important; opacity: 1 !important;
+              }
+              #intro-logo-img {
+                  max-width: 65vw; max-height: 55vh; object-fit: contain;
+                  filter: drop-shadow(0 0 30px rgba(0,255,255,0.4));
+                  animation: logoZoom 2s ease-out forwards;
+              }
+              #intro-logo-fallback {
+                  text-align: center; font-family: var(--font-title);
+                  animation: logoZoom 2s ease-out forwards;
+              }
+              #intro-logo-fallback h1 {
+                  font-size: clamp(32px, 7vw, 70px); font-weight: 900;
+                  color: #fff; letter-spacing: 4px;
+                  text-shadow: 0 0 25px var(--neon), 0 0 50px var(--magenta);
+              }
+              #intro-logo-fallback p {
+                  font-size: clamp(14px, 2.5vw, 24px); color: var(--vivid-yellow);
+                  letter-spacing: 6px; margin-top: 8px; font-weight: 700;
+              }
+              @keyframes logoZoom {
+                  0% { transform: scale(0.92); opacity: 0.2; }
+                  30% { opacity: 1; }
+                  100% { transform: scale(1.04); opacity: 1; }
+              }
+
+              /* Modal de Duplicados (Codigo 0000) */
+              #modal-duplicados-overlay {
+                  position: fixed; inset: 0; z-index: 35000; display: none;
+                  align-items: center; justify-content: center; background: rgba(0,0,0,0.88);
+                  backdrop-filter: blur(8px); padding: 20px;
+              }
+              #modal-duplicados-overlay.active { display: flex !important; }
+              #modal-duplicados-box {
+                  background: linear-gradient(160deg, #181226, #090812);
+                  border: 2px solid var(--vivid-yellow); border-radius: 20px;
+                  padding: 24px; width: min(92vw, 650px); max-height: 85vh;
+                  display: flex; flex-direction: column; gap: 14px;
+                  box-shadow: 0 0 40px rgba(255,221,0,0.3); color: #fff;
+              }
+              #modal-duplicados-titulo {
+                  font: 900 20px var(--font-title); color: var(--vivid-yellow);
+                  text-align: center; letter-spacing: 2px;
+              }
+              #modal-duplicados-lista {
+                  flex: 1; overflow-y: auto; max-height: 45vh; display: flex;
+                  flex-direction: column; gap: 8px; padding-right: 6px;
+              }
+              .item-dup {
+                  background: rgba(255,255,255,0.06); padding: 10px 14px;
+                  border-radius: 10px; border-left: 4px solid #ff4444; font-size: 13px;
+              }
+              .item-dup b { color: var(--neon); display: block; margin-bottom: 2px; }
+              .item-dup small { color: #aaa; word-break: break-all; }
+              .modal-dup-acoes { display: flex; gap: 10px; margin-top: 6px; }
+              .modal-dup-acoes button {
+                  flex: 1; padding: 14px; border: none; border-radius: 12px;
+                  font: 800 14px var(--font-title); cursor: pointer;
+              }
+              #btn-fechar-dup { background: #333; color: #fff; }
+              #btn-remover-dup { background: #ff2244; color: #fff; box-shadow: 0 0 20px rgba(255,34,68,0.5); }
+              """
+              h = h.replace("</style>", css_cinematografico + "\n#ui-wrapper.liberado { opacity: 1 !important; pointer-events: auto !important; }\n</style>")
+
+              # Containers da Logo e Modal de Duplicados
+              html_extras = """
+              <div id="intro-logo-overlay">
+                  <img id="intro-logo-img" style="display:none;" alt="Logo">
+                  <div id="intro-logo-fallback">
+                      <h1>KARAOKÊ</h1>
+                      <p>FESTA DAS CORES</p>
+                  </div>
+              </div>
+
+              <div id="modal-duplicados-overlay">
+                  <div id="modal-duplicados-box">
+                      <div id="modal-duplicados-titulo">🔍 VERIFICADOR DE DUPLICADOS</div>
+                      <p id="modal-duplicados-sub" style="text-align:center; font-size: 14px; color: #bbb;"></p>
+                      <div id="modal-duplicados-lista"></div>
+                      <div class="modal-dup-acoes">
+                          <button type="button" id="btn-fechar-dup" onclick="fecharModalDuplicados()">CANCELAR</button>
+                          <button type="button" id="btn-remover-dup" onclick="confirmarRemoverDuplicados()">ELIMINAR DUPLICADOS</button>
+                      </div>
+                  </div>
+              </div>
+              """
+              h = h.replace("</body>", html_extras + "\n</body>")
+
+              # Remove os SVGs dos botoes
+              h = re.sub(r'(<button type="button" class="btn-control btn-parar"[^>]*>)\s*<svg[\s\S]*?</svg>', r'\1', h)
+              h = re.sub(r'(<button type="button" class="btn-control btn-limpar"[^>]*>)\s*<svg[\s\S]*?</svg>', r'\1', h)
+
+              # Logica JS de Crossfade Cinematografico de Fotos + Duplicados
+              js_crossfade_cinematografico = """
+              function pararCrossfade() {
+                  if (singerBgInterval) { clearInterval(singerBgInterval); singerBgInterval = null; }
+                  camadaAtiva = 1; fotosCantor = []; indiceFotoAtual = 0;
+                  if (bgSinger) { bgSinger.classList.remove('ativo-zoom'); bgSinger.style.backgroundImage = ''; }
+                  if (bgSinger2) { bgSinger2.classList.remove('ativo-zoom'); bgSinger2.style.backgroundImage = ''; }
+              }
+
+              function iniciarCrossfade(urls) {
+                  pararCrossfade();
+                  if (!urls || urls.length === 0) return;
+                  fotosCantor = urls;
+                  indiceFotoAtual = 0;
+
+                  bgSinger.style.backgroundImage = `url("${fotosCantor[0]}")`;
+                  bgSinger.classList.add('ativo-zoom');
+                  bgSinger2.classList.remove('ativo-zoom');
+
+                  if (fotosCantor.length === 1) return;
+
+                  singerBgInterval = setInterval(() => {
+                      indiceFotoAtual = (indiceFotoAtual + 1) % fotosCantor.length;
+                      const proximaUrl = fotosCantor[indiceFotoAtual];
+                      if (camadaAtiva === 1) {
+                          bgSinger2.style.backgroundImage = `url("${proximaUrl}")`;
+                          bgSinger2.classList.add('ativo-zoom');
+                          bgSinger.classList.remove('ativo-zoom');
+                          camadaAtiva = 2;
+                      } else {
+                          bgSinger.style.backgroundImage = `url("${proximaUrl}")`;
+                          bgSinger.classList.add('ativo-zoom');
+                          bgSinger2.classList.remove('ativo-zoom');
+                          camadaAtiva = 1;
+                      }
+                  }, 1800);
+              }
+
+              let _duplicadosEncontrados = [];
+              let _logoPersonalizadaUrl = null;
+
+              function verificarLogoNasPastas(files) {
+                  for (let f of (files || [])) {
+                      const n = (f.name || '').toLowerCase();
+                      if (n === 'logo.png' || n === 'logo.gif' || n === 'logo.jpg' || n === 'logo.webp') {
+                          _logoPersonalizadaUrl = f.contentUri || URL.createObjectURL(f);
+                          break;
+                      }
+                  }
+              }
+
+              function exibirTransicaoLogo(callbackFinal) {
+                  const logoOverlay = document.getElementById('intro-logo-overlay');
+                  const logoImg = document.getElementById('intro-logo-img');
+                  const logoFallback = document.getElementById('intro-logo-fallback');
+                  if (!logoOverlay) { if (callbackFinal) callbackFinal(); return; }
+
+                  if (_logoPersonalizadaUrl) {
+                      logoImg.src = _logoPersonalizadaUrl;
+                      logoImg.style.display = 'block';
+                      if (logoFallback) logoFallback.style.display = 'none';
+                  } else {
+                      logoImg.style.display = 'none';
+                      if (logoFallback) logoFallback.style.display = 'block';
+                  }
+
+                  logoOverlay.classList.add('ativo');
+
+                  setTimeout(() => {
+                      logoOverlay.style.opacity = '0';
+                      setTimeout(() => {
+                          logoOverlay.classList.remove('ativo');
+                          logoOverlay.style.opacity = '1';
+                          if (callbackFinal) callbackFinal();
+                      }, 500);
+                  }, 2000);
+              }
+
+              function checarDuplicadosCodigo0000(todosArquivos) {
+                  _duplicadosEncontrados = [];
+                  const mapTitulos = new Map();
+                  const listaArquivos = todosArquivos || [];
+
+                  for (let f of listaArquivos) {
+                      const nome = f.name || '';
+                      if (!/\.mp4$/i.test(nome) || nome.toLowerCase().startsWith('intro')) continue;
+                      const chave = normalizarNome(descricaoDoArquivo(nome) || nome.replace(/\.mp4$/i, ''));
+                      if (!chave) continue;
+
+                      if (mapTitulos.has(chave)) {
+                          _duplicadosEncontrados.push({ original: mapTitulos.get(chave), duplicado: f, chave: chave });
+                      } else {
+                          mapTitulos.set(chave, f);
+                      }
+                  }
+
+                  const modal = document.getElementById('modal-duplicados-overlay');
+                  const sub = document.getElementById('modal-duplicados-sub');
+                  const containerLista = document.getElementById('modal-duplicados-lista');
+                  const btnRemover = document.getElementById('btn-remover-dup');
+
+                  if (_duplicadosEncontrados.length === 0) {
+                      sub.innerHTML = '<span style=\"color:#00ff88; font-weight:bold;\">PARABÉNS! Nenhum vídeo duplicado encontrado.</span><br>Sua lista está 100% limpa e otimizada.';
+                      containerLista.innerHTML = '';
+                      btnRemover.style.display = 'none';
+                      modal.classList.add('active');
+                      return;
+                  }
+
+                  sub.innerHTML = 'Encontrados <b style=\"color:#ff4444;\">' + _duplicadosEncontrados.length + '</b> vídeo(s) duplicado(s). Deseja excluí-los?';
+                  btnRemover.style.display = 'block';
+                  containerLista.innerHTML = _duplicadosEncontrados.map(d => `
+                      <div class="item-dup">
+                          <b>⚠️ MÚSICA REPETIDA:</b>
+                          <div>Cópia: ${escHtml(d.duplicado.webkitRelativePath || d.duplicado.name)}</div>
+                          <small>Mantendo: ${escHtml(d.original.webkitRelativePath || d.original.name)}</small>
+                      </div>
+                  `).join('');
+                  modal.classList.add('active');
+              }
+
+              function fecharModalDuplicados() {
+                  document.getElementById('modal-duplicados-overlay').classList.remove('active');
+              }
+
+              async function confirmarRemoverDuplicados() {
+                  const sub = document.getElementById('modal-duplicados-sub');
+                  sub.innerHTML = '<span style=\"color:#ffdd00;\">Excluindo duplicados e reiniciando karaokê...</span>';
+                  let removidos = 0;
+
+                  for (let item of _duplicadosEncontrados) {
+                      if (item.duplicado.contentUri && window.AndroidHost && AndroidHost.deleteFile) {
+                          try {
+                              if (AndroidHost.deleteFile(item.duplicado.contentUri)) removidos++;
+                          } catch(e) {}
+                      }
+                  }
+
+                  fecharModalDuplicados();
+                  mostrarAviso('✔ ' + removidos + ' vídeo(s) duplicado(s) eliminado(s)! Reiniciando...', false);
+
+                  setTimeout(async () => {
+                      if (window.AndroidHost && AndroidHost.refreshFolder) {
+                          AndroidHost.refreshFolder();
+                      }
+                      await reproduzirCicloIntro();
+                  }, 800);
+              }
+              """
+              # Substitui a funcao antiga de crossfade pela cinematografica
+              idx_cf_ini = h.find("function pararCrossfade()")
+              idx_cf_fim = h.find("async function voltarMusica()", idx_cf_ini)
+              if idx_cf_ini != -1 and idx_cf_fim != -1:
+                  h = h[:idx_cf_ini] + js_crossfade_cinematografico + "\n" + h[idx_cf_fim:]
+
+              # Acionador do codigo 0000
+              h = h.replace("function processarCodigo(val) {", "function processarCodigo(val) {\n    if (String(val).trim() === '0000') { checarDuplicadosCodigo0000(window._arquivosCarregadosCache || []); return; }\n")
+
+              # Cache para busca de logo e duplicados
+              h = h.replace("async function handleFolderSelect(e) {", "async function handleFolderSelect(e) {\n    window._arquivosCarregadosCache = Array.from(e.target.files); verificarLogoNasPastas(window._arquivosCarregadosCache);\n")
+
+              # Transicao da logo antes do palco
+              alvo_intro_fim = "introScreen.classList.remove('active');"
+              novo_intro_fim = """
+              introScreen.classList.remove('active');
+              exibirTransicaoLogo(function() {
+                  var ui = document.getElementById('ui-wrapper');
+                  if (ui) ui.classList.add('liberado');
+              });
+              """
+              h = h.replace(alvo_intro_fim, novo_intro_fim)
+
+              # Palco protegido na abertura
+              h = h.replace("#ui-wrapper { display: flex;", "#ui-wrapper { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; display: flex;")
+              h = h.replace("folderLoadFinished = true;", "folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && !document.getElementById('intro-screen').classList.contains('active')) ui.classList.add('liberado');")
+
+              with open(p_html, "w", encoding="utf-8") as f:
+                  f.write(h)
+              print(f"[OK] index.html com transicao cinematografica: {p_html}")
+
+          EOF
+          python3 patch_karaoke.py
 
       - name: Configurar Java 17
         uses: actions/setup-java@v4
