@@ -22,6 +22,69 @@ jobs:
           fi
           ls -la
 
+      - name: Aplicar correcao da intro (sem piscar tela)
+        run: |
+          python3 -c '
+          import os
+
+          def achar_arquivos(nome):
+              caminhos = []
+              for root, dirs, files in os.walk("."):
+                  if nome in files:
+                      caminhos.append(os.path.join(root, nome))
+              return caminhos
+
+          # 1. Corrige o MainActivity.java
+          for p_java in achar_arquivos("MainActivity.java"):
+              with open(p_java, "r", encoding="utf-8") as f:
+                  j = f.read()
+
+              # Trata caso nao haja pasta salva
+              j = j.replace("else openFolderPicker();", "else { if (webView != null) webView.evaluateJavascript(\"window.onNoSavedFolder && window.onNoSavedFolder()\", null); openFolderPicker(); }")
+
+              # Trata cancelamento do seletor
+              alvo = "startScan(tree, false, false);"
+              if alvo in j:
+                  pos = j.find(alvo)
+                  pos_fecha = j.find("}", pos)
+                  if pos_fecha != -1:
+                      codigo_else = "} else { runOnUiThread(new Runnable() { @Override public void run() { if (webView != null) webView.evaluateJavascript(\"window.onNativeFolderCanceled && window.onNativeFolderCanceled()\", null); } });"
+                      j = j[:pos_fecha] + codigo_else + j[pos_fecha+1:]
+
+              with open(p_java, "w", encoding="utf-8") as f:
+                  f.write(j)
+              print(f"[OK] MainActivity.java corrigido: {p_java}")
+
+          # 2. Corrige o index.html
+          for p_html in achar_arquivos("index.html"):
+              with open(p_html, "r", encoding="utf-8") as f:
+                  h = f.read()
+
+              # Inicia tela preta sem mostrar os botoes antes
+              h = h.replace("<div id=\"intro-screen\">", "<div id=\"intro-screen\" class=\"active\">")
+              h = h.replace("<source src=\"intro.mp4\" type=\"video/mp4\">", "")
+
+              # Remove atraso de 700ms
+              h = h.replace("setTimeout(() => selectFolder(), 700)", "selectFolder()")
+
+              # Adiciona liberacao de tela caso cancele
+              alvo_fn = "window.onNativeFolderLoadFailed = function() {"
+              if alvo_fn in h:
+                  funcoes_extras = """
+          window.onNoSavedFolder = function() {
+              var el = document.getElementById("intro-screen"); if (el) el.classList.remove("active");
+          };
+          window.onNativeFolderCanceled = function() {
+              var el = document.getElementById("intro-screen"); if (el) el.classList.remove("active");
+          };
+          """
+                  h = h.replace(alvo_fn, funcoes_extras + alvo_fn + "\n            var el = document.getElementById(\"intro-screen\"); if (el) el.classList.remove(\"active\");")
+
+              with open(p_html, "w", encoding="utf-8") as f:
+                  f.write(h)
+              print(f"[OK] index.html corrigido: {p_html}")
+          '
+
       - name: Configurar Java 17
         uses: actions/setup-java@v4
         with:
