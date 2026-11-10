@@ -26,7 +26,106 @@ jobs:
           fi
           ls -la
 
-      - name: Aplicar correcoes finais (Trio Parar/Limpar/Sair 100% alinhado, Anti-play, Multi-intro)
+      - name: Gerar Ícone Oficial Redondo (Microfone Vintage Dourado + Fundo Rosa/Lilás)
+        run: |
+          sudo apt-get install -y libcairo2-dev
+          pip install cairosvg pillow
+
+          cat << 'EOF' > gerar_icone.py
+          import os, cairosvg
+          from PIL import Image
+
+          svg_icone = """<svg viewBox="0 0 512 512" width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="bgFesta" x1="15%" y1="10%" x2="85%" y2="90%">
+                <stop offset="0%" stop-color="#ff007f" />
+                <stop offset="45%" stop-color="#b026ff" />
+                <stop offset="100%" stop-color="#3d0075" />
+              </linearGradient>
+              <radialGradient id="auraGlow" cx="50%" cy="45%" r="50%">
+                <stop offset="0%" stop-color="#ffe600" stop-opacity="0.35" />
+                <stop offset="50%" stop-color="#ff00aa" stop-opacity="0.2" />
+                <stop offset="100%" stop-color="#7a00ff" stop-opacity="0" />
+              </radialGradient>
+              <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fff9d2" />
+                <stop offset="25%" stop-color="#ffd700" />
+                <stop offset="55%" stop-color="#d4af37" />
+                <stop offset="80%" stop-color="#aa771c" />
+                <stop offset="100%" stop-color="#fff2a8" />
+              </linearGradient>
+              <linearGradient id="goldDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#aa771c" />
+                <stop offset="100%" stop-color="#4a3003" />
+              </linearGradient>
+              <linearGradient id="goldRim" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="20%" stop-color="#ffd700" />
+                <stop offset="50%" stop-color="#ffaa00" />
+                <stop offset="80%" stop-color="#ffd700" />
+                <stop offset="100%" stop-color="#ffffff" />
+              </linearGradient>
+            </defs>
+            <circle cx="256" cy="256" r="236" fill="url(#bgFesta)" stroke="url(#goldRim)" stroke-width="8" />
+            <circle cx="256" cy="240" r="180" fill="url(#auraGlow)" />
+            <ellipse cx="256" cy="425" rx="55" ry="14" fill="url(#goldDark)" />
+            <ellipse cx="256" cy="420" rx="52" ry="12" fill="url(#goldGrad)" />
+            <path d="M 246 360 L 266 360 L 263 420 L 249 420 Z" fill="url(#goldGrad)" stroke="url(#goldDark)" stroke-width="2" />
+            <ellipse cx="256" cy="360" rx="16" ry="6" fill="#fff9d2" />
+            <path d="M 175 250 C 175 355, 337 355, 337 250 C 337 245, 323 245, 323 250 C 323 335, 189 335, 189 250 Z" fill="url(#goldGrad)" stroke="#4a3003" stroke-width="1.5" />
+            <circle cx="178" cy="250" r="10" fill="url(#goldGrad)" stroke="#4a3003" stroke-width="2" />
+            <circle cx="334" cy="250" r="10" fill="url(#goldGrad)" stroke="#4a3003" stroke-width="2" />
+            <circle cx="178" cy="250" r="4" fill="#ffffff" />
+            <circle cx="334" cy="250" r="4" fill="#ffffff" />
+            <g transform="translate(0, -10)">
+              <path d="M 200 150 C 200 100, 312 100, 312 150 L 305 270 C 305 295, 207 295, 207 270 Z" fill="#1b0e02" />
+              <path d="M 200 150 C 200 95, 312 95, 312 150 L 305 270 C 305 300, 207 300, 207 270 Z" fill="none" stroke="url(#goldGrad)" stroke-width="12" />
+              <path d="M 203 125 Q 256 132 309 125" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
+              <path d="M 197 145 Q 256 153 315 145" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
+              <path d="M 195 165 Q 256 173 317 165" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
+              <path d="M 194 185 Q 256 193 318 185" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
+              <path d="M 195 205 Q 256 213 317 205" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
+              <path d="M 197 225 Q 256 233 315 225" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
+              <path d="M 200 245 Q 256 253 312 245" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
+              <path d="M 205 265 Q 256 272 307 265" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
+              <path d="M 252 100 L 260 100 L 260 295 L 252 295 Z" fill="url(#goldGrad)" stroke="#aa771c" stroke-width="1" />
+              <line x1="255" y1="102" x2="255" y2="292" stroke="#ffffff" stroke-width="2.5" opacity="0.85" />
+            </g>
+            <path d="M 370 120 Q 370 145 345 145 Q 370 145 370 170 Q 370 145 395 145 Q 370 145 370 120 Z" fill="#ffffff" />
+            <circle cx="370" cy="145" r="4" fill="#ffd700" />
+            <path d="M 135 150 Q 135 168 117 168 Q 135 168 135 186 Q 135 168 153 168 Q 135 168 135 150 Z" fill="#ffd700" />
+            <circle cx="135" cy="168" r="3" fill="#ffffff" />
+            <path d="M 125 310 Q 125 322 113 322 Q 125 322 125 334 Q 125 322 137 322 Q 125 322 125 310 Z" fill="#00ffff" />
+            <circle cx="395" cy="270" r="5" fill="#00f5d4" opacity="0.85" />
+            <circle cx="160" cy="95" r="4" fill="#ffe600" opacity="0.8" />
+            <circle cx="340" cy="350" r="4" fill="#ff00aa" opacity="0.8" />
+            <circle cx="130" cy="230" r="3" fill="#ffffff" opacity="0.9" />
+          </svg>"""
+
+          cairosvg.svg2png(bytestring=svg_icone.encode('utf-8'), write_to="master_icon.png", output_width=512, output_height=512)
+          master = Image.open("master_icon.png").convert("RGBA")
+
+          tamanhos = {
+              "mipmap-mdpi": 48,
+              "mipmap-hdpi": 72,
+              "mipmap-xhdpi": 96,
+              "mipmap-xxhdpi": 144,
+              "mipmap-xxxhdpi": 192
+          }
+
+          for root, dirs, files in os.walk("."):
+              for pasta, dim in tamanhos.items():
+                  if pasta in dirs:
+                      caminho_dir = os.path.join(root, pasta)
+                      redim = master.resize((dim, dim), Image.Resampling.LANCZOS)
+                      redim.save(os.path.join(caminho_dir, "ic_launcher.png"), "PNG")
+                      redim.save(os.path.join(caminho_dir, "ic_launcher_round.png"), "PNG")
+                      print(f"[OK] Ícone aplicado em: {caminho_dir} ({dim}x{dim})")
+
+          EOF
+          python3 gerar_icone.py
+
+      - name: Aplicar correcoes finais (Controle Remoto TV, Touch, Teclado Bluetooth, Botoes Padronizados)
         run: |
           cat << 'EOF' > patch_karaoke.py
           import os, re
@@ -39,7 +138,7 @@ jobs:
               return res
 
           # ==============================================================
-          # 1. MAINACTIVITY.JAVA (Anti-Play + Multi-Intro + Delete + Sair)
+          # 1. MAINACTIVITY.JAVA (Controle Remoto TV, Teclado, Exit, Anti-Play)
           # ==============================================================
           for p_java in achar("MainActivity.java"):
               with open(p_java, "r", encoding="utf-8") as f:
@@ -67,6 +166,20 @@ jobs:
                   }
                   """
                   j = j.replace("public final class AndroidHost {", "public final class AndroidHost {" + metodos_host)
+
+              if "dispatchKeyEvent" not in j:
+                  metodo_dispatch = """
+                  @Override
+                  public boolean dispatchKeyEvent(android.view.KeyEvent event) {
+                      if (webView != null && webView.dispatchKeyEvent(event)) {
+                          return true;
+                      }
+                      return super.dispatchKeyEvent(event);
+                  }
+                  """
+                  ultimo_fechamento = j.rfind("}")
+                  if ultimo_fechamento != -1:
+                      j = j[:ultimo_fechamento] + metodo_dispatch + "\n}\n"
 
               if "getDefaultVideoPoster" not in j:
                   poster_override = """
@@ -114,14 +227,14 @@ jobs:
               print(f"[OK] MainActivity.java corrigido: {p_java}")
 
           # ==============================================================
-          # 2. INDEX.HTML
+          # 2. INDEX.HTML (CSS Responsivo, TV Focus, Bluetooth, Padronização)
           # ==============================================================
           for p_html in achar("index.html"):
               with open(p_html, "r", encoding="utf-8") as f:
                   h = f.read().replace("\r\n", "\n")
 
-              css_revisado = """
-              /* BLOQUEIO TOTAL E ABSOLUTO DO PALCO */
+              css_unificado = """
+              /* BLOQUEIO TOTAL E ABSOLUTO DO PALCO INICIAL */
               #ui-wrapper.oculto-inicio,
               #ui-wrapper:not(.liberado) {
                   display: none !important;
@@ -154,66 +267,138 @@ jobs:
                   pointer-events: none !important;
               }
 
-              /* GRID PERFEITO: PREENCHE 100% DA LARGURA COM 3 BOTÕES IGUAIS */
-              .linha-controles-trio {
+              /* ADAPTAÇÃO PARA TOQUE EM CELULARES E CURSOR DO MOUSE */
+              * {
+                  -webkit-tap-highlight-color: transparent !important;
+                  box-sizing: border-box !important;
+              }
+              button {
+                  touch-action: manipulation !important;
+              }
+
+              /* CONTAINER PADRONIZADO EM AMBOS OS LADOS (GRID 3 COLUNAS, 100% LARGURA) */
+              .linha-controles-trio,
+              .linha-botoes-padrao,
+              *:has(> .btn-parar),
+              *:has(> .btn-sair) {
+                  width: 100% !important;
+                  max-width: 100% !important;
                   display: grid !important;
                   grid-template-columns: repeat(3, 1fr) !important;
                   gap: 10px !important;
-                  width: 100% !important;
                   box-sizing: border-box !important;
-                  margin: 8px 0 !important;
+                  margin-top: auto !important;
+                  padding: 0 !important;
               }
 
-              /* PADRÃO IDÊNTICO PARA OS 3 BOTÕES */
+              /* MOLDE UNIVERSAL DOS 6 BOTÕES: ALTURA 60PX, CANTOS 14PX, RETANGULARES */
               .btn-control svg { display: none !important; }
-              .linha-controles-trio .btn-control,
-              .btn-control {
+              .btn-control,
+              .btn-karaoke,
+              .linha-controles-trio .btn-control {
                   width: 100% !important;
-                  height: 56px !important;
+                  height: 60px !important;
+                  border-radius: 14px !important;
+                  font-family: var(--font-title, sans-serif) !important;
+                  font-weight: 900 !important;
+                  font-size: 14px !important;
+                  letter-spacing: 1.5px !important;
+                  text-transform: uppercase !important;
+                  cursor: pointer !important;
                   display: flex !important;
                   align-items: center !important;
                   justify-content: center !important;
-                  border-radius: 14px !important;
-                  font-family: inherit !important;
-                  font-weight: 900 !important;
-                  text-transform: uppercase !important;
-                  letter-spacing: 1.5px !important;
-                  font-size: clamp(12px, 1.4vw, 15px) !important;
-                  padding: 0 4px !important;
-                  box-sizing: border-box !important;
                   text-align: center !important;
+                  border: 1.5px solid transparent !important;
+                  box-sizing: border-box !important;
+                  padding: 0 4px !important;
+                  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease !important;
               }
-              .btn-control span {
-                  font-size: inherit !important;
-                  letter-spacing: inherit !important;
+
+              .btn-control span,
+              .btn-karaoke span {
+                  font-size: 14px !important;
+                  letter-spacing: 1.5px !important;
                   white-space: nowrap !important;
                   pointer-events: none !important;
               }
 
-              /* CORES E EFEITOS NEON */
+              /* NAVEGAÇÃO POR CONTROLE REMOTO (SMART TV / TV BOX D-PAD): FOCO NEON COM HALO */
+              .btn-control:focus,
+              .btn-control:focus-visible,
+              .btn-karaoke:focus,
+              .btn-karaoke:focus-visible,
+              button:focus-visible {
+                  outline: 3px solid #ffffff !important;
+                  box-shadow: 0 0 25px #ffffff, 0 0 35px rgba(255, 255, 255, 0.8) !important;
+                  transform: translateY(-2px) scale(1.05) !important;
+                  z-index: 50 !important;
+              }
+
+              /* FEEDBACK AO CLIQUE / TOQUE */
+              .btn-control:active,
+              .btn-karaoke:active {
+                  transform: translateY(2px) scale(0.97) !important;
+                  filter: brightness(1.25) !important;
+              }
+
+              /* MOUSE HOVER */
+              @media (hover: hover) {
+                  .btn-control:hover,
+                  .btn-karaoke:hover {
+                      filter: brightness(1.15) !important;
+                      transform: translateY(-1px) !important;
+                  }
+              }
+
+              /* --------------------------------------------------------------------------
+                 CORES DO LADO ESQUERDO (ACABAMENTO 3D NEON)
+                 -------------------------------------------------------------------------- */
+              .btn-codigo {
+                  background: linear-gradient(180deg, #ff007f 0%, #d9048e 55%, #9d0267 100%) !important;
+                  border-color: #ff66b2 !important;
+                  color: #ffffff !important;
+                  text-shadow: 0 1px 2px rgba(0,0,0,0.6), 0 0 10px rgba(255,255,255,0.4) !important;
+                  box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 18px rgba(217, 4, 142, 0.45), inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -2px 4px rgba(0,0,0,0.4) !important;
+              }
+              .btn-catalogo {
+                  background: linear-gradient(180deg, #00d4ff 0%, #00b4d8 55%, #0077b6 100%) !important;
+                  border-color: #80e5ff !important;
+                  color: #021a24 !important;
+                  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
+                  box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 18px rgba(0, 180, 216, 0.45), inset 0 1px 1px rgba(255,255,255,0.7), inset 0 -2px 4px rgba(0,0,0,0.3) !important;
+              }
+              .btn-show, .btn-iniciar {
+                  background: linear-gradient(180deg, #00ffc4 0%, #00f5d4 55%, #00bbf9 100%) !important;
+                  border-color: #99ffe6 !important;
+                  color: #02241e !important;
+                  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
+                  box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 18px rgba(0, 245, 212, 0.45), inset 0 1px 1px rgba(255,255,255,0.7), inset 0 -2px 4px rgba(0,0,0,0.3) !important;
+              }
+
+              /* --------------------------------------------------------------------------
+                 CORES DO LADO DIREITO (ACABAMENTO 3D NEON)
+                 -------------------------------------------------------------------------- */
               .btn-parar {
-                  background: linear-gradient(135deg, #ff2255, #aa0022) !important;
-                  border: 2px solid #ff4477 !important;
-                  color: #fff !important;
-                  box-shadow: 0 0 18px rgba(255, 34, 85, 0.45) !important;
+                  background: linear-gradient(180deg, #ff1744 0%, #d50000 55%, #9b0000 100%) !important;
+                  border-color: #ff5252 !important;
+                  color: #ffffff !important;
+                  text-shadow: 0 1px 2px rgba(0,0,0,0.6), 0 0 10px rgba(255,255,255,0.4) !important;
+                  box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 18px rgba(255, 23, 68, 0.45), inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -2px 4px rgba(0,0,0,0.4) !important;
               }
               .btn-limpar {
-                  background: linear-gradient(135deg, #ffbb00, #cc8800) !important;
-                  border: 2px solid #ffdd44 !important;
-                  color: #000 !important;
-                  box-shadow: 0 0 18px rgba(255, 187, 0, 0.45) !important;
+                  background: linear-gradient(180deg, #ffea00 0%, #ffd600 55%, #ffab00 100%) !important;
+                  border-color: #fff59d !important;
+                  color: #1a1200 !important;
+                  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
+                  box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 20px rgba(255, 214, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.8), inset 0 -2px 4px rgba(0,0,0,0.2) !important;
               }
               .btn-sair {
-                  background: linear-gradient(135deg, #a855f7, #6b21a8) !important;
-                  border: 2px solid #c084fc !important;
+                  background: linear-gradient(180deg, #b388ff 0%, #7c4dff 55%, #651fff 100%) !important;
+                  border-color: #d1c4e9 !important;
                   color: #ffffff !important;
-                  box-shadow: 0 0 18px rgba(192, 132, 252, 0.45) !important;
-                  cursor: pointer !important;
-                  transition: transform 0.1s ease, box-shadow 0.1s ease !important;
-              }
-              .btn-sair:active {
-                  transform: scale(0.96) !important;
-                  box-shadow: 0 0 25px rgba(192, 132, 252, 0.8) !important;
+                  text-shadow: 0 1px 2px rgba(0,0,0,0.6), 0 0 10px rgba(255,255,255,0.4) !important;
+                  box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 18px rgba(124, 77, 255, 0.45), inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -2px 4px rgba(0,0,0,0.4) !important;
               }
 
               /* MODAL DE CONFIRMAÇÃO DE SAÍDA */
@@ -224,11 +409,11 @@ jobs:
               }
               #modal-sair-overlay.active { display: flex !important; }
               #modal-sair-box {
-                  background: linear-gradient(160deg, #1f1435, #0c0817); border: 2px solid #c084fc; border-radius: 20px;
+                  background: linear-gradient(160deg, #1f1435, #0c0817); border: 2px solid #d1c4e9; border-radius: 18px;
                   padding: 24px; width: min(90vw, 440px); display: flex; flex-direction: column; gap: 14px; text-align: center;
-                  box-shadow: 0 0 35px rgba(192, 132, 252, 0.4); color: #fff;
+                  box-shadow: 0 0 35px rgba(176, 38, 255, 0.4); color: #fff;
               }
-              #modal-sair-titulo { font: 900 22px var(--font-title); color: #d8b4fe; letter-spacing: 2px; }
+              #modal-sair-titulo { font: 900 22px var(--font-title); color: #d480ff; letter-spacing: 2px; }
               #modal-sair-sub { font-size: 15px; color: #ddd; margin: 0; }
               .modal-sair-acoes { display: flex; gap: 12px; margin-top: 10px; }
               .modal-sair-acoes button {
@@ -237,8 +422,8 @@ jobs:
               }
               #btn-cancelar-sair { background: #333; color: #fff; }
               #btn-confirmar-sair {
-                  background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff;
-                  box-shadow: 0 0 20px rgba(168, 85, 247, 0.55);
+                  background: linear-gradient(135deg, #b026ff, #7a00e6); color: #fff;
+                  box-shadow: 0 0 20px rgba(176, 38, 255, 0.6);
               }
 
               /* Tela de Logo pos-contagem */
@@ -293,27 +478,30 @@ jobs:
               #btn-fechar-dup { background: #333; color: #fff; }
               #btn-remover-dup { background: #ff2244; color: #fff; box-shadow: 0 0 20px rgba(255,34,68,0.5); }
               """
-              h = h.replace("</style>", css_revisado + "\n</style>")
+              h = h.replace("</style>", css_unificado + "\n</style>")
 
               # Força atributos anti-play em todas as tags <video>
               h = re.sub(r'<video\b([^>]*)>', r'<video\1 playsinline webkit-playsinline preload="auto">', h)
 
-              # Bloqueia o palco diretamente na tag HTML com inline style
+              # Bloqueia o palco de início
               h = re.sub(r'<div\s+id="ui-wrapper"([^>]*)>',
                          r'<div id="ui-wrapper"\1 class="oculto-inicio" style="display: none !important; opacity: 0 !important; visibility: hidden !important;">',
                          h, count=1)
 
-              # ENCAPSULA OS 3 BOTÕES NO GRID QUE COBRE 100% DA LARGURA
+              # ENCAPSULA OS 3 BOTÕES DA DIREITA NO GRID QUE COBRE 100% DA ÁREA AMARELA
               padrao_trio = r'(<button[^>]*class="[^"]*btn-parar[^"]*"[^>]*>[\s\S]*?</button>\s*<button[^>]*class="[^"]*btn-limpar[^"]*"[^>]*>[\s\S]*?</button>)'
               if re.search(padrao_trio, h):
                   subst_trio = r'''<div class="linha-controles-trio">
                       \1
-                      <button type="button" class="btn-control btn-sair" onclick="pedirConfirmacaoSair()"><span>SAIR</span></button>
+                      <button type="button" tabindex="0" class="btn-control btn-sair" onclick="pedirConfirmacaoSair()"><span>SAIR</span></button>
                   </div>'''
                   h = re.sub(padrao_trio, subst_trio, h, count=1)
               else:
-                  botao_sair_html = r'\1\n<button type="button" class="btn-control btn-sair" onclick="pedirConfirmacaoSair()"><span>SAIR</span></button>'
+                  botao_sair_html = r'\1\n<button type="button" tabindex="0" class="btn-control btn-sair" onclick="pedirConfirmacaoSair()"><span>SAIR</span></button>'
                   h = re.sub(r'(<button[^>]*class="[^"]*btn-limpar[^"]*"[^>]*>[\s\S]*?</button>)', botao_sair_html, h, count=1)
+
+              # Garante que todos os botões tenham tabindex="0" para navegação com controle remoto
+              h = re.sub(r'<button\b(?![^>]*\btabindex=)', r'<button tabindex="0"', h)
 
               html_elementos = """
               <!-- TELA DE LOGO EXCLUSIVA POS-CONTAGEM (APENAS LOGO.PNG) -->
@@ -364,6 +552,21 @@ jobs:
               let _logoUrlObrigatorio = null;
               let _bgOficialUrl = null;
               let _duplicadosEncontrados = [];
+
+              // SUPORTE A CONTROLE REMOTO TV / TECLADO BLUETOOTH / TECLADO USB
+              window.addEventListener('keydown', (e) => {
+                  if (/^[0-9]$/.test(e.key)) {
+                      if (typeof digitarNumero === 'function') digitarNumero(e.key);
+                      else if (typeof handleKeypad === 'function') handleKeypad(e.key);
+                  }
+                  if (e.key === 'Escape' || e.key === 'GoBack' || e.keyCode === 27 || e.keyCode === 4) {
+                      const modSair = document.getElementById('modal-sair-overlay');
+                      const modDup = document.getElementById('modal-duplicados-overlay');
+                      if (modDup && modDup.classList.contains('active')) fecharModalDuplicados();
+                      else if (modSair && modSair.classList.contains('active')) fecharModalSair();
+                      else pedirConfirmacaoSair();
+                  }
+              });
 
               function pedirConfirmacaoSair() {
                   const modal = document.getElementById('modal-sair-overlay');
@@ -588,7 +791,7 @@ jobs:
 
               with open(p_html, "w", encoding="utf-8") as f:
                   f.write(h)
-              print(f"[OK] index.html com correcoes e trio de botoes aplicado: {p_html}")
+              print(f"[OK] index.html com padronizacao total e suporte a TV/Bluetooth: {p_html}")
 
           EOF
           python3 patch_karaoke.py
