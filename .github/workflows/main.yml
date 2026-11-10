@@ -815,9 +815,11 @@ jobs:
       - name: Compilar APK (Debug)
         run: ./gradlew assembleDebug --stacktrace
 
-      - name: Disponibilizar APK para Download
+      - name: Disponibilizar APK e Ícone para Download
         uses: actions/upload-artifact@v4
         with:
           name: Karaoke-Festa-das-Cores-v2.0
-          path: app/build/outputs/apk/debug/*.apk
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            master_icon.png
           retention-days: 7
