@@ -22,7 +22,7 @@ jobs:
           fi
           ls -la
 
-      - name: Aplicar correcoes solicitadas (Busca, Logo.png pos-zero, sem Jukebox, sem logo na intro)
+      - name: Aplicar correcoes finais (Zero piscada, bgoficial.png, sem icone play, logo direto no video)
         run: |
           cat << 'EOF' > patch_karaoke.py
           import os, re
@@ -35,7 +35,7 @@ jobs:
               return res
 
           # ==============================================================
-          # 1. MAINACTIVITY.JAVA (Multi-Intro + Excluir Arquivos Duplicados)
+          # 1. MAINACTIVITY.JAVA (Multi-Intro + Delete SAF)
           # ==============================================================
           for p_java in achar("MainActivity.java"):
               with open(p_java, "r", encoding="utf-8") as f:
@@ -92,8 +92,9 @@ jobs:
                   h = f.read()
 
               css_revisado = """
-              /* BLOQUEIO TOTAL DO PALCO ATE O TERMINO DA INTRO */
-              #ui-wrapper {
+              /* BLOQUEIO TOTAL E ABSOLUTO DO PALCO */
+              #ui-wrapper.oculto-inicio,
+              #ui-wrapper:not(.liberado) {
                   display: none !important;
                   opacity: 0 !important;
                   visibility: hidden !important;
@@ -104,6 +105,16 @@ jobs:
                   opacity: 1 !important;
                   visibility: visible !important;
                   pointer-events: auto !important;
+              }
+
+              /* ELIMINA QUALQUER ÍCONE NATIVO DE PLAY NO VÍDEO / ANDROID WEBKIT */
+              video::-webkit-media-controls,
+              video::-webkit-media-controls-start-playback-button,
+              video::-webkit-media-controls-play-button,
+              video::-webkit-media-controls-overlay-play-button {
+                  display: none !important;
+                  -webkit-appearance: none !important;
+                  opacity: 0 !important;
               }
 
               /* Botoes PARAR e LIMPAR sem icones */
@@ -125,7 +136,7 @@ jobs:
               #logo-tela-overlay {
                   position: absolute; inset: 0; z-index: 20000;
                   background: #000; display: none; align-items: center; justify-content: center;
-                  opacity: 0; transition: opacity 0.35s ease;
+                  opacity: 0; transition: opacity 0.3s ease;
               }
               #logo-tela-overlay.ativo { display: flex !important; opacity: 1 !important; }
               #logo-tela-img {
@@ -175,6 +186,9 @@ jobs:
               """
               h = h.replace("</style>", css_revisado + "\n</style>")
 
+              # Bloqueia o palco diretamente na tag HTML com inline style para não piscar nunca
+              h = h.replace('<div id="ui-wrapper">', '<div id="ui-wrapper" class="oculto-inicio" style="display: none !important; opacity: 0 !important; visibility: hidden !important;">')
+
               html_elementos = """
               <!-- TELA DE LOGO EXCLUSIVA POS-CONTAGEM (APENAS LOGO.PNG) -->
               <div id="logo-tela-overlay">
@@ -210,23 +224,25 @@ jobs:
 
               js_preciso = """
               let _logoUrlObrigatorio = null;
+              let _bgOficialUrl = null;
               let _duplicadosEncontrados = [];
 
-              // Localiza OBRIGATORIAMENTE o arquivo logo.png na raiz da pasta mestra
+              // Localiza OBRIGATORIAMENTE logo.png e bgoficial.png na pasta
               function identificarLogoMestra(files) {
                   _logoUrlObrigatorio = null;
+                  _bgOficialUrl = null;
                   for (let f of (files || [])) {
                       const nome = (f.name || '').toLowerCase();
                       const path = (f.webkitRelativePath || f.name).replace(/\\\\/g, '/');
                       const partes = path.split('/').filter(Boolean);
 
-                      // Verifica se o arquivo se chama exatamente logo.png e esta na raiz (KARAOKE/logo.png ou logo.png)
                       if (nome === 'logo.png' && partes.length <= 2) {
                           _logoUrlObrigatorio = f.contentUri || URL.createObjectURL(f);
-                          break;
+                      }
+                      if (nome === 'bgoficial.png') {
+                          _bgOficialUrl = f.contentUri || URL.createObjectURL(f);
                       }
                   }
-                  // Fallback: se estiver renomeado logo.png em qualquer nível
                   if (!_logoUrlObrigatorio) {
                       for (let f of (files || [])) {
                           if ((f.name || '').toLowerCase() === 'logo.png') {
@@ -237,7 +253,7 @@ jobs:
                   }
               }
 
-              // Exibe estritamente o logo.png pos-contagem (sem fallback nem textos)
+              // Exibe estritamente o logo.png pos-contagem e transiciona direto para o video
               function exibirLogoPosContagem(duracaoMs, callbackFim) {
                   const overlay = document.getElementById('logo-tela-overlay');
                   const img = document.getElementById('logo-tela-img');
@@ -256,11 +272,11 @@ jobs:
                           overlay.classList.remove('ativo');
                           overlay.style.opacity = '1';
                           if (callbackFim) callbackFim();
-                      }, 300);
+                      }, 250);
                   }, duracaoMs);
               }
 
-              // Busca no Catalogo por Musica, Cantor ou Codigo
+              // Busca no Catalogo
               let _termoBuscaCatalogo = '';
               function filtrarBuscaCatalogo(val) {
                   _termoBuscaCatalogo = (val || '').trim().toLowerCase();
@@ -336,14 +352,13 @@ jobs:
               }
               """
 
-              # Processamento de codigos: apenas 0000 (sem jukebox)
               h = h.replace("function processarCodigo(val) {", js_preciso + """
               function processarCodigo(val) {
                   const codStr = String(val).trim();
                   if (codStr === '0000') { checarDuplicadosCodigo0000(window._arquivosCarregadosCache || []); return; }
               """)
 
-              # Cache dos arquivos para busca de logo.png e duplicados
+              # Cache dos arquivos para busca de logo.png, bgoficial.png e duplicados
               h = h.replace("async function handleFolderSelect(e) {", "async function handleFolderSelect(e) {\n    window._arquivosCarregadosCache = Array.from(e.target.files); identificarLogoMestra(window._arquivosCarregadosCache);\n")
 
               # Injeta o filtro de busca no Catalogo
@@ -356,31 +371,77 @@ jobs:
               """
               h = h.replace(alvo_filtro_cat, subst_filtro_cat)
 
-              # LOGO.PNG OBRIGATORIO APOS O ZERO DA CONTAGEM (ANTES DO VIDEO COMEÇAR)
+              # ZERA O DELAY DE 700MS: CHAMA O SELETOR DIRETO A 0MS
+              h = h.replace("if (usaSeletorNativo) setTimeout(() => selectFolder(), 700);", "if (usaSeletorNativo) selectFolder();")
+
+              # CONTAGEM REGRESSIVA: bgoficial.png SE NÃO TIVER CANTOR OU TELA PRETA PURA (SEM PISCAR BG)
+              alvo_start_cross = """const nomes = [singerName, initialChar];
+            for (const nome of nomes) {
+                const arquivo1 = bgCantores[nome];
+                const arquivo2 = bgCantores[nome + "2"];
+                if (arquivo1) urls.push(arquivo1.isUrl ? arquivo1.url : (arquivo1.contentUri || URL.createObjectURL(arquivo1)));
+                if (arquivo2) urls.push(arquivo2.isUrl ? arquivo2.url : (arquivo2.contentUri || URL.createObjectURL(arquivo2)));
+                if (urls.length > 0) break;
+            }
+            iniciarCrossfade(urls);"""
+
+              subst_start_cross = """const nomes = [singerName, initialChar];
+            if (singerName && singerName !== 'CONVIDADO') {
+                for (const nome of nomes) {
+                    if (!nome) continue;
+                    const arquivo1 = bgCantores[nome];
+                    const arquivo2 = bgCantores[nome + "2"];
+                    if (arquivo1) urls.push(arquivo1.isUrl ? arquivo1.url : (arquivo1.contentUri || URL.createObjectURL(arquivo1)));
+                    if (arquivo2) urls.push(arquivo2.isUrl ? arquivo2.url : (arquivo2.contentUri || URL.createObjectURL(arquivo2)));
+                    if (urls.length > 0) break;
+                }
+            }
+            if (urls.length > 0) {
+                iniciarCrossfade(urls);
+            } else if (_bgOficialUrl) {
+                iniciarCrossfade([_bgOficialUrl]);
+            } else {
+                pararCrossfade();
+                if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }
+                if (bgSinger) { bgSinger.style.opacity = '0'; bgSinger.style.backgroundImage = ''; }
+                if (bgSinger2) { bgSinger2.style.opacity = '0'; bgSinger2.style.backgroundImage = ''; }
+            }"""
+              h = h.replace(alvo_start_cross, subst_start_cross)
+
+              # LOGO.PNG APÓS O ZERO E DIRETO PARA O VÍDEO (SEM PISCAR BG PADRÃO)
               alvo_fim_contagem = "pararCrossfade();\n            timerScreen.classList.remove('active');\n            document.body.classList.remove('countdown-ativo');"
               subst_fim_contagem = """pararCrossfade();
                           timerScreen.classList.remove('active');
-                          document.body.classList.remove('countdown-ativo');
-                          await new Promise(resLogo => {
-                              exibirLogoPosContagem(1800, resLogo);
-                          });"""
+                          if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }
+                          if (_logoUrlObrigatorio) {
+                              await new Promise(resLogo => {
+                                  exibirLogoPosContagem(1800, resLogo);
+                              });
+                          }
+                          if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }"""
               h = h.replace(alvo_fim_contagem, subst_fim_contagem)
 
-              # QUANDO A INTRO TERMINA: VAI DIRETO PARA O PALCO (SEM LOGO NA INTRO)
+              # QUANDO A INTRO TERMINA: LIBERA O PALCO PELA PRIMEIRA VEZ
               alvo_intro_fim = "introScreen.classList.remove('active');"
               novo_intro_fim = """
               introScreen.classList.remove('active');
               var ui = document.getElementById('ui-wrapper');
-              if (ui) ui.classList.add('liberado');
+              if (ui) {
+                  ui.classList.remove('oculto-inicio');
+                  ui.classList.add('liberado');
+                  ui.style.display = '';
+                  ui.style.opacity = '';
+                  ui.style.visibility = '';
+              }
               """
               h = h.replace(alvo_intro_fim, novo_intro_fim)
 
               # Se a pasta nao tiver intro, libera o palco
-              h = h.replace("folderLoadFinished = true;", "folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) ui.classList.add('liberado');")
+              h = h.replace("folderLoadFinished = true;", "folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; }")
 
               with open(p_html, "w", encoding="utf-8") as f:
                   f.write(h)
-              print(f"[OK] index.html com busca, logo.png pos-zero e sem Jukebox: {p_html}")
+              print(f"[OK] index.html com correcoes finais aplicadas: {p_html}")
 
           EOF
           python3 patch_karaoke.py
