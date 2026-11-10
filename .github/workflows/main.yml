@@ -24,12 +24,24 @@ jobs:
           if [ -d "FONTE-KARAOKE" ]; then
             cp -r FONTE-KARAOKE/* .
           fi
+
+          # Se o projeto estiver dentro de alguma subpasta do ZIP, move tudo para a raiz
+          if [ ! -f "build.gradle" ] && [ ! -f "settings.gradle" ] && [ ! -f "build.gradle.kts" ]; then
+            for dir in */; do
+              if [ -f "${dir}build.gradle" ] || [ -f "${dir}settings.gradle" ]; then
+                echo "Projeto encontrado em $dir. Movendo para raiz..."
+                cp -r "${dir}"* .
+                break
+              fi
+            done
+          fi
           ls -la
 
       - name: Gerar Ícone Oficial Redondo (Microfone Vintage Dourado + Fundo Rosa/Lilás)
         run: |
-          sudo apt-get install -y libcairo2-dev
-          pip install cairosvg pillow
+          # Instala dependências nativas via apt (evita erro de pip no Ubuntu 24.04)
+          sudo apt-get update -y
+          sudo apt-get install -y python3-cairosvg python3-pil
 
           cat << 'EOF' > gerar_icone.py
           import os, cairosvg
@@ -113,6 +125,7 @@ jobs:
               "mipmap-xxxhdpi": 192
           }
 
+          aplicados = 0
           for root, dirs, files in os.walk("."):
               for pasta, dim in tamanhos.items():
                   if pasta in dirs:
@@ -120,7 +133,18 @@ jobs:
                       redim = master.resize((dim, dim), Image.Resampling.LANCZOS)
                       redim.save(os.path.join(caminho_dir, "ic_launcher.png"), "PNG")
                       redim.save(os.path.join(caminho_dir, "ic_launcher_round.png"), "PNG")
+                      aplicados += 1
                       print(f"[OK] Ícone aplicado em: {caminho_dir} ({dim}x{dim})")
+
+          if aplicados == 0:
+              print("[AVISO] Pastas mipmap ainda nao encontradas, criando fallback em app/src/main/res...")
+              res_base = os.path.join("app", "src", "main", "res")
+              for pasta, dim in tamanhos.items():
+                  target_dir = os.path.join(res_base, pasta)
+                  os.makedirs(target_dir, exist_ok=True)
+                  redim = master.resize((dim, dim), Image.Resampling.LANCZOS)
+                  redim.save(os.path.join(target_dir, "ic_launcher.png"), "PNG")
+                  redim.save(os.path.join(target_dir, "ic_launcher_round.png"), "PNG")
 
           EOF
           python3 gerar_icone.py
@@ -153,33 +177,34 @@ jobs:
                   }
 
                   @android.webkit.JavascriptInterface public void exitApp() {
-                      runOnUiThread(new Runnable() {
-                          @Override public void run() {
-                              try {
-                                  finishAffinity();
-                                  System.exit(0);
-                              } catch (Exception ignored) {
+                      try {
+                          MainActivity.this.runOnUiThread(new Runnable() {
+                              @Override public void run() {
+                                  try { MainActivity.this.finishAffinity(); } catch(Exception ignored) {}
                                   System.exit(0);
                               }
-                          }
-                      });
+                          });
+                      } catch (Exception e) {
+                          System.exit(0);
+                      }
                   }
                   """
                   j = j.replace("public final class AndroidHost {", "public final class AndroidHost {" + metodos_host)
 
-              if "dispatchKeyEvent" not in j:
+              # Ancoragem segura antes do AndroidHost para não quebrar o arquivo
+              if "dispatchKeyEvent" not in j and "public final class AndroidHost" in j:
                   metodo_dispatch = """
                   @Override
                   public boolean dispatchKeyEvent(android.view.KeyEvent event) {
-                      if (webView != null && webView.dispatchKeyEvent(event)) {
-                          return true;
-                      }
+                      try {
+                          if (webView != null && webView.dispatchKeyEvent(event)) {
+                              return true;
+                          }
+                      } catch (Exception ignored) {}
                       return super.dispatchKeyEvent(event);
                   }
                   """
-                  ultimo_fechamento = j.rfind("}")
-                  if ultimo_fechamento != -1:
-                      j = j[:ultimo_fechamento] + metodo_dispatch + "\n}\n"
+                  j = j.replace("public final class AndroidHost {", metodo_dispatch + "\n    public final class AndroidHost {")
 
               if "getDefaultVideoPoster" not in j:
                   poster_override = """
@@ -293,7 +318,7 @@ jobs:
                   cursor: pointer !important;
                   color: #d480ff !important;
                   transition: all 0.2s ease !important;
-                  z-index: 100 !important;
+                  z-index: 1000 !important;
               }
               .btn-sair-topo:hover,
               .btn-sair-topo:focus,
@@ -319,7 +344,7 @@ jobs:
                   margin-right: 56px !important;
               }
 
-              /* BARRA INFERIOR DA DIREITA: 50% PARAR | 50% LIMPAR (TOTALMENTE DESAFOGADOS) */
+              /* BARRA INFERIOR DA DIREITA: 50% PARAR | 50% LIMPAR */
               .linha-direita-dupla,
               *:has(> .btn-parar):not(:has(> .btn-codigo)) {
                   width: 100% !important;
@@ -526,14 +551,14 @@ jobs:
                          r'<div id="ui-wrapper"\1 class="oculto-inicio" style="display: none !important; opacity: 0 !important; visibility: hidden !important;">',
                          h, count=1)
 
-              # INJETA O BOTÃO SAIR DISCRETO NO TOPO DIREITO DA TELA
+              # INJETA O BOTÃO SAIR DISCRETO DENTRO DO PALCO (PARA NÃO APARECER NA INTRO)
               botao_sair_topo_html = '''
               <button type="button" tabindex="0" class="btn-sair-topo" title="Sair do Karaokê" onclick="pedirConfirmacaoSair()">
                   <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
               </button>
               '''
               if "btn-sair-topo" not in h:
-                  h = h.replace('<div id="ui-wrapper"', botao_sair_topo_html + '\n<div id="ui-wrapper"')
+                  h = re.sub(r'(<div\s+id="ui-wrapper"[^>]*>)', r'\1\n' + botao_sair_topo_html, h, count=1)
 
               # ENCAPSULA OS BOTÕES PARAR E LIMPAR EM 50% CADA (SEM O BOTÃO SAIR ATRAPALHANDO EMBAIXO)
               padrao_trio = r'(<button[^>]*class="[^"]*btn-parar[^"]*"[^>]*>[\s\S]*?</button>\s*<button[^>]*class="[^"]*btn-limpar[^"]*"[^>]*>[\s\S]*?</button>)'
@@ -798,3 +823,73 @@ jobs:
                 if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }
                 if (bgSinger) { bgSinger.style.opacity = '0'; bgSinger.style.backgroundImage = ''; }
                 if (bgSinger2) { bgSinger2.style.opacity = '0'; bgSinger2.style.backgroundImage = ''; }
+            }"""
+              h = h.replace(alvo_start_cross, subst_start_cross)
+
+              alvo_fim_contagem = "pararCrossfade();\n            timerScreen.classList.remove('active');\n            document.body.classList.remove('countdown-ativo');"
+              subst_fim_contagem = """pararCrossfade();
+                          timerScreen.classList.remove('active');
+                          if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }
+                          if (_logoUrlObrigatorio) {
+                              await new Promise(resLogo => {
+                                  exibirLogoPosContagem(1800, resLogo);
+                              });
+                          }
+                          document.body.classList.remove('countdown-ativo');
+                          if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }"""
+              h = h.replace(alvo_fim_contagem, subst_fim_contagem)
+
+              alvo_intro_fim = "introScreen.classList.remove('active');"
+              novo_intro_fim = """
+              introScreen.classList.remove('active');
+              var ui = document.getElementById('ui-wrapper');
+              if (ui) {
+                  ui.classList.remove('oculto-inicio');
+                  ui.classList.add('liberado');
+                  ui.style.display = '';
+                  ui.style.opacity = '';
+                  ui.style.visibility = '';
+              }
+              """
+              h = h.replace(alvo_intro_fim, novo_intro_fim)
+
+              h = h.replace("folderLoadFinished = true;",
+                            "folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; }")
+
+              with open(p_html, "w", encoding="utf-8") as f:
+                  f.write(h)
+              print(f"[OK] index.html ajustado: PARAR e LIMPAR 50% + Botao Sair no topo: {p_html}")
+
+          EOF
+          python3 patch_karaoke.py
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Garantir Gradle Wrapper
+        run: |
+          if [ ! -f "gradlew" ]; then
+            gradle wrapper --gradle-version 8.11.1
+          fi
+          chmod +x gradlew
+
+      - name: Compilar APK (Debug)
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Disponibilizar APK e Ícone para Download
+        uses: actions/upload-artifact@v4
+        with:
+          name: Karaoke-Festa-das-Cores-v2.0
+          path: |
+            **/build/outputs/apk/**/*.apk
+            master_icon.png
+          if-no-files-found: warn
+          retention-days: 7
