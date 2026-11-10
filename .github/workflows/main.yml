@@ -22,7 +22,7 @@ jobs:
           fi
           ls -la
 
-      - name: Aplicar transicao cinematografica e melhorias visuais
+      - name: Aplicar todas as correcoes (Zero piscada, Logo, Busca, 0000 e 9999)
         run: |
           cat << 'EOF' > patch_karaoke.py
           import os, re
@@ -35,12 +35,13 @@ jobs:
               return res
 
           # ==============================================================
-          # 1. ATUALIZA MAINACTIVITY.JAVA (3 Intros + Deletar Duplicados)
+          # 1. MAINACTIVITY.JAVA (Multi-Intro + Excluir Arquivos Duplicados)
           # ==============================================================
           for p_java in achar("MainActivity.java"):
               with open(p_java, "r", encoding="utf-8") as f:
                   j = f.read()
 
+              # Adiciona método deleteFile no AndroidHost
               if "deleteFile" not in j:
                   metodo_delete = """
                   @JavascriptInterface public boolean deleteFile(String uriStr) {
@@ -51,6 +52,7 @@ jobs:
                   """
                   j = j.replace("public final class AndroidHost {", "public final class AndroidHost {" + metodo_delete)
 
+              # Suporte a intro.mp4, intro2.mp4 e intro3.mp4 com sorteio
               idx_inicio = j.find("if (cursor == null) return;")
               idx_fim = j.find("} catch (Exception ignored) {}", idx_inicio)
               if idx_inicio != -1 and idx_fim != -1:
@@ -85,35 +87,28 @@ jobs:
               print(f"[OK] MainActivity.java: {p_java}")
 
           # ==============================================================
-          # 2. ATUALIZA INDEX.HTML (Transicao Cinematografica + UI)
+          # 2. INDEX.HTML (Zero Piscada, Busca, Logo pos-0, 9999 e 0000)
           # ==============================================================
           for p_html in achar("index.html"):
               with open(p_html, "r", encoding="utf-8") as f:
                   h = f.read()
 
-              # Estilo das fotos do cantor com transicao de palco cinematografica
-              css_cinematografico = """
-              /* Transicao Cinematografica das fotos do Cantor */
-              #bg-singer-layer,
-              #bg-singer-layer-2 {
-                  position: absolute; width: 100%; height: 100%;
-                  background-color: transparent;
-                  background-size: contain;
-                  background-position: center center;
-                  background-repeat: no-repeat;
-                  z-index: 2; opacity: 0;
-                  transform: scale(0.98) translateZ(0);
-                  transition: opacity 0.85s cubic-bezier(0.25, 1, 0.5, 1), transform 1.9s cubic-bezier(0.1, 0.8, 0.2, 1) !important;
-                  filter: drop-shadow(0 0 35px rgba(0, 255, 255, 0.4)) drop-shadow(0 0 70px rgba(255, 0, 255, 0.25)) !important;
-                  will-change: opacity, transform;
+              css_completo = """
+              /* BLOQUEIO TOTAL DO PALCO ATE O TERMINO DA INTRO (FIM DA PISCADA) */
+              #ui-wrapper {
+                  display: none !important;
+                  opacity: 0 !important;
+                  visibility: hidden !important;
+                  pointer-events: none !important;
               }
-              #bg-singer-layer.ativo-zoom,
-              #bg-singer-layer-2.ativo-zoom {
+              #ui-wrapper.liberado {
+                  display: grid !important;
                   opacity: 1 !important;
-                  transform: scale(1.06) translateZ(0) !important;
+                  visibility: visible !important;
+                  pointer-events: auto !important;
               }
 
-              /* Botoes PARAR e LIMPAR sem icones, harmoniosos e elegantes */
+              /* Botoes PARAR e LIMPAR modernos sem icones e harmoniosos */
               .btn-control svg { display: none !important; }
               .btn-control {
                   height: 58px !important;
@@ -126,90 +121,136 @@ jobs:
                   text-align: center !important;
                   border-radius: 16px !important;
               }
-              .btn-control span {
-                  font-size: 15px !important;
-                  letter-spacing: 2px !important;
-              }
+              .btn-control span { font-size: 15px !important; letter-spacing: 2px !important; }
 
-              /* Tela de Logo pos-intro (2 segundos) */
-              #intro-logo-overlay {
-                  position: fixed; inset: 0; z-index: 9999999;
-                  background: #050508; display: none; align-items: center; justify-content: center;
-                  flex-direction: column; opacity: 0; transition: opacity 0.5s ease;
+              /* Tela de Logo pos-contagem e pos-intro */
+              #logo-tela-overlay {
+                  position: absolute; inset: 0; z-index: 20000;
+                  background: #000; display: none; align-items: center; justify-content: center;
+                  flex-direction: column; opacity: 0; transition: opacity 0.4s ease;
               }
-              #intro-logo-overlay.ativo {
-                  display: flex !important; opacity: 1 !important;
+              #logo-tela-overlay.ativo { display: flex !important; opacity: 1 !important; }
+              #logo-tela-img {
+                  max-width: 70%; max-height: 70%; object-fit: contain;
+                  filter: drop-shadow(0 0 35px rgba(0,255,255,0.5));
+                  animation: zoomLogoShow 1.8s ease-out forwards;
               }
-              #intro-logo-img {
-                  max-width: 65vw; max-height: 55vh; object-fit: contain;
-                  filter: drop-shadow(0 0 30px rgba(0,255,255,0.4));
-                  animation: logoZoom 2s ease-out forwards;
-              }
-              #intro-logo-fallback {
-                  text-align: center; font-family: var(--font-title);
-                  animation: logoZoom 2s ease-out forwards;
-              }
-              #intro-logo-fallback h1 {
-                  font-size: clamp(32px, 7vw, 70px); font-weight: 900;
-                  color: #fff; letter-spacing: 4px;
+              #logo-tela-fallback { text-align: center; font-family: var(--font-title); animation: zoomLogoShow 1.8s ease-out forwards; }
+              #logo-tela-fallback h1 {
+                  font-size: clamp(30px, 6vw, 65px); font-weight: 900; color: #fff; letter-spacing: 4px;
                   text-shadow: 0 0 25px var(--neon), 0 0 50px var(--magenta);
               }
-              #intro-logo-fallback p {
-                  font-size: clamp(14px, 2.5vw, 24px); color: var(--vivid-yellow);
-                  letter-spacing: 6px; margin-top: 8px; font-weight: 700;
+              #logo-tela-fallback p {
+                  font-size: clamp(14px, 2vw, 22px); color: var(--vivid-yellow); letter-spacing: 6px; margin-top: 6px; font-weight: 700;
               }
-              @keyframes logoZoom {
-                  0% { transform: scale(0.92); opacity: 0.2; }
-                  30% { opacity: 1; }
+              @keyframes zoomLogoShow {
+                  0% { transform: scale(0.9); opacity: 0.3; }
+                  25% { opacity: 1; }
                   100% { transform: scale(1.04); opacity: 1; }
               }
+
+              /* Campo de busca no Catalogo por musica ou cantor */
+              .cat-busca-box { display: flex; gap: 8px; margin: 4px 0 10px; width: 100%; }
+              #cat-campo-busca {
+                  flex: 1; padding: 12px 18px; border-radius: 14px;
+                  border: 2px solid var(--neon); background: rgba(0,0,0,0.65);
+                  color: #fff; font-size: 16px; font-family: var(--font-title); font-weight: 700; outline: none;
+              }
+              #cat-campo-busca:focus { border-color: var(--magenta); box-shadow: 0 0 15px rgba(255,0,255,0.4); }
+              #cat-btn-limpar-busca {
+                  padding: 10px 18px; border-radius: 14px; border: 0; background: #333; color: #fff;
+                  font-weight: 900; font-family: var(--font-title); font-size: 13px; cursor: pointer;
+              }
+
+              /* PLAYER HIBRIDO MP3 (CODIGO 9999) */
+              #player-mp3-overlay {
+                  position: fixed; inset: 0; z-index: 99999999;
+                  background: radial-gradient(circle at center, #18122c 0%, #060511 100%);
+                  display: none; flex-direction: column; align-items: center; justify-content: center;
+                  padding: 24px; font-family: var(--font-title); color: #fff;
+              }
+              #player-mp3-overlay.ativo { display: flex !important; }
+              .mp3-box {
+                  width: min(92vw, 680px); background: rgba(255,255,255,0.05);
+                  border: 2px solid var(--neon); border-radius: 24px; padding: 26px;
+                  box-shadow: 0 0 50px rgba(0,255,255,0.3); text-align: center;
+                  display: flex; flex-direction: column; gap: 16px;
+              }
+              .mp3-tag-pasta {
+                  display: inline-block; background: var(--magenta); color: #fff;
+                  padding: 6px 16px; border-radius: 10px; font-size: 14px; font-weight: 900; letter-spacing: 2px; align-self: center;
+              }
+              .mp3-titulo { font-size: clamp(18px, 3.2vw, 26px); color: var(--vivid-yellow); text-shadow: 0 0 15px rgba(255,221,0,0.5); word-break: break-word; }
+              .mp3-onda-visual { display: flex; gap: 6px; justify-content: center; align-items: flex-end; height: 60px; margin: 8px 0; }
+              .mp3-barra { width: 8px; border-radius: 4px; background: linear-gradient(180deg, var(--neon), var(--magenta)); animation: animBarra 0.7s ease-in-out infinite alternate; }
+              .mp3-barra:nth-child(2) { animation-delay: 0.15s; }
+              .mp3-barra:nth-child(3) { animation-delay: 0.3s; }
+              .mp3-barra:nth-child(4) { animation-delay: 0.45s; }
+              .mp3-barra:nth-child(5) { animation-delay: 0.6s; }
+              .mp3-barra:nth-child(6) { animation-delay: 0.25s; }
+              .mp3-barra:nth-child(7) { animation-delay: 0.5s; }
+              @keyframes animBarra { 0% { height: 10px; } 100% { height: 55px; } }
+              .mp3-controles { display: flex; gap: 12px; justify-content: center; align-items: center; margin-top: 6px; }
+              .btn-mp3-acao {
+                  padding: 14px 22px; border: 0; border-radius: 14px; font-weight: 900; font-size: 14px; letter-spacing: 1.5px;
+                  cursor: pointer; color: #fff; background: #2a2238; border: 1px solid rgba(255,255,255,0.2); transition: transform 0.1s, background 0.2s;
+              }
+              .btn-mp3-acao:active { transform: scale(0.95); background: var(--neon); color: #000; }
+              .btn-mp3-play { padding: 16px 32px; background: var(--emerald); color: #001a0d; font-size: 16px; box-shadow: 0 0 25px rgba(0,255,136,0.5); }
+              .btn-mp3-fechar { background: #ff2244; color: #fff; border: 0; padding: 12px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; align-self: center; }
+              .mp3-dica { font-size: 12px; color: #aaa; letter-spacing: 1px; }
 
               /* Modal de Duplicados (Codigo 0000) */
               #modal-duplicados-overlay {
                   position: fixed; inset: 0; z-index: 35000; display: none;
-                  align-items: center; justify-content: center; background: rgba(0,0,0,0.88);
-                  backdrop-filter: blur(8px); padding: 20px;
+                  align-items: center; justify-content: center; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); padding: 20px;
               }
               #modal-duplicados-overlay.active { display: flex !important; }
               #modal-duplicados-box {
-                  background: linear-gradient(160deg, #181226, #090812);
-                  border: 2px solid var(--vivid-yellow); border-radius: 20px;
-                  padding: 24px; width: min(92vw, 650px); max-height: 85vh;
-                  display: flex; flex-direction: column; gap: 14px;
+                  background: linear-gradient(160deg, #181226, #090812); border: 2px solid var(--vivid-yellow); border-radius: 20px;
+                  padding: 24px; width: min(92vw, 650px); max-height: 85vh; display: flex; flex-direction: column; gap: 14px;
                   box-shadow: 0 0 40px rgba(255,221,0,0.3); color: #fff;
               }
-              #modal-duplicados-titulo {
-                  font: 900 20px var(--font-title); color: var(--vivid-yellow);
-                  text-align: center; letter-spacing: 2px;
-              }
-              #modal-duplicados-lista {
-                  flex: 1; overflow-y: auto; max-height: 45vh; display: flex;
-                  flex-direction: column; gap: 8px; padding-right: 6px;
-              }
-              .item-dup {
-                  background: rgba(255,255,255,0.06); padding: 10px 14px;
-                  border-radius: 10px; border-left: 4px solid #ff4444; font-size: 13px;
-              }
+              #modal-duplicados-titulo { font: 900 20px var(--font-title); color: var(--vivid-yellow); text-align: center; letter-spacing: 2px; }
+              #modal-duplicados-lista { flex: 1; overflow-y: auto; max-height: 45vh; display: flex; flex-direction: column; gap: 8px; padding-right: 6px; }
+              .item-dup { background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 10px; border-left: 4px solid #ff4444; font-size: 13px; }
               .item-dup b { color: var(--neon); display: block; margin-bottom: 2px; }
               .item-dup small { color: #aaa; word-break: break-all; }
               .modal-dup-acoes { display: flex; gap: 10px; margin-top: 6px; }
-              .modal-dup-acoes button {
-                  flex: 1; padding: 14px; border: none; border-radius: 12px;
-                  font: 800 14px var(--font-title); cursor: pointer;
-              }
+              .modal-dup-acoes button { flex: 1; padding: 14px; border: none; border-radius: 12px; font: 800 14px var(--font-title); cursor: pointer; }
               #btn-fechar-dup { background: #333; color: #fff; }
               #btn-remover-dup { background: #ff2244; color: #fff; box-shadow: 0 0 20px rgba(255,34,68,0.5); }
               """
-              h = h.replace("</style>", css_cinematografico + "\n#ui-wrapper.liberado { opacity: 1 !important; pointer-events: auto !important; }\n</style>")
+              h = h.replace("</style>", css_completo + "\n</style>")
 
-              # Containers da Logo e Modal de Duplicados
               html_extras = """
-              <div id="intro-logo-overlay">
-                  <img id="intro-logo-img" style="display:none;" alt="Logo">
-                  <div id="intro-logo-fallback">
+              <div id="logo-tela-overlay">
+                  <img id="logo-tela-img" style="display:none;" alt="Logo">
+                  <div id="logo-tela-fallback">
                       <h1>KARAOKÊ</h1>
                       <p>FESTA DAS CORES</p>
                   </div>
+              </div>
+
+              <div id="player-mp3-overlay">
+                  <div class="mp3-box">
+                      <div class="mp3-tag-pasta" id="mp3-pasta-label">PASTA: GERAL</div>
+                      <div class="mp3-titulo" id="mp3-titulo-label">Nenhuma música carregada</div>
+                      <div class="mp3-onda-visual">
+                          <div class="mp3-barra"></div><div class="mp3-barra"></div>
+                          <div class="mp3-barra"></div><div class="mp3-barra"></div>
+                          <div class="mp3-barra"></div><div class="mp3-barra"></div>
+                          <div class="mp3-barra"></div>
+                      </div>
+                      <div class="mp3-controles">
+                          <button class="btn-mp3-acao" id="btn-mp3-ant" title="Clique: Volta música / Segure: Volta pasta">⏮ VOLTAR</button>
+                          <button class="btn-mp3-acao btn-mp3-play" id="btn-mp3-playpause">▶ TOCAR</button>
+                          <button class="btn-mp3-acao" id="btn-mp3-prox" title="Clique: Avança música / Segure: Avança pasta">AVANÇAR ⏭</button>
+                      </div>
+                      <div class="mp3-dica">💡 Toque para trocar música | Segure para trocar de pasta inteira</div>
+                      <button class="btn-mp3-fechar" onclick="fecharPlayerMP3Hibrido()">✕ VOLTAR AO KARAOKÊ</button>
+                  </div>
+                  <audio id="audio-mp3-player"></audio>
               </div>
 
               <div id="modal-duplicados-overlay">
@@ -226,86 +267,190 @@ jobs:
               """
               h = h.replace("</body>", html_extras + "\n</body>")
 
-              # Remove os SVGs dos botoes
+              # Remove os ícones dos botões PARAR e LIMPAR
               h = re.sub(r'(<button type="button" class="btn-control btn-parar"[^>]*>)\s*<svg[\s\S]*?</svg>', r'\1', h)
               h = re.sub(r'(<button type="button" class="btn-control btn-limpar"[^>]*>)\s*<svg[\s\S]*?</svg>', r'\1', h)
 
-              # Logica JS de Crossfade Cinematografico de Fotos + Duplicados
-              js_crossfade_cinematografico = """
-              function pararCrossfade() {
-                  if (singerBgInterval) { clearInterval(singerBgInterval); singerBgInterval = null; }
-                  camadaAtiva = 1; fotosCantor = []; indiceFotoAtual = 0;
-                  if (bgSinger) { bgSinger.classList.remove('ativo-zoom'); bgSinger.style.backgroundImage = ''; }
-                  if (bgSinger2) { bgSinger2.classList.remove('ativo-zoom'); bgSinger2.style.backgroundImage = ''; }
-              }
+              # Adiciona o campo de pesquisa no Catálogo
+              h = h.replace('<div id="cat-letras"></div>', """
+              <div class="cat-busca-box">
+                  <input type="text" id="cat-campo-busca" placeholder="🔍 Pesquise por música ou cantor..." oninput="filtrarBuscaCatalogo(this.value)">
+                  <button type="button" id="cat-btn-limpar-busca" onclick="limparBuscaCatalogo()">LIMPAR</button>
+              </div>
+              <div id="cat-letras"></div>""")
 
-              function iniciarCrossfade(urls) {
-                  pararCrossfade();
-                  if (!urls || urls.length === 0) return;
-                  fotosCantor = urls;
-                  indiceFotoAtual = 0;
-
-                  bgSinger.style.backgroundImage = `url("${fotosCantor[0]}")`;
-                  bgSinger.classList.add('ativo-zoom');
-                  bgSinger2.classList.remove('ativo-zoom');
-
-                  if (fotosCantor.length === 1) return;
-
-                  singerBgInterval = setInterval(() => {
-                      indiceFotoAtual = (indiceFotoAtual + 1) % fotosCantor.length;
-                      const proximaUrl = fotosCantor[indiceFotoAtual];
-                      if (camadaAtiva === 1) {
-                          bgSinger2.style.backgroundImage = `url("${proximaUrl}")`;
-                          bgSinger2.classList.add('ativo-zoom');
-                          bgSinger.classList.remove('ativo-zoom');
-                          camadaAtiva = 2;
-                      } else {
-                          bgSinger.style.backgroundImage = `url("${proximaUrl}")`;
-                          bgSinger.classList.add('ativo-zoom');
-                          bgSinger2.classList.remove('ativo-zoom');
-                          camadaAtiva = 1;
-                      }
-                  }, 1800);
-              }
-
+              js_logic = """
+              let _logoUrlGeral = null;
               let _duplicadosEncontrados = [];
-              let _logoPersonalizadaUrl = null;
+              let _mp3Estrutura = {};
+              let _mp3Pastas = [];
+              let _mp3PastaAtualIdx = 0;
+              let _mp3MusicaAtualIdx = 0;
 
-              function verificarLogoNasPastas(files) {
+              function analisarArquivosEspeciais(files) {
+                  _logoUrlGeral = null;
+                  _mp3Estrutura = {};
+                  _mp3Pastas = [];
+
                   for (let f of (files || [])) {
                       const n = (f.name || '').toLowerCase();
-                      if (n === 'logo.png' || n === 'logo.gif' || n === 'logo.jpg' || n === 'logo.webp') {
-                          _logoPersonalizadaUrl = f.contentUri || URL.createObjectURL(f);
-                          break;
+                      const path = (f.webkitRelativePath || f.name).replace(/\\\\/g, '/');
+
+                      if (n === 'logo.png' || n === 'logo.jpg' || n === 'logo.jpeg' || n === 'logo.webp') {
+                          _logoUrlGeral = f.contentUri || URL.createObjectURL(f);
+                      }
+
+                      if (n.endsWith('.mp3') && !n.includes('easteregg')) {
+                          const partes = path.split('/');
+                          let pasta = 'GERAL';
+                          if (partes.length > 2) {
+                              pasta = partes[partes.length - 2].toUpperCase();
+                          } else if (partes.length === 2) {
+                              pasta = partes[0].toUpperCase();
+                          }
+                          if (!_mp3Estrutura[pasta]) _mp3Estrutura[pasta] = [];
+                          _mp3Estrutura[pasta].push(f);
                       }
                   }
+                  _mp3Pastas = Object.keys(_mp3Estrutura);
               }
 
-              function exibirTransicaoLogo(callbackFinal) {
-                  const logoOverlay = document.getElementById('intro-logo-overlay');
-                  const logoImg = document.getElementById('intro-logo-img');
-                  const logoFallback = document.getElementById('intro-logo-fallback');
-                  if (!logoOverlay) { if (callbackFinal) callbackFinal(); return; }
+              function exibirLogoMomento(duracaoMs, callbackFim) {
+                  const overlay = document.getElementById('logo-tela-overlay');
+                  const img = document.getElementById('logo-tela-img');
+                  const fallback = document.getElementById('logo-tela-fallback');
+                  if (!overlay) { if (callbackFim) callbackFim(); return; }
 
-                  if (_logoPersonalizadaUrl) {
-                      logoImg.src = _logoPersonalizadaUrl;
-                      logoImg.style.display = 'block';
-                      if (logoFallback) logoFallback.style.display = 'none';
+                  if (_logoUrlGeral) {
+                      img.src = _logoUrlGeral;
+                      img.style.display = 'block';
+                      if (fallback) fallback.style.display = 'none';
                   } else {
-                      logoImg.style.display = 'none';
-                      if (logoFallback) logoFallback.style.display = 'block';
+                      img.style.display = 'none';
+                      if (fallback) fallback.style.display = 'block';
                   }
 
-                  logoOverlay.classList.add('ativo');
+                  overlay.classList.add('ativo');
 
                   setTimeout(() => {
-                      logoOverlay.style.opacity = '0';
+                      overlay.style.opacity = '0';
                       setTimeout(() => {
-                          logoOverlay.classList.remove('ativo');
-                          logoOverlay.style.opacity = '1';
-                          if (callbackFinal) callbackFinal();
-                      }, 500);
-                  }, 2000);
+                          overlay.classList.remove('ativo');
+                          overlay.style.opacity = '1';
+                          if (callbackFim) callbackFim();
+                      }, 400);
+                  }, duracaoMs);
+              }
+
+              let _termoBuscaCatalogo = '';
+              function filtrarBuscaCatalogo(val) {
+                  _termoBuscaCatalogo = (val || '').trim().toLowerCase();
+                  const barraLetras = document.getElementById('cat-letras');
+                  if (barraLetras) barraLetras.style.display = _termoBuscaCatalogo ? 'none' : 'flex';
+                  renderCatalogo();
+              }
+              function limparBuscaCatalogo() {
+                  const campo = document.getElementById('cat-campo-busca');
+                  if (campo) campo.value = '';
+                  filtrarBuscaCatalogo('');
+              }
+
+              function abrirPlayerMP3Hibrido() {
+                  if (_mp3Pastas.length === 0) {
+                      mostrarAviso('Nenhum MP3 encontrado na pasta!', true);
+                      return;
+                  }
+                  const overlay = document.getElementById('player-mp3-overlay');
+                  overlay.classList.add('ativo');
+                  configurarBotoesMP3();
+                  carregarFaixaMP3Atual(true);
+              }
+
+              function fecharPlayerMP3Hibrido() {
+                  const audio = document.getElementById('audio-mp3-player');
+                  if (audio) { audio.pause(); audio.src = ''; }
+                  document.getElementById('player-mp3-overlay').classList.remove('ativo');
+              }
+
+              function carregarFaixaMP3Atual(autoPlay) {
+                  const pastaNome = _mp3Pastas[_mp3PastaAtualIdx] || 'GERAL';
+                  const listaFaixas = _mp3Estrutura[pastaNome] || [];
+                  if (listaFaixas.length === 0) return;
+
+                  if (_mp3MusicaAtualIdx >= listaFaixas.length) _mp3MusicaAtualIdx = 0;
+                  if (_mp3MusicaAtualIdx < 0) _mp3MusicaAtualIdx = listaFaixas.length - 1;
+
+                  const arquivo = listaFaixas[_mp3MusicaAtualIdx];
+                  const url = arquivo.contentUri || URL.createObjectURL(arquivo);
+                  const audio = document.getElementById('audio-mp3-player');
+
+                  document.getElementById('mp3-pasta-label').textContent = 'PASTA: ' + pastaNome + ' [' + (_mp3PastaAtualIdx + 1) + '/' + _mp3Pastas.length + ']';
+                  document.getElementById('mp3-titulo-label').textContent = (_mp3MusicaAtualIdx + 1) + '. ' + (arquivo.name || '').replace(/\\\\.mp3$/i, '');
+
+                  audio.src = url;
+                  if (autoPlay) {
+                      audio.play().then(() => {
+                          document.getElementById('btn-mp3-playpause').textContent = '⏸ PAUSAR';
+                      }).catch(() => {});
+                  }
+                  audio.onended = () => { avancarFaixaMP3(); };
+              }
+
+              function avancarFaixaMP3() {
+                  const pastaNome = _mp3Pastas[_mp3PastaAtualIdx];
+                  const total = (_mp3Estrutura[pastaNome] || []).length;
+                  _mp3MusicaAtualIdx = (_mp3MusicaAtualIdx + 1) % total;
+                  carregarFaixaMP3Atual(true);
+              }
+              function voltarFaixaMP3() {
+                  const pastaNome = _mp3Pastas[_mp3PastaAtualIdx];
+                  const total = (_mp3Estrutura[pastaNome] || []).length;
+                  _mp3MusicaAtualIdx = (_mp3MusicaAtualIdx - 1 + total) % total;
+                  carregarFaixaMP3Atual(true);
+              }
+              function avancarPastaMP3() {
+                  _mp3Pastas.length && (_mp3PastaAtualIdx = (_mp3PastaAtualIdx + 1) % _mp3Pastas.length);
+                  _mp3MusicaAtualIdx = 0;
+                  mostrarAviso('📁 Pasta: ' + _mp3Pastas[_mp3PastaAtualIdx]);
+                  carregarFaixaMP3Atual(true);
+              }
+              function voltarPastaMP3() {
+                  _mp3Pastas.length && (_mp3PastaAtualIdx = (_mp3PastaAtualIdx - 1 + _mp3Pastas.length) % _mp3Pastas.length);
+                  _mp3MusicaAtualIdx = 0;
+                  mostrarAviso('📁 Pasta: ' + _mp3Pastas[_mp3PastaAtualIdx]);
+                  carregarFaixaMP3Atual(true);
+              }
+
+              function configurarBotoesMP3() {
+                  const btnPlay = document.getElementById('btn-mp3-playpause');
+                  const btnProx = document.getElementById('btn-mp3-prox');
+                  const btnAnt = document.getElementById('btn-mp3-ant');
+                  const audio = document.getElementById('audio-mp3-player');
+
+                  btnPlay.onclick = () => {
+                      if (audio.paused) { audio.play(); btnPlay.textContent = '⏸ PAUSAR'; }
+                      else { audio.pause(); btnPlay.textContent = '▶ TOCAR'; }
+                  };
+
+                  let pressTimerProx = null, segurouProx = false;
+                  btnProx.onpointerdown = () => {
+                      segurouProx = false;
+                      pressTimerProx = setTimeout(() => { segurouProx = true; avancarPastaMP3(); }, 650);
+                  };
+                  btnProx.onpointerup = () => {
+                      clearTimeout(pressTimerProx);
+                      if (!segurouProx) avancarFaixaMP3();
+                  };
+
+                  let pressTimerAnt = null, segurouAnt = false;
+                  btnAnt.onpointerdown = () => {
+                      segurouAnt = false;
+                      pressTimerAnt = setTimeout(() => { segurouAnt = true; voltarPastaMP3(); }, 650);
+                  };
+                  btnAnt.onpointerup = () => {
+                      clearTimeout(pressTimerAnt);
+                      if (!segurouAnt) voltarFaixaMP3();
+                  };
               }
 
               function checarDuplicadosCodigo0000(todosArquivos) {
@@ -315,8 +460,8 @@ jobs:
 
                   for (let f of listaArquivos) {
                       const nome = f.name || '';
-                      if (!/\.mp4$/i.test(nome) || nome.toLowerCase().startsWith('intro')) continue;
-                      const chave = normalizarNome(descricaoDoArquivo(nome) || nome.replace(/\.mp4$/i, ''));
+                      if (!/\\\\.mp4$/i.test(nome) || nome.toLowerCase().startsWith('intro')) continue;
+                      const chave = normalizarNome(descricaoDoArquivo(nome) || nome.replace(/\\\\.mp4$/i, ''));
                       if (!chave) continue;
 
                       if (mapTitulos.has(chave)) {
@@ -350,91 +495,11 @@ jobs:
                   `).join('');
                   modal.classList.add('active');
               }
-
-              function fecharModalDuplicados() {
-                  document.getElementById('modal-duplicados-overlay').classList.remove('active');
-              }
-
+              function fecharModalDuplicados() { document.getElementById('modal-duplicados-overlay').classList.remove('active'); }
               async function confirmarRemoverDuplicados() {
                   const sub = document.getElementById('modal-duplicados-sub');
                   sub.innerHTML = '<span style=\"color:#ffdd00;\">Excluindo duplicados e reiniciando karaokê...</span>';
                   let removidos = 0;
-
                   for (let item of _duplicadosEncontrados) {
                       if (item.duplicado.contentUri && window.AndroidHost && AndroidHost.deleteFile) {
-                          try {
-                              if (AndroidHost.deleteFile(item.duplicado.contentUri)) removidos++;
-                          } catch(e) {}
-                      }
-                  }
-
-                  fecharModalDuplicados();
-                  mostrarAviso('✔ ' + removidos + ' vídeo(s) duplicado(s) eliminado(s)! Reiniciando...', false);
-
-                  setTimeout(async () => {
-                      if (window.AndroidHost && AndroidHost.refreshFolder) {
-                          AndroidHost.refreshFolder();
-                      }
-                      await reproduzirCicloIntro();
-                  }, 800);
-              }
-              """
-              # Substitui a funcao antiga de crossfade pela cinematografica
-              idx_cf_ini = h.find("function pararCrossfade()")
-              idx_cf_fim = h.find("async function voltarMusica()", idx_cf_ini)
-              if idx_cf_ini != -1 and idx_cf_fim != -1:
-                  h = h[:idx_cf_ini] + js_crossfade_cinematografico + "\n" + h[idx_cf_fim:]
-
-              # Acionador do codigo 0000
-              h = h.replace("function processarCodigo(val) {", "function processarCodigo(val) {\n    if (String(val).trim() === '0000') { checarDuplicadosCodigo0000(window._arquivosCarregadosCache || []); return; }\n")
-
-              # Cache para busca de logo e duplicados
-              h = h.replace("async function handleFolderSelect(e) {", "async function handleFolderSelect(e) {\n    window._arquivosCarregadosCache = Array.from(e.target.files); verificarLogoNasPastas(window._arquivosCarregadosCache);\n")
-
-              # Transicao da logo antes do palco
-              alvo_intro_fim = "introScreen.classList.remove('active');"
-              novo_intro_fim = """
-              introScreen.classList.remove('active');
-              exibirTransicaoLogo(function() {
-                  var ui = document.getElementById('ui-wrapper');
-                  if (ui) ui.classList.add('liberado');
-              });
-              """
-              h = h.replace(alvo_intro_fim, novo_intro_fim)
-
-              # Palco protegido na abertura
-              h = h.replace("#ui-wrapper { display: flex;", "#ui-wrapper { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; display: flex;")
-              h = h.replace("folderLoadFinished = true;", "folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && !document.getElementById('intro-screen').classList.contains('active')) ui.classList.add('liberado');")
-
-              with open(p_html, "w", encoding="utf-8") as f:
-                  f.write(h)
-              print(f"[OK] index.html com transicao cinematografica: {p_html}")
-
-          EOF
-          python3 patch_karaoke.py
-
-      - name: Configurar Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Configurar Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Garantir Gradle Wrapper
-        run: |
-          if [ ! -f "gradlew" ]; then
-            gradle wrapper --gradle-version 8.11.1
-          fi
-          chmod +x gradlew
-
-      - name: Compilar APK (Debug)
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Disponibilizar APK para Download
-        uses: actions/upload-artifact@v4
-        with:
-          name: Karaoke-Festa-das-Cores-v2.0
-          path: app/build/outputs/apk/debug/*.apk
-          retention-days: 7
+                          try { if (AndroidHost.deleteFile(item.duplicado.conten
