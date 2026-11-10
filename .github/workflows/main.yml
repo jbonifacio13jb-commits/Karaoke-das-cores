@@ -25,7 +25,7 @@ jobs:
             cp -r FONTE-KARAOKE/* .
           fi
 
-          # Se o projeto estiver dentro de alguma subpasta do ZIP, move tudo para a raiz
+          # Se o projeto estiver em alguma subpasta, move para a raiz
           if [ ! -f "build.gradle" ] && [ ! -f "settings.gradle" ] && [ ! -f "build.gradle.kts" ]; then
             for dir in */; do
               if [ -f "${dir}build.gradle" ] || [ -f "${dir}settings.gradle" ]; then
@@ -136,7 +136,6 @@ jobs:
                       print(f"[OK] Ícone aplicado em: {caminho_dir} ({dim}x{dim})")
 
           if aplicados == 0:
-              print("[AVISO] Pastas mipmap ainda nao encontradas, criando fallback em app/src/main/res...")
               res_base = os.path.join("app", "src", "main", "res")
               for pasta, dim in tamanhos.items():
                   target_dir = os.path.join(res_base, pasta)
@@ -190,7 +189,6 @@ jobs:
                   """
                   j = j.replace("public final class AndroidHost {", "public final class AndroidHost {" + metodos_host)
 
-              # Ancoragem segura antes do AndroidHost para não quebrar o arquivo
               if "dispatchKeyEvent" not in j and "public final class AndroidHost" in j:
                   metodo_dispatch = """
                   @Override
@@ -251,7 +249,7 @@ jobs:
               print(f"[OK] MainActivity.java corrigido: {p_java}")
 
           # ==============================================================
-          # 2. INDEX.HTML (Layout Exato da Imagem + Controle Remoto TV/Teclado)
+          # 2. INDEX.HTML (CSS Sem :has(), 50% Real, Botão Sair no Card da Fila)
           # ==============================================================
           for p_html in achar("index.html"):
               with open(p_html, "r", encoding="utf-8") as f:
@@ -300,7 +298,12 @@ jobs:
                   touch-action: manipulation !important;
               }
 
-              /* ÍCONE DE SAÍDA TRANSPARENTE E DISCRETO NO TOPO DIREITO */
+              /* ANCORAGEM DO TOPO DA FILA PARA O BOTÃO SAIR */
+              .card, .tela-fila, [class*="fila"] {
+                  position: relative !important;
+              }
+
+              /* ÍCONE DE SAÍDA TRANSPARENTE E DISCRETO NO TOPO DIREITO DO CARD DA FILA */
               .btn-sair-topo {
                   position: absolute !important;
                   top: 14px !important;
@@ -308,8 +311,8 @@ jobs:
                   width: 38px !important;
                   height: 38px !important;
                   border-radius: 12px !important;
-                  background: rgba(255, 255, 255, 0.06) !important;
-                  border: 1.5px solid rgba(212, 128, 255, 0.35) !important;
+                  background: rgba(255, 255, 255, 0.08) !important;
+                  border: 1.5px solid rgba(212, 128, 255, 0.4) !important;
                   backdrop-filter: blur(8px) !important;
                   display: flex !important;
                   align-items: center !important;
@@ -317,15 +320,15 @@ jobs:
                   cursor: pointer !important;
                   color: #d480ff !important;
                   transition: all 0.2s ease !important;
-                  z-index: 1000 !important;
+                  z-index: 99999 !important;
               }
               .btn-sair-topo:hover,
               .btn-sair-topo:focus,
               .btn-sair-topo:focus-visible {
-                  background: rgba(176, 38, 255, 0.25) !important;
+                  background: rgba(176, 38, 255, 0.3) !important;
                   border-color: #d480ff !important;
-                  box-shadow: 0 0 18px rgba(176, 38, 255, 0.65) !important;
-                  transform: scale(1.05) !important;
+                  box-shadow: 0 0 18px rgba(176, 38, 255, 0.7) !important;
+                  transform: scale(1.06) !important;
                   outline: none !important;
               }
               .btn-sair-topo svg {
@@ -343,36 +346,23 @@ jobs:
                   margin-right: 48px !important;
               }
 
-              /* BARRA INFERIOR DA DIREITA: PARAR (LARANJA) E LIMPAR (VERMELHO) - 50% CADA */
-              .linha-direita-dupla,
-              *:has(> .btn-parar):not(:has(> .btn-codigo)) {
+              /* BARRA INFERIOR DA DIREITA: CONTAINER 100% LARGURA COM FLEX */
+              .linha-direita-dupla {
                   width: 100% !important;
                   max-width: 100% !important;
-                  display: grid !important;
-                  grid-template-columns: 1fr 1fr !important;
+                  display: flex !important;
+                  flex-direction: row !important;
                   gap: 14px !important;
                   box-sizing: border-box !important;
                   margin-top: auto !important;
                   padding: 0 !important;
               }
 
-              /* BARRA DA ESQUERDA: CÓDIGO, CATÁLOGO E INICIAR SHOW */
-              .linha-esquerda-padrao,
-              *:has(> .btn-codigo) {
-                  width: 100% !important;
-                  max-width: 100% !important;
-                  display: grid !important;
-                  grid-template-columns: repeat(3, 1fr) !important;
-                  gap: 12px !important;
-                  box-sizing: border-box !important;
-              }
-
-              /* MOLDE UNIVERSAL GLOSSY 3D IDÊNTICO À FOTO (CANTOS 22px, ALTURA 68px) */
-              .btn-control svg { display: none !important; }
-              .btn-control,
-              .btn-pill-3d,
-              .linha-direita-dupla .btn-control {
-                  width: 100% !important;
+              /* FORÇA PARAR E LIMPAR A DIVIDIREM EXATAMENTE 50% DA LARGURA CADA */
+              .btn-parar, .btn-limpar {
+                  flex: 1 1 0% !important;
+                  width: 50% !important;
+                  min-width: 0 !important;
                   height: 68px !important;
                   border-radius: 22px !important;
                   font-family: var(--font-title, sans-serif) !important;
@@ -390,19 +380,36 @@ jobs:
                   padding: 0 8px !important;
                   transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease !important;
               }
-
-              .btn-control span,
-              .btn-pill-3d span {
+              .btn-parar span, .btn-limpar span {
                   font-size: 16px !important;
                   letter-spacing: 2px !important;
                   white-space: nowrap !important;
                   pointer-events: none !important;
               }
 
+              /* 1. PARAR: LARANJA / ÂMBAR 3D GLOSSY COM TEXTO BRANCO */
+              .btn-parar {
+                  background: linear-gradient(180deg, #ff9e1b 0%, #f97316 55%, #c2410c 100%) !important;
+                  color: #ffffff !important;
+                  text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+                  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
+              }
+
+              /* 2. LIMPAR: VERMELHO RUBI 3D GLOSSY COM TEXTO BRANCO */
+              .btn-limpar {
+                  background: linear-gradient(180deg, #ff2e51 0%, #ef4444 55%, #b91c1c 100%) !important;
+                  color: #ffffff !important;
+                  text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+                  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
+              }
+
               /* NAVEGAÇÃO POR CONTROLE REMOTO (SMART TV / TV BOX D-PAD): HALO BRILHANTE */
+              .btn-parar:focus,
+              .btn-parar:focus-visible,
+              .btn-limpar:focus,
+              .btn-limpar:focus-visible,
               .btn-control:focus,
               .btn-control:focus-visible,
-              .btn-pill-3d:focus-visible,
               button:focus-visible {
                   outline: 3px solid #ffffff !important;
                   box-shadow: 0 0 25px #ffffff, 0 0 35px rgba(255, 255, 255, 0.8) !important;
@@ -411,57 +418,29 @@ jobs:
               }
 
               /* FEEDBACK AO CLIQUE / TOQUE */
-              .btn-control:active,
-              .btn-pill-3d:active {
+              .btn-parar:active,
+              .btn-limpar:active,
+              .btn-control:active {
                   transform: translateY(2px) scale(0.98) !important;
                   filter: brightness(1.2) !important;
               }
 
-              /* MOUSE HOVER */
-              @media (hover: hover) {
-                  .btn-control:hover,
-                  .btn-pill-3d:hover {
-                      filter: brightness(1.15) !important;
-                      transform: translateY(-1px) !important;
-                  }
-              }
-
-              /* 1. ESQUERDA: CÓDIGO (MAGENTA) */
+              /* CORES DO LADO ESQUERDO */
               .btn-codigo {
                   background: linear-gradient(180deg, #ff007f 0%, #d9048e 55%, #9d0267 100%) !important;
                   color: #ffffff !important;
                   box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 2px 2px rgba(255,255,255,0.4), inset 0 -2px 3px rgba(0,0,0,0.3) !important;
               }
-
-              /* 2. ESQUERDA: CATÁLOGO (CIANO) */
               .btn-catalogo {
                   background: linear-gradient(180deg, #00d4ff 0%, #00b4d8 55%, #0077b6 100%) !important;
                   color: #021a24 !important;
                   box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 2px 2px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.2) !important;
               }
-
-              /* 3. ESQUERDA: INICIAR SHOW (VERDE) */
               .btn-show, .btn-iniciar {
                   background: linear-gradient(180deg, #00ffc4 0%, #00f5d4 55%, #00bbf9 100%) !important;
                   color: #02241e !important;
                   line-height: 1.15;
                   box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 2px 2px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.2) !important;
-              }
-
-              /* 4. DIREITA: PARAR (LARANJA/ÂMBAR VIBRANTE 3D COM TEXTO BRANCO) */
-              .btn-parar {
-                  background: linear-gradient(180deg, #ff9e1b 0%, #f97316 55%, #c2410c 100%) !important;
-                  color: #ffffff !important;
-                  text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
-                  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
-              }
-
-              /* 5. DIREITA: LIMPAR (VERMELHO RUBI INTENSO 3D COM TEXTO BRANCO) */
-              .btn-limpar {
-                  background: linear-gradient(180deg, #ff2e51 0%, #ef4444 55%, #b91c1c 100%) !important;
-                  color: #ffffff !important;
-                  text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
-                  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
               }
 
               /* MODAL DE CONFIRMAÇÃO DE SAÍDA */
@@ -551,23 +530,30 @@ jobs:
                          r'<div id="ui-wrapper"\1 class="oculto-inicio" style="display: none !important; opacity: 0 !important; visibility: hidden !important;">',
                          h, count=1)
 
-              # INJETA O ÍCONE SAIR TRANSPARENTE DENTRO DO PALCO (PARA NÃO APARECER NA INTRO)
+              # INJETA O BOTÃO SAIR TRANSPARENTE DENTRO DO CABEÇALHO DA FILA (AO LADO DO CONTADOR)
               botao_sair_topo_html = '''
               <button type="button" tabindex="0" class="btn-sair-topo" title="Sair do Karaokê" onclick="pedirConfirmacaoSair()">
                   <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
               </button>
               '''
               if "btn-sair-topo" not in h:
-                  h = re.sub(r'(<div\s+id="ui-wrapper"[^>]*>)', r'\1\n' + botao_sair_topo_html, h, count=1)
+                  # Procura o título FILA DE MÚSICAS ou o card da fila para inserir o botão exatamente ali
+                  if re.search(r'(FILA DE M[ÚU]SICAS[\s\S]*?</div>)', h, re.IGNORECASE):
+                      h = re.sub(r'(FILA DE M[ÚU]SICAS[\s\S]*?</div>)', r'\1\n' + botao_sair_topo_html, h, count=1, flags=re.IGNORECASE)
+                  else:
+                      h = re.sub(r'(<div\s+id="ui-wrapper"[^>]*>)', r'\1\n' + botao_sair_topo_html, h, count=1)
 
-              # ENCAPSULA OS BOTÕES PARAR E LIMPAR EM 50% CADA (SEM O BOTÃO SAIR ATRAPALHANDO EMBAIXO)
-              padrao_trio = r'(<button[^>]*class="[^"]*btn-parar[^"]*"[^>]*>[\s\S]*?</button>\s*<button[^>]*class="[^"]*btn-limpar[^"]*"[^>]*>[\s\S]*?</button>)'
+              # REMOVE QUALQUER BOTÃO SAIR ANTIGO DA BARRA INFERIOR
+              h = re.sub(r'<button[^>]*class="[^"]*btn-sair[^"]*"[^>]*>[\s\S]*?</button>', '', h)
+
+              # ENCAPSULA OS BOTÕES PARAR E LIMPAR EM CONTAINER 100% (SEM O BOTÃO SAIR EMBAIXO)
+              padrao_botoes = r'(<button[^>]*btn-parar[^>]*>[\s\S]*?</button>[\s\S]*?<button[^>]*btn-limpar[^>]*>[\s\S]*?</button>)'
               subst_dupla = r'''<div class="linha-direita-dupla">
                   \1
               </div>'''
-              h = re.sub(padrao_trio, subst_dupla, h, count=1)
+              h = re.sub(padrao_botoes, subst_dupla, h, count=1)
 
-              # Garante que todos os botões tenham tabindex="0" para navegação por controle remoto
+              # Garante que todos os botões tenham tabindex="0" para o controle remoto da TV navegar
               h = re.sub(r'<button\b(?![^>]*\btabindex=)', r'<button tabindex="0"', h)
 
               html_elementos = """
@@ -858,7 +844,7 @@ jobs:
 
               with open(p_html, "w", encoding="utf-8") as f:
                   f.write(h)
-              print(f"[OK] index.html ajustado: PARAR (Laranja) e LIMPAR (Vermelho) + Botao Sair no topo: {p_html}")
+              print(f"[OK] index.html atualizado: PARAR (Laranja 50%) e LIMPAR (Vermelho 50%) + Sair ancorado: {p_html}")
 
           EOF
           python3 patch_karaoke.py
