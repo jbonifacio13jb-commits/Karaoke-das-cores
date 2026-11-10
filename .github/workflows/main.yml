@@ -39,7 +39,6 @@ jobs:
 
       - name: Gerar Ícone Oficial Redondo (Microfone Vintage Dourado + Fundo Rosa/Lilás)
         run: |
-          # Instala dependências nativas via apt (evita erro de pip no Ubuntu 24.04)
           sudo apt-get update -y
           sudo apt-get install -y python3-cairosvg python3-pil
 
@@ -252,7 +251,7 @@ jobs:
               print(f"[OK] MainActivity.java corrigido: {p_java}")
 
           # ==============================================================
-          # 2. INDEX.HTML (CSS Responsivo, TV Focus, Bluetooth, Padronização)
+          # 2. INDEX.HTML (Layout Exato da Imagem + Controle Remoto TV/Teclado)
           # ==============================================================
           for p_html in achar("index.html"):
               with open(p_html, "r", encoding="utf-8") as f:
@@ -301,13 +300,13 @@ jobs:
                   touch-action: manipulation !important;
               }
 
-              /* ÍCONE DE SAÍDA TRANSPARENTE NO CANTO SUPERIOR DIREITO */
+              /* ÍCONE DE SAÍDA TRANSPARENTE E DISCRETO NO TOPO DIREITO */
               .btn-sair-topo {
                   position: absolute !important;
                   top: 14px !important;
                   right: 14px !important;
-                  width: 44px !important;
-                  height: 44px !important;
+                  width: 38px !important;
+                  height: 38px !important;
                   border-radius: 12px !important;
                   background: rgba(255, 255, 255, 0.06) !important;
                   border: 1.5px solid rgba(212, 128, 255, 0.35) !important;
@@ -325,13 +324,13 @@ jobs:
               .btn-sair-topo:focus-visible {
                   background: rgba(176, 38, 255, 0.25) !important;
                   border-color: #d480ff !important;
-                  box-shadow: 0 0 18px rgba(176, 38, 255, 0.6) !important;
+                  box-shadow: 0 0 18px rgba(176, 38, 255, 0.65) !important;
                   transform: scale(1.05) !important;
                   outline: none !important;
               }
               .btn-sair-topo svg {
-                  width: 22px !important;
-                  height: 22px !important;
+                  width: 20px !important;
+                  height: 20px !important;
                   fill: none !important;
                   stroke: currentColor !important;
                   stroke-width: 2.2 !important;
@@ -339,129 +338,130 @@ jobs:
                   stroke-linejoin: round !important;
               }
 
-              /* MARGEM DE SEGURANÇA PARA O CONTADOR DA FILA NÃO COLIDIR COM O BOTÃO SAIR */
+              /* MARGEM DE SEGURANÇA PARA O CONTADOR DA FILA (0) NÃO SER COBERTO */
               .badge-contador, [class*="contador"], [class*="badge"] {
-                  margin-right: 56px !important;
+                  margin-right: 48px !important;
               }
 
-              /* BARRA INFERIOR DA DIREITA: 50% PARAR | 50% LIMPAR */
+              /* BARRA INFERIOR DA DIREITA: PARAR (LARANJA) E LIMPAR (VERMELHO) - 50% CADA */
               .linha-direita-dupla,
               *:has(> .btn-parar):not(:has(> .btn-codigo)) {
                   width: 100% !important;
                   max-width: 100% !important;
                   display: grid !important;
                   grid-template-columns: 1fr 1fr !important;
-                  gap: 12px !important;
+                  gap: 14px !important;
                   box-sizing: border-box !important;
                   margin-top: auto !important;
                   padding: 0 !important;
               }
 
-              /* BARRA DA ESQUERDA: 3 BOTÕES PADRONIZADOS */
+              /* BARRA DA ESQUERDA: CÓDIGO, CATÁLOGO E INICIAR SHOW */
               .linha-esquerda-padrao,
               *:has(> .btn-codigo) {
                   width: 100% !important;
                   max-width: 100% !important;
                   display: grid !important;
                   grid-template-columns: repeat(3, 1fr) !important;
-                  gap: 10px !important;
+                  gap: 12px !important;
                   box-sizing: border-box !important;
               }
 
-              /* MOLDE UNIVERSAL DOS BOTÕES: ALTURA 60PX, CANTOS 14PX, RETANGULARES */
+              /* MOLDE UNIVERSAL GLOSSY 3D IDÊNTICO À FOTO (CANTOS 22px, ALTURA 68px) */
               .btn-control svg { display: none !important; }
               .btn-control,
-              .btn-karaoke,
+              .btn-pill-3d,
               .linha-direita-dupla .btn-control {
                   width: 100% !important;
-                  height: 60px !important;
-                  border-radius: 14px !important;
+                  height: 68px !important;
+                  border-radius: 22px !important;
                   font-family: var(--font-title, sans-serif) !important;
                   font-weight: 900 !important;
-                  font-size: 15px !important;
-                  letter-spacing: 1.5px !important;
+                  font-size: 16px !important;
+                  letter-spacing: 2px !important;
                   text-transform: uppercase !important;
                   cursor: pointer !important;
                   display: flex !important;
                   align-items: center !important;
                   justify-content: center !important;
                   text-align: center !important;
-                  border: 1.5px solid transparent !important;
+                  border: none !important;
                   box-sizing: border-box !important;
-                  padding: 0 6px !important;
+                  padding: 0 8px !important;
                   transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease !important;
               }
 
               .btn-control span,
-              .btn-karaoke span {
-                  font-size: 15px !important;
-                  letter-spacing: 1.5px !important;
+              .btn-pill-3d span {
+                  font-size: 16px !important;
+                  letter-spacing: 2px !important;
                   white-space: nowrap !important;
                   pointer-events: none !important;
               }
 
-              /* NAVEGAÇÃO POR CONTROLE REMOTO (SMART TV / TV BOX D-PAD) */
+              /* NAVEGAÇÃO POR CONTROLE REMOTO (SMART TV / TV BOX D-PAD): HALO BRILHANTE */
               .btn-control:focus,
               .btn-control:focus-visible,
-              .btn-karaoke:focus,
-              .btn-karaoke:focus-visible,
+              .btn-pill-3d:focus-visible,
               button:focus-visible {
                   outline: 3px solid #ffffff !important;
                   box-shadow: 0 0 25px #ffffff, 0 0 35px rgba(255, 255, 255, 0.8) !important;
-                  transform: translateY(-2px) scale(1.05) !important;
+                  transform: translateY(-2px) scale(1.03) !important;
                   z-index: 50 !important;
               }
 
               /* FEEDBACK AO CLIQUE / TOQUE */
               .btn-control:active,
-              .btn-karaoke:active {
-                  transform: translateY(2px) scale(0.97) !important;
-                  filter: brightness(1.25) !important;
+              .btn-pill-3d:active {
+                  transform: translateY(2px) scale(0.98) !important;
+                  filter: brightness(1.2) !important;
               }
 
               /* MOUSE HOVER */
               @media (hover: hover) {
                   .btn-control:hover,
-                  .btn-karaoke:hover {
+                  .btn-pill-3d:hover {
                       filter: brightness(1.15) !important;
                       transform: translateY(-1px) !important;
                   }
               }
 
-              /* CORES DO LADO ESQUERDO */
+              /* 1. ESQUERDA: CÓDIGO (MAGENTA) */
               .btn-codigo {
                   background: linear-gradient(180deg, #ff007f 0%, #d9048e 55%, #9d0267 100%) !important;
-                  border-color: #ff66b2 !important;
                   color: #ffffff !important;
-                  box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 18px rgba(217, 4, 142, 0.45), inset 0 1px 1px rgba(255,255,255,0.6) !important;
-              }
-              .btn-catalogo {
-                  background: linear-gradient(180deg, #00d4ff 0%, #00b4d8 55%, #0077b6 100%) !important;
-                  border-color: #80e5ff !important;
-                  color: #021a24 !important;
-                  box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 18px rgba(0, 180, 216, 0.45), inset 0 1px 1px rgba(255,255,255,0.7) !important;
-              }
-              .btn-show, .btn-iniciar {
-                  background: linear-gradient(180deg, #00ffc4 0%, #00f5d4 55%, #00bbf9 100%) !important;
-                  border-color: #99ffe6 !important;
-                  color: #02241e !important;
-                  box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 18px rgba(0, 245, 212, 0.45), inset 0 1px 1px rgba(255,255,255,0.7) !important;
+                  box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 2px 2px rgba(255,255,255,0.4), inset 0 -2px 3px rgba(0,0,0,0.3) !important;
               }
 
-              /* CORES DO LADO DIREITO (AMPLOS, 50% CADA) */
-              .btn-parar {
-                  background: linear-gradient(180deg, #ff1744 0%, #d50000 55%, #9b0000 100%) !important;
-                  border-color: #ff5252 !important;
-                  color: #ffffff !important;
-                  text-shadow: 0 1px 2px rgba(0,0,0,0.6), 0 0 10px rgba(255,255,255,0.4) !important;
-                  box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 20px rgba(255, 23, 68, 0.45), inset 0 1px 1px rgba(255,255,255,0.6) !important;
+              /* 2. ESQUERDA: CATÁLOGO (CIANO) */
+              .btn-catalogo {
+                  background: linear-gradient(180deg, #00d4ff 0%, #00b4d8 55%, #0077b6 100%) !important;
+                  color: #021a24 !important;
+                  box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 2px 2px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.2) !important;
               }
+
+              /* 3. ESQUERDA: INICIAR SHOW (VERDE) */
+              .btn-show, .btn-iniciar {
+                  background: linear-gradient(180deg, #00ffc4 0%, #00f5d4 55%, #00bbf9 100%) !important;
+                  color: #02241e !important;
+                  line-height: 1.15;
+                  box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 2px 2px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.2) !important;
+              }
+
+              /* 4. DIREITA: PARAR (LARANJA/ÂMBAR VIBRANTE 3D COM TEXTO BRANCO) */
+              .btn-parar {
+                  background: linear-gradient(180deg, #ff9e1b 0%, #f97316 55%, #c2410c 100%) !important;
+                  color: #ffffff !important;
+                  text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+                  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
+              }
+
+              /* 5. DIREITA: LIMPAR (VERMELHO RUBI INTENSO 3D COM TEXTO BRANCO) */
               .btn-limpar {
-                  background: linear-gradient(180deg, #ffea00 0%, #ffd600 55%, #ffab00 100%) !important;
-                  border-color: #fff59d !important;
-                  color: #1a1200 !important;
-                  text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
-                  box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 22px rgba(255, 214, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.8) !important;
+                  background: linear-gradient(180deg, #ff2e51 0%, #ef4444 55%, #b91c1c 100%) !important;
+                  color: #ffffff !important;
+                  text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+                  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
               }
 
               /* MODAL DE CONFIRMAÇÃO DE SAÍDA */
@@ -472,15 +472,15 @@ jobs:
               }
               #modal-sair-overlay.active { display: flex !important; }
               #modal-sair-box {
-                  background: linear-gradient(160deg, #1f1435, #0c0817); border: 2px solid #d1c4e9; border-radius: 18px;
-                  padding: 24px; width: min(90vw, 440px); display: flex; flex-direction: column; gap: 14px; text-align: center;
-                  box-shadow: 0 0 35px rgba(176, 38, 255, 0.4); color: #fff;
+                  background: linear-gradient(160deg, #1f1435, #0c0817); border: 2px solid #d480ff; border-radius: 20px;
+                  padding: 24px; width: min(90vw, 420px); display: flex; flex-direction: column; gap: 14px; text-align: center;
+                  box-shadow: 0 0 35px rgba(176, 38, 255, 0.45); color: #fff;
               }
-              #modal-sair-titulo { font: 900 22px var(--font-title); color: #d480ff; letter-spacing: 2px; }
-              #modal-sair-sub { font-size: 15px; color: #ddd; margin: 0; }
-              .modal-sair-acoes { display: flex; gap: 12px; margin-top: 10px; }
+              #modal-sair-titulo { font: 900 20px var(--font-title); color: #d480ff; letter-spacing: 2px; }
+              #modal-sair-sub { font-size: 14px; color: #ddd; margin: 0; }
+              .modal-sair-acoes { display: flex; gap: 10px; margin-top: 10px; }
               .modal-sair-acoes button {
-                  flex: 1; padding: 14px; border: none; border-radius: 12px;
+                  flex: 1; padding: 12px; border: none; border-radius: 12px;
                   font: 800 14px var(--font-title); cursor: pointer;
               }
               #btn-cancelar-sair { background: #333; color: #fff; }
@@ -551,7 +551,7 @@ jobs:
                          r'<div id="ui-wrapper"\1 class="oculto-inicio" style="display: none !important; opacity: 0 !important; visibility: hidden !important;">',
                          h, count=1)
 
-              # INJETA O BOTÃO SAIR DISCRETO DENTRO DO PALCO (PARA NÃO APARECER NA INTRO)
+              # INJETA O ÍCONE SAIR TRANSPARENTE DENTRO DO PALCO (PARA NÃO APARECER NA INTRO)
               botao_sair_topo_html = '''
               <button type="button" tabindex="0" class="btn-sair-topo" title="Sair do Karaokê" onclick="pedirConfirmacaoSair()">
                   <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
@@ -858,7 +858,7 @@ jobs:
 
               with open(p_html, "w", encoding="utf-8") as f:
                   f.write(h)
-              print(f"[OK] index.html ajustado: PARAR e LIMPAR 50% + Botao Sair no topo: {p_html}")
+              print(f"[OK] index.html ajustado: PARAR (Laranja) e LIMPAR (Vermelho) + Botao Sair no topo: {p_html}")
 
           EOF
           python3 patch_karaoke.py
