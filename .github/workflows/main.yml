@@ -36,7 +36,7 @@ jobs:
           fi
           ls -la
 
-      - name: Gerar Ícone Oficial Redondo (Microfone Vintage Dourado + Fundo Rosa/Lilás)
+      - name: Aplicar Ícone Oficial (Microfone Vintage Dourado na Tela Inicial)
         run: |
           sudo apt-get update -y
           sudo apt-get install -y python3-cairosvg python3-pil
@@ -112,21 +112,22 @@ jobs:
             <circle cx="130" cy="230" r="3" fill="#ffffff" opacity="0.9" />
           </svg>"""
 
+          # Gera o ícone mestre 512x512
           cairosvg.svg2png(bytestring=svg_icone.encode('utf-8'), write_to="master_icon.png", output_width=512, output_height=512)
           master = Image.open("master_icon.png").convert("RGBA")
 
-          # 1. ELIMINA OS XMLs DE ADAPTIVE ICON (QUE FORÇAVAM O FUNDO BRANCO)
+          # 1. ELIMINA QUALQUER XML DE ADAPTIVE ICON QUE FORCE FUNDO BRANCO NO ANDROID 8+
           for root, dirs, files in os.walk("."):
               for f in files:
                   if f in ["ic_launcher.xml", "ic_launcher_round.xml", "ic_launcher_background.xml"]:
                       caminho = os.path.join(root, f)
                       try:
                           os.remove(caminho)
-                          print(f"[REMOVIDO XML FUNDO BRANCO]: {caminho}")
+                          print(f"[REMOVIDO XML DE FUNDO BRANCO]: {caminho}")
                       except:
                           pass
 
-          # 2. APLICA O ÍCONE COLORIDO DO MICROFONE EM TODAS AS PASTAS MIPMAP
+          # 2. GRAVA A IMAGEM EM TODAS AS PASTAS MIPMAP (ÍCONE DA TELA INICIAL)
           tamanhos = {
               "mipmap-mdpi": 48,
               "mipmap-hdpi": 72,
@@ -298,7 +299,7 @@ jobs:
                   touch-action: manipulation !important;
               }
 
-              /* BOTÃO SAIR FIXO NO CANTO SUPERIOR ESQUERDO (ONDE PASSA O LETREIRO) */
+              /* BOTÃO SAIR TRANSLÚCIDO FIXADO NO CANTO SUPERIOR ESQUERDO */
               .btn-sair-topo-fixo {
                   position: fixed !important;
                   top: 10px !important;
@@ -337,7 +338,7 @@ jobs:
                   stroke-linejoin: round !important;
               }
 
-              /* DÁ RESPIRO PARA O LETREIRO NÃO COLIDIR COM O BOTÃO SAIR */
+              /* RECUO DE SEGURANÇA PARA O LETREIRO NÃO COLIDIR COM O BOTÃO SAIR */
               marquee, .letreiro, #letreiro, [class*="letreiro"], .ticker, [class*="ticker"] {
                   padding-left: 56px !important;
               }
@@ -387,7 +388,7 @@ jobs:
                   box-shadow: 0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
               }
 
-              /* NAVEGAÇÃO POR CONTROLE REMOTO (SMART TV / TV BOX D-PAD): HALO BRILHANTE */
+              /* FOCO PARA CONTROLE REMOTO DE SMART TV E TV BOX */
               .btn-parar:focus,
               .btn-parar:focus-visible,
               .btn-limpar:focus,
@@ -537,7 +538,7 @@ jobs:
               js_layout_garantido = """
               function aplicarLayoutFestaDasCores() {
                   try {
-                      // 1. Remove qualquer botão sair antigo que tenha ficado em local incorreto
+                      // 1. Remove qualquer botão sair antigo
                       const botoes = Array.from(document.querySelectorAll('button'));
                       botoes.forEach(b => {
                           if (b.textContent.trim() === 'SAIR' || b.className.includes('btn-sair-topo')) {
@@ -587,7 +588,7 @@ jobs:
                           btnLimpar.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35)';
                       }
 
-                      // 3. INJETA O BOTÃO SAIR FIXO NO CANTO SUPERIOR ESQUERDO (ONDE PASSA O LETREIRO)
+                      // 3. INJETA O BOTÃO SAIR FIXO NO CANTO SUPERIOR ESQUERDO
                       if (!document.getElementById('btn-sair-app-fixo')) {
                           const btnSair = document.createElement('button');
                           btnSair.id = 'btn-sair-app-fixo';
@@ -597,7 +598,6 @@ jobs:
                           btnSair.innerHTML = '<svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>';
                           btnSair.onclick = pedirConfirmacaoSair;
                           
-                          // Insere no ui-wrapper para aparecer junto com a tela do palco
                           const wrapper = document.getElementById('ui-wrapper') || document.body;
                           wrapper.appendChild(btnSair);
                       }
