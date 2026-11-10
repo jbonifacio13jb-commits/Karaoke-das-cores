@@ -16,13 +16,17 @@ jobs:
       - name: Descompactar o arquivo ZIP automaticamente
         run: |
           sudo apt-get install -y unzip
-          unzip -o *.zip
+          for f in *.zip; do
+            [ -e "$f" ] || continue
+            unzip -o "$f"
+          done
+
           if [ -d "FONTE-KARAOKE" ]; then
             cp -r FONTE-KARAOKE/* .
           fi
           ls -la
 
-      - name: Aplicar correcoes finais (Zero piscada, bgoficial.png, sem icone play, logo direto no video)
+      - name: Aplicar correcoes finais (Sem icone play, Zero piscada, Multi-intro, Busca, Duplicados)
         run: |
           cat << 'EOF' > patch_karaoke.py
           import os, re
@@ -35,22 +39,37 @@ jobs:
               return res
 
           # ==============================================================
-          # 1. MAINACTIVITY.JAVA (Multi-Intro + Delete SAF)
+          # 1. MAINACTIVITY.JAVA (Anti-Play Nativo + Multi-Intro + Delete)
           # ==============================================================
           for p_java in achar("MainActivity.java"):
               with open(p_java, "r", encoding="utf-8") as f:
-                  j = f.read()
+                  j = f.read().replace("\r\n", "\n")
 
+              # 1.1 Injeta deleteFile
               if "deleteFile" not in j:
                   metodo_delete = """
-                  @JavascriptInterface public boolean deleteFile(String uriStr) {
+                  @android.webkit.JavascriptInterface public boolean deleteFile(String uriStr) {
                       try {
-                          return DocumentsContract.deleteDocument(getContentResolver(), Uri.parse(uriStr));
+                          return android.provider.DocumentsContract.deleteDocument(getContentResolver(), android.net.Uri.parse(uriStr));
                       } catch (Exception e) { return false; }
                   }
                   """
                   j = j.replace("public final class AndroidHost {", "public final class AndroidHost {" + metodo_delete)
 
+              # 1.2 ELIMINA ÍCONE DE PLAY NATIVO DO ANDROID WEBVIEW
+              if "getDefaultVideoPoster" not in j:
+                  poster_override = """
+                      @Override
+                      public android.graphics.Bitmap getDefaultVideoPoster() {
+                          return android.graphics.Bitmap.createBitmap(1, 1, android.graphics.Bitmap.Config.ARGB_8888);
+                      }
+                  """
+                  if "setWebChromeClient(new WebChromeClient() {" in j:
+                      j = j.replace("setWebChromeClient(new WebChromeClient() {", "setWebChromeClient(new WebChromeClient() {" + poster_override)
+                  elif "new WebChromeClient() {" in j:
+                      j = j.replace("new WebChromeClient() {", "new WebChromeClient() {" + poster_override, 1)
+
+              # 1.3 Multi-Intro
               idx_inicio = j.find("if (cursor == null) return;")
               idx_fim = j.find("} catch (Exception ignored) {}", idx_inicio)
               if idx_inicio != -1 and idx_fim != -1:
@@ -60,10 +79,10 @@ jobs:
                       String id = cursor.getString(0);
                       String name = cursor.getString(1);
                       String mime = cursor.getString(2);
-                      if (name == null || Document.MIME_TYPE_DIR.equals(mime)) continue;
+                      if (name == null || android.provider.DocumentsContract.Document.MIME_TYPE_DIR.equals(mime)) continue;
                       String n = name.toLowerCase();
                       if (n.equals("intro.mp4") || n.equals("intro2.mp4") || n.equals("intro3.mp4")) {
-                          intros.add(DocumentsContract.buildDocumentUriUsingTree(treeUri, id).toString());
+                          intros.add(android.provider.DocumentsContract.buildDocumentUriUsingTree(treeUri, id).toString());
                       }
                   }
                   if (!intros.isEmpty()) {
@@ -72,7 +91,7 @@ jobs:
                       runOnUiThread(new Runnable() {
                           @Override public void run() {
                               if (webView != null) webView.evaluateJavascript(
-                                  "window.onIntroFoundDuringScan && window.onIntroFoundDuringScan(" + JSONObject.quote(introUri) + ")", null);
+                                  "window.onIntroFoundDuringScan && window.onIntroFoundDuringScan(" + org.json.JSONObject.quote(introUri) + ")", null);
                           }
                       });
                   }
@@ -82,14 +101,14 @@ jobs:
 
               with open(p_java, "w", encoding="utf-8") as f:
                   f.write(j)
-              print(f"[OK] MainActivity.java: {p_java}")
+              print(f"[OK] MainActivity.java corrigido: {p_java}")
 
           # ==============================================================
           # 2. INDEX.HTML
           # ==============================================================
           for p_html in achar("index.html"):
               with open(p_html, "r", encoding="utf-8") as f:
-                  h = f.read()
+                  h = f.read().replace("\r\n", "\n")
 
               css_revisado = """
               /* BLOQUEIO TOTAL E ABSOLUTO DO PALCO */
@@ -108,13 +127,21 @@ jobs:
               }
 
               /* ELIMINA QUALQUER ÍCONE NATIVO DE PLAY NO VÍDEO / ANDROID WEBKIT */
+              video {
+                  outline: none !important;
+                  background-color: transparent !important;
+              }
               video::-webkit-media-controls,
               video::-webkit-media-controls-start-playback-button,
               video::-webkit-media-controls-play-button,
-              video::-webkit-media-controls-overlay-play-button {
+              video::-webkit-media-controls-overlay-play-button,
+              video::-webkit-media-controls-panel,
+              video::-webkit-media-controls-enclosure {
                   display: none !important;
                   -webkit-appearance: none !important;
                   opacity: 0 !important;
+                  visibility: hidden !important;
+                  pointer-events: none !important;
               }
 
               /* Botoes PARAR e LIMPAR sem icones */
@@ -132,7 +159,7 @@ jobs:
               }
               .btn-control span { font-size: 15px !important; letter-spacing: 2px !important; }
 
-              /* Tela de Logo pos-contagem (exclusiva para logo.png) */
+              /* Tela de Logo pos-contagem */
               #logo-tela-overlay {
                   position: absolute; inset: 0; z-index: 20000;
                   background: #000; display: none; align-items: center; justify-content: center;
@@ -186,8 +213,13 @@ jobs:
               """
               h = h.replace("</style>", css_revisado + "\n</style>")
 
-              # Bloqueia o palco diretamente na tag HTML com inline style para não piscar nunca
-              h = h.replace('<div id="ui-wrapper">', '<div id="ui-wrapper" class="oculto-inicio" style="display: none !important; opacity: 0 !important; visibility: hidden !important;">')
+              # Força atributos anti-play em todas as tags <video>
+              h = re.sub(r'<video\b([^>]*)>', r'<video\1 playsinline webkit-playsinline preload="auto">', h)
+
+              # Bloqueia o palco diretamente na tag HTML com inline style
+              h = re.sub(r'<div\s+id="ui-wrapper"([^>]*)>',
+                         r'<div id="ui-wrapper"\1 class="oculto-inicio" style="display: none !important; opacity: 0 !important; visibility: hidden !important;">',
+                         h, count=1)
 
               html_elementos = """
               <!-- TELA DE LOGO EXCLUSIVA POS-CONTAGEM (APENAS LOGO.PNG) -->
@@ -227,7 +259,6 @@ jobs:
               let _bgOficialUrl = null;
               let _duplicadosEncontrados = [];
 
-              // Localiza OBRIGATORIAMENTE logo.png e bgoficial.png na pasta
               function identificarLogoMestra(files) {
                   _logoUrlObrigatorio = null;
                   _bgOficialUrl = null;
@@ -253,7 +284,6 @@ jobs:
                   }
               }
 
-              // Exibe estritamente o logo.png pos-contagem e transiciona direto para o video
               function exibirLogoPosContagem(duracaoMs, callbackFim) {
                   const overlay = document.getElementById('logo-tela-overlay');
                   const img = document.getElementById('logo-tela-img');
@@ -276,7 +306,6 @@ jobs:
                   }, duracaoMs);
               }
 
-              // Busca no Catalogo
               let _termoBuscaCatalogo = '';
               function filtrarBuscaCatalogo(val) {
                   _termoBuscaCatalogo = (val || '').trim().toLowerCase();
@@ -290,7 +319,6 @@ jobs:
                   filtrarBuscaCatalogo('');
               }
 
-              // MODAL DUPLICADOS (0000)
               function checarDuplicadosCodigo0000(todosArquivos) {
                   _duplicadosEncontrados = [];
                   const mapTitulos = new Map();
@@ -358,7 +386,7 @@ jobs:
                   if (codStr === '0000') { checarDuplicadosCodigo0000(window._arquivosCarregadosCache || []); return; }
               """)
 
-              # Cache dos arquivos para busca de logo.png, bgoficial.png e duplicados
+              # Cache dos arquivos
               h = h.replace("async function handleFolderSelect(e) {", "async function handleFolderSelect(e) {\n    window._arquivosCarregadosCache = Array.from(e.target.files); identificarLogoMestra(window._arquivosCarregadosCache);\n")
 
               # Injeta o filtro de busca no Catalogo
@@ -371,10 +399,10 @@ jobs:
               """
               h = h.replace(alvo_filtro_cat, subst_filtro_cat)
 
-              # ZERA O DELAY DE 700MS: CHAMA O SELETOR DIRETO A 0MS
+              # Zera delay de seletor nativo
               h = h.replace("if (usaSeletorNativo) setTimeout(() => selectFolder(), 700);", "if (usaSeletorNativo) selectFolder();")
 
-              # CONTAGEM REGRESSIVA: bgoficial.png SE NÃO TIVER CANTOR OU TELA PRETA PURA (SEM PISCAR BG)
+              # Contagem regressiva (bgoficial ou tela preta)
               alvo_start_cross = """const nomes = [singerName, initialChar];
             for (const nome of nomes) {
                 const arquivo1 = bgCantores[nome];
@@ -408,7 +436,7 @@ jobs:
             }"""
               h = h.replace(alvo_start_cross, subst_start_cross)
 
-              # LOGO.PNG APÓS O ZERO E DIRETO PARA O VÍDEO (SEM PISCAR BG PADRÃO)
+              # Logo apos zero e remocao de countdown-ativo
               alvo_fim_contagem = "pararCrossfade();\n            timerScreen.classList.remove('active');\n            document.body.classList.remove('countdown-ativo');"
               subst_fim_contagem = """pararCrossfade();
                           timerScreen.classList.remove('active');
@@ -418,10 +446,11 @@ jobs:
                                   exibirLogoPosContagem(1800, resLogo);
                               });
                           }
+                          document.body.classList.remove('countdown-ativo');
                           if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }"""
               h = h.replace(alvo_fim_contagem, subst_fim_contagem)
 
-              # QUANDO A INTRO TERMINA: LIBERA O PALCO PELA PRIMEIRA VEZ
+              # Intro fim: libera palco
               alvo_intro_fim = "introScreen.classList.remove('active');"
               novo_intro_fim = """
               introScreen.classList.remove('active');
@@ -436,8 +465,9 @@ jobs:
               """
               h = h.replace(alvo_intro_fim, novo_intro_fim)
 
-              # Se a pasta nao tiver intro, libera o palco
-              h = h.replace("folderLoadFinished = true;", "folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; }")
+              # Sem intro: libera palco
+              h = h.replace("folderLoadFinished = true;",
+                            "folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; }")
 
               with open(p_html, "w", encoding="utf-8") as f:
                   f.write(h)
