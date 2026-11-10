@@ -26,7 +26,7 @@ jobs:
           fi
           ls -la
 
-      - name: Aplicar correcoes finais (Sem icone play, Zero piscada, Multi-intro, Busca, Duplicados)
+      - name: Aplicar correcoes finais (Botao Sair Lilas, Sem icone play, Zero piscada, Multi-intro)
         run: |
           cat << 'EOF' > patch_karaoke.py
           import os, re
@@ -39,22 +39,35 @@ jobs:
               return res
 
           # ==============================================================
-          # 1. MAINACTIVITY.JAVA (Anti-Play Nativo + Multi-Intro + Delete)
+          # 1. MAINACTIVITY.JAVA (Anti-Play + Multi-Intro + Delete + Sair)
           # ==============================================================
           for p_java in achar("MainActivity.java"):
               with open(p_java, "r", encoding="utf-8") as f:
                   j = f.read().replace("\r\n", "\n")
 
-              # 1.1 Injeta deleteFile
+              # 1.1 Injeta deleteFile e exitApp
               if "deleteFile" not in j:
-                  metodo_delete = """
+                  metodos_host = """
                   @android.webkit.JavascriptInterface public boolean deleteFile(String uriStr) {
                       try {
                           return android.provider.DocumentsContract.deleteDocument(getContentResolver(), android.net.Uri.parse(uriStr));
                       } catch (Exception e) { return false; }
                   }
+
+                  @android.webkit.JavascriptInterface public void exitApp() {
+                      runOnUiThread(new Runnable() {
+                          @Override public void run() {
+                              try {
+                                  finishAffinity();
+                                  System.exit(0);
+                              } catch (Exception ignored) {
+                                  System.exit(0);
+                              }
+                          }
+                      });
+                  }
                   """
-                  j = j.replace("public final class AndroidHost {", "public final class AndroidHost {" + metodo_delete)
+                  j = j.replace("public final class AndroidHost {", "public final class AndroidHost {" + metodos_host)
 
               # 1.2 ELIMINA ÍCONE DE PLAY NATIVO DO ANDROID WEBVIEW
               if "getDefaultVideoPoster" not in j:
@@ -144,20 +157,66 @@ jobs:
                   pointer-events: none !important;
               }
 
-              /* Botoes PARAR e LIMPAR sem icones */
+              /* HARMONIZAÇÃO DOS BOTÕES: PARAR, LIMPAR E SAIR */
               .btn-control svg { display: none !important; }
               .btn-control {
-                  height: 58px !important;
+                  height: 52px !important;
                   display: flex !important;
                   align-items: center !important;
                   justify-content: center !important;
-                  letter-spacing: 3px !important;
-                  font-size: 15px !important;
+                  letter-spacing: 1.5px !important;
+                  font-size: 14px !important;
                   font-weight: 900 !important;
                   text-align: center !important;
-                  border-radius: 16px !important;
+                  border-radius: 14px !important;
+                  padding: 0 8px !important;
+                  flex: 1 1 0 !important;
+                  min-width: 0 !important;
               }
-              .btn-control span { font-size: 15px !important; letter-spacing: 2px !important; }
+              .btn-control span {
+                  font-size: 14px !important;
+                  letter-spacing: 1.5px !important;
+                  white-space: nowrap !important;
+              }
+
+              /* ESTILO EXCLUSIVO DO BOTÃO SAIR (LILÁS NEON) */
+              .btn-sair {
+                  background: linear-gradient(135deg, #a855f7, #6b21a8) !important;
+                  color: #ffffff !important;
+                  border: 2px solid #c084fc !important;
+                  box-shadow: 0 0 16px rgba(192, 132, 252, 0.45) !important;
+                  cursor: pointer !important;
+                  transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+              }
+              .btn-sair:active {
+                  transform: scale(0.96) !important;
+                  box-shadow: 0 0 25px rgba(192, 132, 252, 0.8) !important;
+              }
+
+              /* MODAL DE CONFIRMAÇÃO DE SAÍDA */
+              #modal-sair-overlay {
+                  position: fixed; inset: 0; z-index: 40000; display: none;
+                  align-items: center; justify-content: center; background: rgba(0,0,0,0.88);
+                  backdrop-filter: blur(8px); padding: 20px;
+              }
+              #modal-sair-overlay.active { display: flex !important; }
+              #modal-sair-box {
+                  background: linear-gradient(160deg, #1f1435, #0c0817); border: 2px solid #c084fc; border-radius: 20px;
+                  padding: 24px; width: min(90vw, 440px); display: flex; flex-direction: column; gap: 14px; text-align: center;
+                  box-shadow: 0 0 35px rgba(192, 132, 252, 0.4); color: #fff;
+              }
+              #modal-sair-titulo { font: 900 22px var(--font-title); color: #d8b4fe; letter-spacing: 2px; }
+              #modal-sair-sub { font-size: 15px; color: #ddd; margin: 0; }
+              .modal-sair-acoes { display: flex; gap: 12px; margin-top: 10px; }
+              .modal-sair-acoes button {
+                  flex: 1; padding: 14px; border: none; border-radius: 12px;
+                  font: 800 14px var(--font-title); cursor: pointer;
+              }
+              #btn-cancelar-sair { background: #333; color: #fff; }
+              #btn-confirmar-sair {
+                  background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff;
+                  box-shadow: 0 0 20px rgba(168, 85, 247, 0.55);
+              }
 
               /* Tela de Logo pos-contagem */
               #logo-tela-overlay {
@@ -221,6 +280,10 @@ jobs:
                          r'<div id="ui-wrapper"\1 class="oculto-inicio" style="display: none !important; opacity: 0 !important; visibility: hidden !important;">',
                          h, count=1)
 
+              # INJETA O BOTÃO SAIR LOGO AO LADO DO BOTÃO LIMPAR
+              botao_sair_html = r'\1\n                <button type="button" class="btn-control btn-sair" onclick="pedirConfirmacaoSair()"><span>SAIR</span></button>'
+              h = re.sub(r'(<button[^>]*class="[^"]*btn-limpar[^"]*"[^>]*>[\s\S]*?</button>)', botao_sair_html, h, count=1)
+
               html_elementos = """
               <!-- TELA DE LOGO EXCLUSIVA POS-CONTAGEM (APENAS LOGO.PNG) -->
               <div id="logo-tela-overlay">
@@ -236,6 +299,18 @@ jobs:
                       <div class="modal-dup-acoes">
                           <button type="button" id="btn-fechar-dup" onclick="fecharModalDuplicados()">CANCELAR</button>
                           <button type="button" id="btn-remover-dup" onclick="confirmarRemoverDuplicados()">ELIMINAR DUPLICADOS</button>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- MODAL DE CONFIRMAÇÃO PARA FECHAR O APK -->
+              <div id="modal-sair-overlay">
+                  <div id="modal-sair-box">
+                      <div id="modal-sair-titulo">🚪 SAIR DO KARAOKÊ</div>
+                      <p id="modal-sair-sub">Tem certeza de que deseja fechar o aplicativo?</p>
+                      <div class="modal-sair-acoes">
+                          <button type="button" id="btn-cancelar-sair" onclick="fecharModalSair()">CONTINUAR</button>
+                          <button type="button" id="btn-confirmar-sair" onclick="confirmarSairApp()">SIM, SAIR</button>
                       </div>
                   </div>
               </div>
@@ -258,6 +333,25 @@ jobs:
               let _logoUrlObrigatorio = null;
               let _bgOficialUrl = null;
               let _duplicadosEncontrados = [];
+
+              // CONTROLE DO BOTÃO SAIR
+              function pedirConfirmacaoSair() {
+                  const modal = document.getElementById('modal-sair-overlay');
+                  if (modal) modal.classList.add('active');
+                  else if (confirm('Deseja realmente fechar o Karaokê?')) confirmarSairApp();
+              }
+              function fecharModalSair() {
+                  const modal = document.getElementById('modal-sair-overlay');
+                  if (modal) modal.classList.remove('active');
+              }
+              function confirmarSairApp() {
+                  fecharModalSair();
+                  if (window.AndroidHost && AndroidHost.exitApp) {
+                      AndroidHost.exitApp();
+                  } else {
+                      window.close();
+                  }
+              }
 
               function identificarLogoMestra(files) {
                   _logoUrlObrigatorio = null;
@@ -471,7 +565,7 @@ jobs:
 
               with open(p_html, "w", encoding="utf-8") as f:
                   f.write(h)
-              print(f"[OK] index.html com correcoes finais aplicadas: {p_html}")
+              print(f"[OK] index.html com correcoes e botao Sair aplicados: {p_html}")
 
           EOF
           python3 patch_karaoke.py
