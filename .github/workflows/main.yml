@@ -502,4 +502,89 @@ jobs:
                   let removidos = 0;
                   for (let item of _duplicadosEncontrados) {
                       if (item.duplicado.contentUri && window.AndroidHost && AndroidHost.deleteFile) {
-                          try { if (AndroidHost.deleteFile(item.duplicado.conten
+                          try { if (AndroidHost.deleteFile(item.duplicado.contentUri)) removidos++; } catch(e) {}
+                      }
+                  }
+                  fecharModalDuplicados();
+                  mostrarAviso('✔ ' + removidos + ' vídeo(s) duplicado(s) eliminado(s)! Reiniciando...', false);
+                  setTimeout(async () => {
+                      if (window.AndroidHost && AndroidHost.refreshFolder) AndroidHost.refreshFolder();
+                      await reproduzirCicloIntro();
+                  }, 800);
+              }
+              """
+
+              h = h.replace("function processarCodigo(val) {", js_logic + """
+              function processarCodigo(val) {
+                  const codStr = String(val).trim();
+                  if (codStr === '9999') { abrirPlayerMP3Hibrido(); return; }
+                  if (codStr === '0000') { checarDuplicadosCodigo0000(window._arquivosCarregadosCache || []); return; }
+              """)
+
+              h = h.replace("async function handleFolderSelect(e) {", "async function handleFolderSelect(e) {\n    window._arquivosCarregadosCache = Array.from(e.target.files); analisarArquivosEspeciais(window._arquivosCarregadosCache);\n")
+
+              alvo_filtro_cat = "const itens = catFiltro === 'TODAS' ? todos : todos.filter(i => inicialDaMusica(i.nome) === catFiltro);"
+              subst_filtro_cat = """
+                  let itens = catFiltro === 'TODAS' ? todos : todos.filter(i => inicialDaMusica(i.nome) === catFiltro);
+                  if (_termoBuscaCatalogo) {
+                      itens = todos.filter(i => (i.nome || '').toLowerCase().includes(_termoBuscaCatalogo) || (i.code || '').includes(_termoBuscaCatalogo));
+                  }
+              """
+              h = h.replace(alvo_filtro_cat, subst_filtro_cat)
+
+              # LOGO APOS A CONTAGEM (ANTES DO VIDEO COMEÇAR)
+              alvo_fim_contagem = "pararCrossfade();\n            timerScreen.classList.remove('active');\n            document.body.classList.remove('countdown-ativo');"
+              subst_fim_contagem = """pararCrossfade();
+                          timerScreen.classList.remove('active');
+                          document.body.classList.remove('countdown-ativo');
+                          await new Promise(resLogo => {
+                              exibirLogoMomento(1800, resLogo);
+                          });"""
+              h = h.replace(alvo_fim_contagem, subst_fim_contagem)
+
+              # LIBERA O PALCO SOMENTE QUANDO A INTRO TERMINAR DE VEZ
+              alvo_intro_fim = "introScreen.classList.remove('active');"
+              novo_intro_fim = """
+              introScreen.classList.remove('active');
+              exibirLogoMomento(1800, function() {
+                  var ui = document.getElementById('ui-wrapper');
+                  if (ui) ui.classList.add('liberado');
+              });
+              """
+              h = h.replace(alvo_intro_fim, novo_intro_fim)
+
+              # Se a pasta não tiver intro, libera o palco
+              h = h.replace("folderLoadFinished = true;", "folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) ui.classList.add('liberado');")
+
+              with open(p_html, "w", encoding="utf-8") as f:
+                  f.write(h)
+              print(f"[OK] index.html 100% revisado: {p_html}")
+
+          EOF
+          python3 patch_karaoke.py
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Garantir Gradle Wrapper
+        run: |
+          if [ ! -f "gradlew" ]; then
+            gradle wrapper --gradle-version 8.11.1
+          fi
+          chmod +x gradlew
+
+      - name: Compilar APK (Debug)
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Disponibilizar APK para Download
+        uses: actions/upload-artifact@v4
+        with:
+          name: Karaoke-Festa-das-Cores-v2.0
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 7
