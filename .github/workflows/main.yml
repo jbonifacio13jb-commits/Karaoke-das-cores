@@ -25,7 +25,6 @@ jobs:
             cp -r FONTE-KARAOKE/* .
           fi
 
-          # Se o projeto estiver dentro de alguma subpasta do ZIP, move tudo para a raiz
           if [ ! -f "build.gradle" ] && [ ! -f "settings.gradle" ] && [ ! -f "build.gradle.kts" ]; then
             for dir in */; do
               if [ -f "${dir}build.gradle" ] || [ -f "${dir}settings.gradle" ]; then
@@ -116,6 +115,18 @@ jobs:
           cairosvg.svg2png(bytestring=svg_icone.encode('utf-8'), write_to="master_icon.png", output_width=512, output_height=512)
           master = Image.open("master_icon.png").convert("RGBA")
 
+          # 1. ELIMINA OS XMLs DE ADAPTIVE ICON (QUE FORÇAVAM O FUNDO BRANCO)
+          for root, dirs, files in os.walk("."):
+              for f in files:
+                  if f in ["ic_launcher.xml", "ic_launcher_round.xml", "ic_launcher_background.xml"]:
+                      caminho = os.path.join(root, f)
+                      try:
+                          os.remove(caminho)
+                          print(f"[REMOVIDO XML FUNDO BRANCO]: {caminho}")
+                      except:
+                          pass
+
+          # 2. APLICA O ÍCONE COLORIDO DO MICROFONE EM TODAS AS PASTAS MIPMAP
           tamanhos = {
               "mipmap-mdpi": 48,
               "mipmap-hdpi": 72,
@@ -124,7 +135,6 @@ jobs:
               "mipmap-xxxhdpi": 192
           }
 
-          aplicados = 0
           for root, dirs, files in os.walk("."):
               for pasta, dim in tamanhos.items():
                   if pasta in dirs:
@@ -132,17 +142,7 @@ jobs:
                       redim = master.resize((dim, dim), Image.Resampling.LANCZOS)
                       redim.save(os.path.join(caminho_dir, "ic_launcher.png"), "PNG")
                       redim.save(os.path.join(caminho_dir, "ic_launcher_round.png"), "PNG")
-                      aplicados += 1
                       print(f"[OK] Ícone aplicado em: {caminho_dir} ({dim}x{dim})")
-
-          if aplicados == 0:
-              res_base = os.path.join("app", "src", "main", "res")
-              for pasta, dim in tamanhos.items():
-                  target_dir = os.path.join(res_base, pasta)
-                  os.makedirs(target_dir, exist_ok=True)
-                  redim = master.resize((dim, dim), Image.Resampling.LANCZOS)
-                  redim.save(os.path.join(target_dir, "ic_launcher.png"), "PNG")
-                  redim.save(os.path.join(target_dir, "ic_launcher_round.png"), "PNG")
 
           EOF
           python3 gerar_icone.py
@@ -298,35 +298,36 @@ jobs:
                   touch-action: manipulation !important;
               }
 
-              /* ÍCONE DE SAÍDA TRANSPARENTE E DISCRETO NO TOPO DIREITO DO CARD */
-              .btn-sair-topo {
-                  position: absolute !important;
-                  top: 14px !important;
-                  right: 14px !important;
+              /* BOTÃO SAIR FIXO NO CANTO SUPERIOR ESQUERDO (ONDE PASSA O LETREIRO) */
+              .btn-sair-topo-fixo {
+                  position: fixed !important;
+                  top: 10px !important;
+                  left: 14px !important;
                   width: 38px !important;
                   height: 38px !important;
                   border-radius: 12px !important;
-                  background: rgba(255, 255, 255, 0.08) !important;
-                  border: 1.5px solid rgba(212, 128, 255, 0.45) !important;
+                  background: rgba(10, 6, 20, 0.75) !important;
+                  border: 1.5px solid rgba(212, 128, 255, 0.6) !important;
                   backdrop-filter: blur(8px) !important;
                   display: flex !important;
                   align-items: center !important;
                   justify-content: center !important;
                   cursor: pointer !important;
                   color: #d480ff !important;
-                  transition: all 0.2s ease !important;
+                  box-shadow: 0 0 15px rgba(176, 38, 255, 0.4) !important;
                   z-index: 99999 !important;
+                  transition: all 0.2s ease !important;
               }
-              .btn-sair-topo:hover,
-              .btn-sair-topo:focus,
-              .btn-sair-topo:focus-visible {
-                  background: rgba(176, 38, 255, 0.35) !important;
-                  border-color: #d480ff !important;
-                  box-shadow: 0 0 18px rgba(176, 38, 255, 0.7) !important;
-                  transform: scale(1.06) !important;
+              .btn-sair-topo-fixo:hover,
+              .btn-sair-topo-fixo:focus,
+              .btn-sair-topo-fixo:focus-visible {
+                  background: rgba(176, 38, 255, 0.4) !important;
+                  border-color: #ffffff !important;
+                  box-shadow: 0 0 22px rgba(212, 128, 255, 0.8) !important;
+                  transform: scale(1.08) !important;
                   outline: none !important;
               }
-              .btn-sair-topo svg {
+              .btn-sair-topo-fixo svg {
                   width: 20px !important;
                   height: 20px !important;
                   fill: none !important;
@@ -336,9 +337,9 @@ jobs:
                   stroke-linejoin: round !important;
               }
 
-              /* MARGEM DE SEGURANÇA PARA O CONTADOR (0) */
-              .badge-contador, [class*="contador"], [class*="badge"] {
-                  margin-right: 48px !important;
+              /* DÁ RESPIRO PARA O LETREIRO NÃO COLIDIR COM O BOTÃO SAIR */
+              marquee, .letreiro, #letreiro, [class*="letreiro"], .ticker, [class*="ticker"] {
+                  padding-left: 56px !important;
               }
 
               /* BOTÕES PARAR E LIMPAR DIVIDINDO 50% DA LARGURA CADA */
@@ -370,7 +371,7 @@ jobs:
                   pointer-events: none !important;
               }
 
-              /* 1. PARAR: LARANJA / ÂMBAR 3D GLOSSY COM TEXTO BRANCO */
+              /* PARAR: LARANJA / ÂMBAR 3D GLOSSY COM TEXTO BRANCO */
               .btn-parar {
                   background: linear-gradient(180deg, #ff9e1b 0%, #f97316 55%, #c2410c 100%) !important;
                   color: #ffffff !important;
@@ -378,7 +379,7 @@ jobs:
                   box-shadow: 0 8px 25px rgba(249, 115, 22, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
               }
 
-              /* 2. LIMPAR: VERMELHO RUBI 3D GLOSSY COM TEXTO BRANCO */
+              /* LIMPAR: VERMELHO RUBI 3D GLOSSY COM TEXTO BRANCO */
               .btn-limpar {
                   background: linear-gradient(180deg, #ff2e51 0%, #ef4444 55%, #b91c1c 100%) !important;
                   color: #ffffff !important;
@@ -398,14 +399,6 @@ jobs:
                   box-shadow: 0 0 25px #ffffff, 0 0 35px rgba(255, 255, 255, 0.8) !important;
                   transform: translateY(-2px) scale(1.03) !important;
                   z-index: 50 !important;
-              }
-
-              /* FEEDBACK AO CLIQUE / TOQUE */
-              .btn-parar:active,
-              .btn-limpar:active,
-              .btn-control:active {
-                  transform: translateY(2px) scale(0.98) !important;
-                  filter: brightness(1.2) !important;
               }
 
               /* MODAL DE CONFIRMAÇÃO DE SAÍDA */
@@ -540,20 +533,19 @@ jobs:
               """
               h = h.replace("</body>", html_modais + "\n</body>")
 
-              # SCRIPT DEFINITIVO DE AJUSTE DIRETO NO DOM (GARANTE 100% QUE O LAYOUT APLICA)
+              # SCRIPT DEFINITIVO DE AJUSTE DIRETO NO DOM (BOTÃO SAIR FIXO NO TOPO ESQUERDO)
               js_layout_garantido = """
-              // AJUSTA O LAYOUT DO PALCO E INJETA O BOTAO SAIR NO CARREGAMENTO
               function aplicarLayoutFestaDasCores() {
                   try {
-                      // 1. Remove qualquer botão SAIR antigo da barra de baixo
+                      // 1. Remove qualquer botão sair antigo que tenha ficado em local incorreto
                       const botoes = Array.from(document.querySelectorAll('button'));
                       botoes.forEach(b => {
-                          if (b.textContent.trim() === 'SAIR' && b.id !== 'btn-sair-topo-app') {
+                          if (b.textContent.trim() === 'SAIR' || b.className.includes('btn-sair-topo')) {
                               b.remove();
                           }
                       });
 
-                      // 2. Localiza os botões PARAR e LIMPAR
+                      // 2. Ajusta os botões PARAR e LIMPAR para 50% cada
                       const btnParar = document.querySelector('.btn-parar') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('PARAR'));
                       const btnLimpar = document.querySelector('.btn-limpar') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('LIMPAR'));
 
@@ -595,29 +587,19 @@ jobs:
                           btnLimpar.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35)';
                       }
 
-                      // 3. Injeta o botão SAIR ao lado do contador da fila
-                      if (!document.getElementById('btn-sair-topo-app')) {
+                      // 3. INJETA O BOTÃO SAIR FIXO NO CANTO SUPERIOR ESQUERDO (ONDE PASSA O LETREIRO)
+                      if (!document.getElementById('btn-sair-app-fixo')) {
                           const btnSair = document.createElement('button');
-                          btnSair.id = 'btn-sair-topo-app';
-                          btnSair.className = 'btn-sair-topo';
+                          btnSair.id = 'btn-sair-app-fixo';
+                          btnSair.className = 'btn-sair-topo-fixo';
                           btnSair.setAttribute('tabindex', '0');
                           btnSair.setAttribute('title', 'Sair do Karaokê');
                           btnSair.innerHTML = '<svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>';
                           btnSair.onclick = pedirConfirmacaoSair;
-
-                          const contador = document.querySelector('[class*="contador"], [class*="badge"], .badge') 
-                                         || Array.from(document.querySelectorAll('*')).find(el => el.textContent.trim() === '0' && el.children.length === 0);
-
-                          if (contador && contador.parentElement) {
-                              contador.style.marginRight = '48px';
-                              contador.parentElement.style.position = 'relative';
-                              contador.parentElement.appendChild(btnSair);
-                          } else {
-                              const cards = document.querySelectorAll('.card');
-                              const filaCard = cards.length > 1 ? cards[1] : (document.querySelector('[class*="fila"]') || document.body);
-                              filaCard.style.position = 'relative';
-                              filaCard.appendChild(btnSair);
-                          }
+                          
+                          // Insere no ui-wrapper para aparecer junto com a tela do palco
+                          const wrapper = document.getElementById('ui-wrapper') || document.body;
+                          wrapper.appendChild(btnSair);
                       }
                   } catch(e) { console.error('Erro ao ajustar layout:', e); }
               }
@@ -871,7 +853,7 @@ jobs:
 
               with open(p_html, "w", encoding="utf-8") as f:
                   f.write(h)
-              print(f"[OK] index.html com injecao garantida no DOM: {p_html}")
+              print(f"[OK] index.html com Sair fixado no canto superior esquerdo e icone aplicado: {p_html}")
 
           EOF
           python3 patch_karaoke.py
