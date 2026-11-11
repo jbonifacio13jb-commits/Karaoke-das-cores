@@ -103,7 +103,7 @@ jobs:
             </g>
             <path d="M 370 120 Q 370 145 345 145 Q 370 145 370 170 Q 370 145 395 145 Q 370 145 370 120 Z" fill="#ffffff" />
             <circle cx="370" cy="145" r="4" fill="#ffd700" />
-            <path d="M 135 150 Q 135 168 117 168 Q 135 168 135 186 Q 135 168 153 168 Q 135 168 135 150 Z" fill="#ffd700" />
+            <path d="M 135 150 Q 135 168 117 168 Q 135 168 135 186 Q 135 168 135 150 Z" fill="#ffd700" />
             <circle cx="135" cy="168" r="3" fill="#ffffff" />
             <path d="M 125 310 Q 125 322 113 322 Q 125 322 125 334 Q 125 322 137 322 Q 125 322 125 310 Z" fill="#00ffff" />
             <circle cx="395" cy="270" r="5" fill="#00f5d4" opacity="0.85" />
@@ -260,7 +260,6 @@ jobs:
                   elif "new WebChromeClient() {" in j:
                       j = j.replace("new WebChromeClient() {", "new WebChromeClient() {" + poster_override, 1)
 
-              # DISPARO IMEDIATO DA INTRO (ENVIA LOGO NO PRIMEIRO ARQUIVO SEM ESPERAR VARRER TUDO)
               idx_inicio = j.find("if (cursor == null) return;")
               idx_fim = j.find("} catch (Exception ignored) {}", idx_inicio)
               if idx_inicio != -1 and idx_fim != -1:
@@ -293,7 +292,7 @@ jobs:
 
               with open(p_java, "w", encoding="utf-8") as f:
                   f.write(j)
-              print(f"[OK] MainActivity.java: Disparo imediato da intro ativado: {p_java}")
+              print(f"[OK] MainActivity.java corrigido: {p_java}")
 
           # ==============================================================
           # 2. INDEX.HTML
@@ -336,37 +335,38 @@ jobs:
                   pointer-events: none !important;
               }
 
-              /* BOTÃO SAIR TOTALMENTE TRANSPARENTE E AUTO-ILUMINADO */
-              .btn-sair-topo-fixo {
+              /* BOTÃO SAIR TRANSPARENTE AO LADO DO CONTADOR */
+              .btn-sair-transparente {
                   width: 38px !important;
                   height: 38px !important;
                   border-radius: 12px !important;
-                  background: transparent !important;
-                  border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+                  background: rgba(255, 255, 255, 0.08) !important;
+                  border: 1.5px solid rgba(255, 255, 255, 0.45) !important;
+                  backdrop-filter: blur(8px) !important;
                   display: inline-flex !important;
                   align-items: center !important;
                   justify-content: center !important;
                   cursor: pointer !important;
                   color: #ffffff !important;
-                  box-shadow: 0 0 12px rgba(212, 128, 255, 0.45) !important;
+                  box-shadow: 0 0 12px rgba(212, 128, 255, 0.35) !important;
                   transition: all 0.2s ease !important;
                   box-sizing: border-box !important;
                   padding: 0 !important;
               }
-              .btn-sair-topo-fixo:hover,
-              .btn-sair-topo-fixo:focus,
-              .btn-sair-topo-fixo:focus-visible {
-                  background: rgba(176, 38, 255, 0.3) !important;
+              .btn-sair-transparente:hover,
+              .btn-sair-transparente:focus,
+              .btn-sair-transparente:focus-visible {
+                  background: rgba(176, 38, 255, 0.35) !important;
                   border-color: #ffffff !important;
                   box-shadow: 0 0 20px rgba(212, 128, 255, 0.8) !important;
                   transform: scale(1.08) !important;
                   outline: none !important;
               }
-              .btn-sair-topo-fixo svg {
+              .btn-sair-transparente svg {
                   width: 22px !important;
                   height: 22px !important;
                   stroke: #ffffff !important;
-                  stroke-width: 2.5 !important;
+                  stroke-width: 2.2 !important;
                   stroke-linecap: round !important;
                   stroke-linejoin: round !important;
                   fill: none !important;
@@ -523,7 +523,7 @@ jobs:
               <!-- MODAL DE CONFIRMAÇÃO PARA FECHAR O APK -->
               <div id="modal-sair-overlay">
                   <div id="modal-sair-box">
-                      <div id="modal-sair-titulo">🚪 SAIR DO KARAOKÊ</div>
+                      <div id="modal-sair-titulo">⚠️ SAIR DO KARAOKÊ</div>
                       <p id="modal-sair-sub">Tem certeza de que deseja fechar o aplicativo?</p>
                       <div class="modal-sair-acoes">
                           <button type="button" id="btn-cancelar-sair" onclick="fecharModalSair()">CONTINUAR</button>
@@ -534,7 +534,7 @@ jobs:
               """
               h = h.replace("</body>", html_modais + "\n</body>")
 
-              # SCRIPT DEFINITIVO DE LAYOUT, INTRO E BOTÃO SAIR GARANTIDO
+              # SCRIPT DEFINITIVO DE LAYOUT, INTRO E BOTÃO SAIR COM ÍCONE DE PORTA
               js_layout_garantido = """
               let _introEmReproducao = false;
 
@@ -594,7 +594,7 @@ jobs:
                       // 1. Remove qualquer botão sair antigo solto
                       const botoes = Array.from(document.querySelectorAll('button'));
                       botoes.forEach(b => {
-                          if (b.textContent.trim() === 'SAIR' || (b.className && b.className.includes('btn-sair-topo') && b.id !== 'btn-sair-topo-oficial')) {
+                          if (b.textContent.trim() === 'SAIR' || (b.className && b.className.includes('btn-sair') && b.id !== 'btn-sair-topo-oficial')) {
                               b.remove();
                           }
                       });
@@ -656,14 +656,15 @@ jobs:
                           btnLimpar.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35)';
                       }
 
-                      // 3. BOTÃO SAIR TRANSPARENTE INJETADO AO LADO DO CONTADOR DA FILA
+                      // 3. BOTÃO SAIR TRANSPARENTE COM ÍCONE DE PORTA AO LADO DO CONTADOR
                       if (!document.getElementById('btn-sair-topo-oficial')) {
                           const btnSair = document.createElement('button');
                           btnSair.id = 'btn-sair-topo-oficial';
-                          btnSair.className = 'btn-sair-topo-fixo';
+                          btnSair.className = 'btn-sair-transparente';
                           btnSair.setAttribute('tabindex', '0');
                           btnSair.setAttribute('title', 'Sair do Karaokê');
-                          btnSair.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" stroke="#ffffff" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>';
+                          // ÍCONE DE PORTA DE SAÍDA VETORIAL
+                          btnSair.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" stroke="#ffffff" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>';
                           btnSair.onclick = pedirConfirmacaoSair;
 
                           // Localiza o contador da fila
@@ -928,7 +929,7 @@ jobs:
 
               with open(p_html, "w", encoding="utf-8") as f:
                   f.write(h)
-              print(f"[OK] index.html atualizado: Intro Imediata e Botão Sair ao lado do contador: {p_html}")
+              print(f"[OK] index.html atualizado: Intro Imediata e Botão Sair com ícone de porta: {p_html}")
 
           EOF
           python3 patch_karaoke.py
