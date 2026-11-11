@@ -15,7 +15,7 @@ jobs:
 
       - name: Descompactar o arquivo ZIP automaticamente
         run: |
-          sudo apt-get install -y unzip
+          sudo apt-get install -y unzip ffmpeg
           for f in *.zip; do
             [ -e "$f" ] || continue
             unzip -o "$f"
@@ -36,7 +36,21 @@ jobs:
           fi
           ls -la
 
-      - name: Aplicar Ícone Oficial (Microfone Vintage Dourado na Tela Inicial)
+      - name: Converter Vídeo de Intro para Padrão Universal da Pasta Mestra (H.264 + AAC)
+        run: |
+          # Procura qualquer vídeo de intro (mesmo com codec incompatível, h264, mkv, avi, mp4)
+          # Converte para MP4 universal perfeito para colocar na Pasta Mestra do PenDrive
+          shopt -s nullglob
+          videos=(*intro* *.h264 *.264 *.mkv *.avi *.mov)
+          for vid in "${videos[@]}"; do
+            if [ -f "$vid" ] && [ "$vid" != "intro_pronta.mp4" ]; then
+              echo "Convertendo $vid para intro.mp4 universal para PenDrive/Pasta Mestra..."
+              ffmpeg -y -i "$vid" -c:v libx264 -pix_fmt yuv420p -profile:v main -c:a aac -b:a 128k -movflags +faststart intro.mp4 || true
+              break
+            fi
+          done
+
+      - name: Gerar Ícone Oficial Redondo (Microfone Vintage Dourado + Fundo Rosa/Lilás)
         run: |
           sudo apt-get update -y
           sudo apt-get install -y python3-cairosvg python3-pil
@@ -115,7 +129,7 @@ jobs:
           cairosvg.svg2png(bytestring=svg_icone.encode('utf-8'), write_to="master_icon.png", output_width=512, output_height=512)
           master = Image.open("master_icon.png").convert("RGBA")
 
-          # Remove XMLs de adaptive icon do Android 8+
+          # Elimina XMLs de adaptive icon do Android 8+
           for root, dirs, files in os.walk("."):
               for f in files:
                   if f in ["ic_launcher.xml", "ic_launcher_round.xml", "ic_launcher_background.xml"]:
@@ -159,7 +173,7 @@ jobs:
               return res
 
           # ==============================================================
-          # 1. MAINACTIVITY.JAVA (Hardware Accelerated + KeyEvents + Sair)
+          # 1. MAINACTIVITY.JAVA (Leitura da Pasta Mestra + SAF + Hardware Accel)
           # ==============================================================
           for p_java in achar("MainActivity.java"):
               with open(p_java, "r", encoding="utf-8") as f:
@@ -188,7 +202,7 @@ jobs:
                   """
                   j = j.replace("public final class AndroidHost {", "public final class AndroidHost {" + metodos_host)
 
-              # Força aceleração gráfica por hardware na janela para evitar tela preta de vídeo
+              # Ativa aceleração gráfica por hardware para rodar vídeo sem engasgo direto do PenDrive
               if "FLAG_HARDWARE_ACCELERATED" not in j:
                   init_accel = """
                   try {
@@ -224,6 +238,7 @@ jobs:
                   elif "new WebChromeClient() {" in j:
                       j = j.replace("new WebChromeClient() {", "new WebChromeClient() {" + poster_override, 1)
 
+              # ESCANEIA TODAS AS INTROS NA PASTA MESTRA (intro.mp4, intro2.mp4, intro3.mp4, etc.)
               idx_inicio = j.find("if (cursor == null) return;")
               idx_fim = j.find("} catch (Exception ignored) {}", idx_inicio)
               if idx_inicio != -1 and idx_fim != -1:
@@ -235,7 +250,7 @@ jobs:
                       String mime = cursor.getString(2);
                       if (name == null || android.provider.DocumentsContract.Document.MIME_TYPE_DIR.equals(mime)) continue;
                       String n = name.toLowerCase();
-                      if (n.equals("intro.mp4") || n.equals("intro2.mp4") || n.equals("intro3.mp4") || n.startsWith("intro")) {
+                      if (n.equals("intro.mp4") || n.equals("intro2.mp4") || n.equals("intro3.mp4") || (n.startsWith("intro") && n.endsWith(".mp4"))) {
                           intros.add(android.provider.DocumentsContract.buildDocumentUriUsingTree(treeUri, id).toString());
                       }
                   }
@@ -255,7 +270,7 @@ jobs:
 
               with open(p_java, "w", encoding="utf-8") as f:
                   f.write(j)
-              print(f"[OK] MainActivity.java corrigido: {p_java}")
+              print(f"[OK] MainActivity.java configurado para ler da Pasta Mestra: {p_java}")
 
           # ==============================================================
           # 2. INDEX.HTML
@@ -313,7 +328,7 @@ jobs:
                   width: 38px !important;
                   height: 38px !important;
                   border-radius: 12px !important;
-                  background: transparent !important; /* Totalmente transparente */
+                  background: transparent !important;
                   border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
                   display: flex !important;
                   align-items: center !important;
@@ -516,11 +531,10 @@ jobs:
               """
               h = h.replace("</body>", html_modais + "\n</body>")
 
-              # SCRIPT DEFINITIVO DE LAYOUT, INTRO (30S MÁXIMO) E SAIR TRANSPARENTE
+              # SCRIPT DEFINITIVO DE LAYOUT, INTRO DA PASTA MESTRA (30S MAX) E SAIR TRANSPARENTE
               js_layout_garantido = """
               let _introEmReproducao = false;
 
-              // LIBERAÇÃO SEGURA DO PALCO
               function liberarPalcoAposIntro() {
                   const screen = document.getElementById('intro-screen') || document.querySelector('.intro-screen');
                   if (screen) screen.classList.remove('active');
@@ -535,7 +549,7 @@ jobs:
                   }
               }
 
-              // REPRODUÇÃO DA INTRO COM LIMITE PADRÃO DE 30 SEGUNDOS
+              // QUANDO ENCONTRA UMA INTRO NA PASTA MESTRA: TOCA ATÉ 30S OU ATÉ O FIM
               window.onIntroFoundDuringScan = function(uri) {
                   const vid = document.getElementById('intro-video');
                   const screen = document.getElementById('intro-screen') || document.querySelector('.intro-screen');
@@ -545,7 +559,7 @@ jobs:
                       vid.loop = false;
                       if (screen) screen.classList.add('active');
 
-                      // Trava de 30 segundos: se tiver 30s ou mais, corta aos 30s
+                      // Limite de até 30 segundos
                       vid.ontimeupdate = function() {
                           if (vid.currentTime >= 30) {
                               vid.ontimeupdate = null;
@@ -555,7 +569,6 @@ jobs:
                           }
                       };
 
-                      // Se o vídeo for menor que 30s, libera ao término natural
                       vid.onended = function() {
                           vid.ontimeupdate = null;
                           _introEmReproducao = false;
@@ -568,7 +581,6 @@ jobs:
 
               function aplicarLayoutFestaDasCores() {
                   try {
-                      // 1. Remove qualquer botão sair antigo solto
                       const botoes = Array.from(document.querySelectorAll('button'));
                       botoes.forEach(b => {
                           if (b.textContent.trim() === 'SAIR' || (b.className && b.className.includes('btn-sair-topo') && b.id !== 'btn-sair-app-fixo')) {
@@ -576,7 +588,7 @@ jobs:
                           }
                       });
 
-                      // 2. PARAR E LIMPAR NO FORMATO E TAMANHO EXATO DO BOTÃO CATÁLOGO
+                      // PARAR E LIMPAR COM O MOLDE DO BOTÃO CATÁLOGO
                       const btnParar = document.querySelector('.btn-parar') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('PARAR'));
                       const btnLimpar = document.querySelector('.btn-limpar') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('LIMPAR'));
                       const btnCat = document.querySelector('.btn-catalogo') || document.querySelector('[class*="catalogo"]');
@@ -633,7 +645,7 @@ jobs:
                           btnLimpar.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35)';
                       }
 
-                      // 3. CONTADOR E BOTÃO SAIR TRANSPARENTE LADO A LADO NO TOPO DIREITO
+                      // BOTÃO SAIR TRANSPARENTE AO LADO DO CONTADOR
                       if (!document.getElementById('btn-sair-app-fixo')) {
                           const btnSair = document.createElement('button');
                           btnSair.id = 'btn-sair-app-fixo';
@@ -643,7 +655,6 @@ jobs:
                           btnSair.innerHTML = '<svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>';
                           btnSair.onclick = pedirConfirmacaoSair;
 
-                          // Localiza o elemento do contador da fila (0)
                           const contador = document.querySelector('[class*="contador"], [class*="badge"], .badge')
                                          || Array.from(document.querySelectorAll('*')).find(el => el.textContent.trim() === '0' && el.children.length === 0);
 
@@ -672,7 +683,7 @@ jobs:
                   setTimeout(aplicarLayoutFestaDasCores, 800);
               });
 
-              // SUPORTE A CONTROLE REMOTO TV / TECLADO BLUETOOTH / TECLADO USB
+              // CONTROLE REMOTO TV / TECLADO BLUETOOTH / TECLADO USB
               window.addEventListener('keydown', (e) => {
                   if (/^[0-9]$/.test(e.key)) {
                       if (typeof digitarNumero === 'function') digitarNumero(e.key);
@@ -904,7 +915,7 @@ jobs:
 
               with open(p_html, "w", encoding="utf-8") as f:
                   f.write(h)
-              print(f"[OK] index.html atualizado: Intro 30s max, Parar/Limpar no molde do Catálogo e Sair transparente ao lado do contador: {p_html}")
+              print(f"[OK] index.html atualizado para rodar Intro da Pasta Mestra: {p_html}")
 
           EOF
           python3 patch_karaoke.py
@@ -930,12 +941,13 @@ jobs:
       - name: Compilar APK (Debug)
         run: ./gradlew assembleDebug --stacktrace
 
-      - name: Disponibilizar APK e Ícone para Download
+      - name: Disponibilizar APK, Ícone e Intro Universal para Download
         uses: actions/upload-artifact@v4
         with:
           name: Karaoke-Festa-das-Cores-v2.0
           path: |
             app/build/outputs/apk/debug/*.apk
             master_icon.png
+            intro.mp4
           if-no-files-found: warn
           retention-days: 7
