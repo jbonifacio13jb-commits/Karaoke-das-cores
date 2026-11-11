@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 8
 
     steps:
       - name: Baixar repositorio
@@ -15,7 +16,7 @@ jobs:
 
       - name: Descompactar o arquivo ZIP automaticamente
         run: |
-          sudo apt-get install -y unzip ffmpeg
+          sudo apt-get install -y unzip
           for f in *.zip; do
             [ -e "$f" ] || continue
             unzip -o "$f"
@@ -36,16 +37,14 @@ jobs:
           fi
           ls -la
 
-      - name: Converter Vídeo de Intro para Padrão Universal da Pasta Mestra (H.264 + AAC)
+      - name: Converter Vídeo de Intro de Forma Rápida (Máx 35s, Preset Ultrafast)
         run: |
-          # Procura qualquer vídeo de intro (mesmo com codec incompatível, h264, mkv, avi, mp4)
-          # Converte para MP4 universal perfeito para colocar na Pasta Mestra do PenDrive
           shopt -s nullglob
           videos=(*intro* *.h264 *.264 *.mkv *.avi *.mov)
           for vid in "${videos[@]}"; do
-            if [ -f "$vid" ] && [ "$vid" != "intro_pronta.mp4" ]; then
-              echo "Convertendo $vid para intro.mp4 universal para PenDrive/Pasta Mestra..."
-              ffmpeg -y -i "$vid" -c:v libx264 -pix_fmt yuv420p -profile:v main -c:a aac -b:a 128k -movflags +faststart intro.mp4 || true
+            if [ -f "$vid" ] && [ "$vid" != "intro.mp4" ]; then
+              echo "Convertendo $vid em modo ultra rápido..."
+              ffmpeg -nostdin -y -i "$vid" -t 35 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -profile:v main -c:a aac -b:a 128k -movflags +faststart intro.mp4 || true
               break
             fi
           done
@@ -129,7 +128,7 @@ jobs:
           cairosvg.svg2png(bytestring=svg_icone.encode('utf-8'), write_to="master_icon.png", output_width=512, output_height=512)
           master = Image.open("master_icon.png").convert("RGBA")
 
-          # Elimina XMLs de adaptive icon do Android 8+
+          # Remove XMLs de adaptive icon do Android 8+
           for root, dirs, files in os.walk("."):
               for f in files:
                   if f in ["ic_launcher.xml", "ic_launcher_round.xml", "ic_launcher_background.xml"]:
@@ -173,7 +172,7 @@ jobs:
               return res
 
           # ==============================================================
-          # 1. MAINACTIVITY.JAVA (Leitura da Pasta Mestra + SAF + Hardware Accel)
+          # 1. MAINACTIVITY.JAVA
           # ==============================================================
           for p_java in achar("MainActivity.java"):
               with open(p_java, "r", encoding="utf-8") as f:
@@ -202,7 +201,6 @@ jobs:
                   """
                   j = j.replace("public final class AndroidHost {", "public final class AndroidHost {" + metodos_host)
 
-              # Ativa aceleração gráfica por hardware para rodar vídeo sem engasgo direto do PenDrive
               if "FLAG_HARDWARE_ACCELERATED" not in j:
                   init_accel = """
                   try {
@@ -238,7 +236,6 @@ jobs:
                   elif "new WebChromeClient() {" in j:
                       j = j.replace("new WebChromeClient() {", "new WebChromeClient() {" + poster_override, 1)
 
-              # ESCANEIA TODAS AS INTROS NA PASTA MESTRA (intro.mp4, intro2.mp4, intro3.mp4, etc.)
               idx_inicio = j.find("if (cursor == null) return;")
               idx_fim = j.find("} catch (Exception ignored) {}", idx_inicio)
               if idx_inicio != -1 and idx_fim != -1:
@@ -355,18 +352,6 @@ jobs:
                   stroke-width: 2.2 !important;
                   stroke-linecap: round !important;
                   stroke-linejoin: round !important;
-              }
-
-              /* CONTAINER DO CONTADOR E DO BOTÃO SAIR LADO A LADO */
-              .fila-acoes-topo-container {
-                  display: flex !important;
-                  flex-direction: row !important;
-                  align-items: center !important;
-                  gap: 10px !important;
-                  position: absolute !important;
-                  top: 14px !important;
-                  right: 14px !important;
-                  z-index: 99999 !important;
               }
 
               /* 1. PARAR: LARANJA / ÂMBAR 3D GLOSSY COM TEXTO BRANCO */
@@ -559,7 +544,6 @@ jobs:
                       vid.loop = false;
                       if (screen) screen.classList.add('active');
 
-                      // Limite de até 30 segundos
                       vid.ontimeupdate = function() {
                           if (vid.currentTime >= 30) {
                               vid.ontimeupdate = null;
