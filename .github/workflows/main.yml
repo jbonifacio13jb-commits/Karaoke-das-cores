@@ -115,7 +115,7 @@ jobs:
           cairosvg.svg2png(bytestring=svg_icone.encode('utf-8'), write_to="master_icon.png", output_width=512, output_height=512)
           master = Image.open("master_icon.png").convert("RGBA")
 
-          # Elimina XMLs de adaptive icons que forçam fundo branco
+          # Remove XMLs de adaptive icon do Android 8+
           for root, dirs, files in os.walk("."):
               for f in files:
                   if f in ["ic_launcher.xml", "ic_launcher_round.xml", "ic_launcher_background.xml"]:
@@ -159,7 +159,7 @@ jobs:
               return res
 
           # ==============================================================
-          # 1. MAINACTIVITY.JAVA
+          # 1. MAINACTIVITY.JAVA (Hardware Accelerated + KeyEvents + Sair)
           # ==============================================================
           for p_java in achar("MainActivity.java"):
               with open(p_java, "r", encoding="utf-8") as f:
@@ -187,6 +187,16 @@ jobs:
                   }
                   """
                   j = j.replace("public final class AndroidHost {", "public final class AndroidHost {" + metodos_host)
+
+              # Força aceleração gráfica por hardware na janela para evitar tela preta de vídeo
+              if "FLAG_HARDWARE_ACCELERATED" not in j:
+                  init_accel = """
+                  try {
+                      getWindow().setFlags(android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
+                      if (webView != null) webView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
+                  } catch (Exception ignored) {}
+                  """
+                  j = j.replace("super.onCreate(savedInstanceState);", "super.onCreate(savedInstanceState);\n" + init_accel)
 
               if "dispatchKeyEvent" not in j and "public final class AndroidHost" in j:
                   metodo_dispatch = """
@@ -297,51 +307,51 @@ jobs:
                   touch-action: manipulation !important;
               }
 
-              /* BOTÃO SAIR TRANSLÚCIDO FIXADO NO CANTO SUPERIOR DIREITO */
+              /* BOTÃO SAIR TOTALMENTE TRANSPARENTE E DISCRETO */
               .btn-sair-topo-fixo {
-                  position: fixed !important;
-                  top: 12px !important;
-                  right: 14px !important;
-                  left: auto !important;
-                  width: 42px !important;
-                  height: 42px !important;
-                  border-radius: 14px !important;
-                  background: rgba(255, 255, 255, 0.08) !important;
-                  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
-                  backdrop-filter: blur(10px) !important;
-                  -webkit-backdrop-filter: blur(10px) !important;
+                  position: static !important;
+                  width: 38px !important;
+                  height: 38px !important;
+                  border-radius: 12px !important;
+                  background: transparent !important; /* Totalmente transparente */
+                  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
                   display: flex !important;
                   align-items: center !important;
                   justify-content: center !important;
                   cursor: pointer !important;
                   color: rgba(255, 255, 255, 0.8) !important;
-                  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
-                  z-index: 99999 !important;
                   transition: all 0.2s ease !important;
               }
               .btn-sair-topo-fixo:hover,
               .btn-sair-topo-fixo:focus,
               .btn-sair-topo-fixo:focus-visible {
-                  background: rgba(176, 38, 255, 0.3) !important;
+                  background: rgba(176, 38, 255, 0.25) !important;
                   border-color: #d480ff !important;
                   color: #ffffff !important;
-                  box-shadow: 0 0 20px rgba(176, 38, 255, 0.7) !important;
+                  box-shadow: 0 0 15px rgba(176, 38, 255, 0.6) !important;
                   transform: scale(1.06) !important;
                   outline: none !important;
               }
               .btn-sair-topo-fixo svg {
-                  width: 22px !important;
-                  height: 22px !important;
+                  width: 20px !important;
+                  height: 20px !important;
                   fill: none !important;
                   stroke: currentColor !important;
-                  stroke-width: 2 !important;
+                  stroke-width: 2.2 !important;
                   stroke-linecap: round !important;
                   stroke-linejoin: round !important;
               }
 
-              /* MARGEM DE SEGURANÇA PARA O CONTADOR (0) NÃO COLIDIR */
-              .badge-contador, [class*="contador"], [class*="badge"] {
-                  margin-right: 52px !important;
+              /* CONTAINER DO CONTADOR E DO BOTÃO SAIR LADO A LADO */
+              .fila-acoes-topo-container {
+                  display: flex !important;
+                  flex-direction: row !important;
+                  align-items: center !important;
+                  gap: 10px !important;
+                  position: absolute !important;
+                  top: 14px !important;
+                  right: 14px !important;
+                  z-index: 99999 !important;
               }
 
               /* 1. PARAR: LARANJA / ÂMBAR 3D GLOSSY COM TEXTO BRANCO */
@@ -506,11 +516,11 @@ jobs:
               """
               h = h.replace("</body>", html_modais + "\n</body>")
 
-              # SCRIPT DEFINITIVO DE LAYOUT, INTRO E CONTROLES
+              # SCRIPT DEFINITIVO DE LAYOUT, INTRO (30S MÁXIMO) E SAIR TRANSPARENTE
               js_layout_garantido = """
               let _introEmReproducao = false;
 
-              // FUNÇÃO PARA LIBERAR O PALCO APENAS QUANDO A INTRO TERMINAR DE TOCAR 100%
+              // LIBERAÇÃO SEGURA DO PALCO
               function liberarPalcoAposIntro() {
                   const screen = document.getElementById('intro-screen') || document.querySelector('.intro-screen');
                   if (screen) screen.classList.remove('active');
@@ -525,17 +535,29 @@ jobs:
                   }
               }
 
-              // ESCUTA A REPRODUÇÃO REAL DA INTRO (RODA O TEMPO REAL COMPLETO)
+              // REPRODUÇÃO DA INTRO COM LIMITE PADRÃO DE 30 SEGUNDOS
               window.onIntroFoundDuringScan = function(uri) {
                   const vid = document.getElementById('intro-video');
                   const screen = document.getElementById('intro-screen') || document.querySelector('.intro-screen');
                   if (vid && uri) {
                       _introEmReproducao = true;
                       vid.src = uri;
-                      vid.loop = false; // Garante que toca a duração real completa sem loop infinito prematuro
+                      vid.loop = false;
                       if (screen) screen.classList.add('active');
 
+                      // Trava de 30 segundos: se tiver 30s ou mais, corta aos 30s
+                      vid.ontimeupdate = function() {
+                          if (vid.currentTime >= 30) {
+                              vid.ontimeupdate = null;
+                              vid.pause();
+                              _introEmReproducao = false;
+                              liberarPalcoAposIntro();
+                          }
+                      };
+
+                      // Se o vídeo for menor que 30s, libera ao término natural
                       vid.onended = function() {
+                          vid.ontimeupdate = null;
                           _introEmReproducao = false;
                           liberarPalcoAposIntro();
                       };
@@ -546,7 +568,7 @@ jobs:
 
               function aplicarLayoutFestaDasCores() {
                   try {
-                      // 1. Remove qualquer botão sair antigo
+                      // 1. Remove qualquer botão sair antigo solto
                       const botoes = Array.from(document.querySelectorAll('button'));
                       botoes.forEach(b => {
                           if (b.textContent.trim() === 'SAIR' || (b.className && b.className.includes('btn-sair-topo') && b.id !== 'btn-sair-app-fixo')) {
@@ -554,14 +576,13 @@ jobs:
                           }
                       });
 
-                      // 2. Localiza os botões PARAR e LIMPAR e o botão CATÁLOGO (como base de tamanho)
+                      // 2. PARAR E LIMPAR NO FORMATO E TAMANHO EXATO DO BOTÃO CATÁLOGO
                       const btnParar = document.querySelector('.btn-parar') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('PARAR'));
                       const btnLimpar = document.querySelector('.btn-limpar') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('LIMPAR'));
                       const btnCat = document.querySelector('.btn-catalogo') || document.querySelector('[class*="catalogo"]');
 
-                      // Lê as propriedades de formato do botão CATÁLOGO
                       let alturaBase = '68px';
-                      let raioBase = '20px';
+                      let raioBase = '22px';
                       let fonteBase = '16px';
                       let familiaBase = 'var(--font-title, sans-serif)';
 
@@ -612,7 +633,7 @@ jobs:
                           btnLimpar.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35)';
                       }
 
-                      // 3. INJETA O BOTÃO SAIR TRANSLÚCIDO FIXO NO CANTO SUPERIOR DIREITO
+                      // 3. CONTADOR E BOTÃO SAIR TRANSPARENTE LADO A LADO NO TOPO DIREITO
                       if (!document.getElementById('btn-sair-app-fixo')) {
                           const btnSair = document.createElement('button');
                           btnSair.id = 'btn-sair-app-fixo';
@@ -621,9 +642,26 @@ jobs:
                           btnSair.setAttribute('title', 'Sair do Karaokê');
                           btnSair.innerHTML = '<svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>';
                           btnSair.onclick = pedirConfirmacaoSair;
-                          
-                          const wrapper = document.getElementById('ui-wrapper') || document.body;
-                          wrapper.appendChild(btnSair);
+
+                          // Localiza o elemento do contador da fila (0)
+                          const contador = document.querySelector('[class*="contador"], [class*="badge"], .badge')
+                                         || Array.from(document.querySelectorAll('*')).find(el => el.textContent.trim() === '0' && el.children.length === 0);
+
+                          if (contador && contador.parentElement) {
+                              const paiContador = contador.parentElement;
+                              paiContador.style.display = 'flex';
+                              paiContador.style.alignItems = 'center';
+                              paiContador.style.gap = '10px';
+                              paiContador.appendChild(btnSair);
+                          } else {
+                              const cards = document.querySelectorAll('.card');
+                              const filaCard = cards.length > 1 ? cards[1] : (document.querySelector('[class*="fila"]') || document.body);
+                              filaCard.style.position = 'relative';
+                              btnSair.style.position = 'absolute';
+                              btnSair.style.top = '14px';
+                              btnSair.style.right = '14px';
+                              filaCard.appendChild(btnSair);
+                          }
                       }
                   } catch(e) { console.error('Erro ao ajustar layout:', e); }
               }
@@ -866,7 +904,7 @@ jobs:
 
               with open(p_html, "w", encoding="utf-8") as f:
                   f.write(h)
-              print(f"[OK] index.html atualizado: Intro completa, Parar/Limpar no molde do Catálogo e Sair no topo direito: {p_html}")
+              print(f"[OK] index.html atualizado: Intro 30s max, Parar/Limpar no molde do Catálogo e Sair transparente ao lado do contador: {p_html}")
 
           EOF
           python3 patch_karaoke.py
