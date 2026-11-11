@@ -795,4 +795,109 @@ jobs:
               h = h.replace("function processarCodigo(val) {", js_layout_garantido + """
               function processarCodigo(val) {
                   const codStr = String(val).trim();
-                  if (codStr === '0000') { checarDuplicad
+                  if (codStr === '0000') { checarDuplicadosCodigo0000(window._arquivosCarregadosCache || []); return; }
+              """)
+
+              h = h.replace("async function handleFolderSelect(e) {", "async function handleFolderSelect(e) {\n    window._arquivosCarregadosCache = Array.from(e.target.files); identificarLogoMestra(window._arquivosCarregadosCache);\n")
+
+              alvo_filtro_cat = "const itens = catFiltro === 'TODAS' ? todos : todos.filter(i => inicialDaMusica(i.nome) === catFiltro);"
+              subst_filtro_cat = """
+                  let itens = catFiltro === 'TODAS' ? todos : todos.filter(i => inicialDaMusica(i.nome) === catFiltro);
+                  if (_termoBuscaCatalogo) {
+                      itens = todos.filter(i => (i.nome || '').toLowerCase().includes(_termoBuscaCatalogo) || (i.code || '').includes(_termoBuscaCatalogo));
+                  }
+              """
+              h = h.replace(alvo_filtro_cat, subst_filtro_cat)
+
+              h = h.replace("if (usaSeletorNativo) setTimeout(() => selectFolder(), 700);", "if (usaSeletorNativo) selectFolder();")
+
+              alvo_start_cross = """const nomes = [singerName, initialChar];
+            for (const nome of nomes) {
+                const arquivo1 = bgCantores[nome];
+                const arquivo2 = bgCantores[nome + "2"];
+                if (arquivo1) urls.push(arquivo1.isUrl ? arquivo1.url : (arquivo1.contentUri || URL.createObjectURL(arquivo1)));
+                if (arquivo2) urls.push(arquivo2.isUrl ? arquivo2.url : (arquivo2.contentUri || URL.createObjectURL(arquivo2)));
+                if (urls.length > 0) break;
+            }
+            iniciarCrossfade(urls);"""
+
+              subst_start_cross = """const nomes = [singerName, initialChar];
+            if (singerName && singerName !== 'CONVIDADO') {
+                for (const nome of nomes) {
+                    if (!nome) continue;
+                    const arquivo1 = bgCantores[nome];
+                    const arquivo2 = bgCantores[nome + "2"];
+                    if (arquivo1) urls.push(arquivo1.isUrl ? arquivo1.url : (arquivo1.contentUri || URL.createObjectURL(arquivo1)));
+                    if (arquivo2) urls.push(arquivo2.isUrl ? arquivo2.url : (arquivo2.contentUri || URL.createObjectURL(arquivo2)));
+                    if (urls.length > 0) break;
+                }
+            }
+            if (urls.length > 0) {
+                iniciarCrossfade(urls);
+            } else if (_bgOficialUrl) {
+                iniciarCrossfade([_bgOficialUrl]);
+            } else {
+                pararCrossfade();
+                if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }
+                if (bgSinger) { bgSinger.style.opacity = '0'; bgSinger.style.backgroundImage = ''; }
+                if (bgSinger2) { bgSinger2.style.opacity = '0'; bgSinger2.style.backgroundImage = ''; }
+            }"""
+              h = h.replace(alvo_start_cross, subst_start_cross)
+
+              alvo_fim_contagem = "pararCrossfade();\n            timerScreen.classList.remove('active');\n            document.body.classList.remove('countdown-ativo');"
+              subst_fim_contagem = """pararCrossfade();
+                          timerScreen.classList.remove('active');
+                          if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }
+                          if (_logoUrlObrigatorio) {
+                              await new Promise(resLogo => {
+                                  exibirLogoPosContagem(1800, resLogo);
+                              });
+                          }
+                          document.body.classList.remove('countdown-ativo');
+                          if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }"""
+              h = h.replace(alvo_fim_contagem, subst_fim_contagem)
+
+              # QUANDO A INTRO TERMINA O VÍDEO COMPLETO, CHAMA O DESBLOQUEIO
+              h = h.replace("introScreen.classList.remove('active');", "liberarPalcoAposIntro();")
+
+              # SE A PASTA NÃO TIVER NENHUM VÍDEO DE INTRO, LIBERA O PALCO DIRETO
+              h = h.replace("folderLoadFinished = true;",
+                            "folderLoadFinished = true; setTimeout(function() { const vid = document.getElementById('intro-video'); if (!_introEmReproducao && (!vid || !vid.src || vid.ended)) { liberarPalcoAposIntro(); } }, 1200);")
+
+              with open(p_html, "w", encoding="utf-8") as f:
+                  f.write(h)
+              print(f"[OK] index.html atualizado: Intro completa, Parar/Limpar no molde do Catálogo e Sair no topo direito: {p_html}")
+
+          EOF
+          python3 patch_karaoke.py
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Garantir Gradle Wrapper
+        run: |
+          if [ ! -f "gradlew" ]; then
+            gradle wrapper --gradle-version 8.11.1
+          fi
+          chmod +x gradlew
+
+      - name: Compilar APK (Debug)
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Disponibilizar APK e Ícone para Download
+        uses: actions/upload-artifact@v4
+        with:
+          name: Karaoke-Festa-das-Cores-v2.0
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            master_icon.png
+          if-no-files-found: warn
+          retention-days: 7
