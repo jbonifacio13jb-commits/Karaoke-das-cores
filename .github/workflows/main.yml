@@ -112,11 +112,10 @@ jobs:
             <circle cx="130" cy="230" r="3" fill="#ffffff" opacity="0.9" />
           </svg>"""
 
-          # Gera o ícone mestre 512x512
           cairosvg.svg2png(bytestring=svg_icone.encode('utf-8'), write_to="master_icon.png", output_width=512, output_height=512)
           master = Image.open("master_icon.png").convert("RGBA")
 
-          # 1. ELIMINA QUALQUER XML DE ADAPTIVE ICON QUE FORCE FUNDO BRANCO NO ANDROID 8+
+          # Elimina XMLs de adaptive icons que forçam fundo branco
           for root, dirs, files in os.walk("."):
               for f in files:
                   if f in ["ic_launcher.xml", "ic_launcher_round.xml", "ic_launcher_background.xml"]:
@@ -127,7 +126,6 @@ jobs:
                       except:
                           pass
 
-          # 2. GRAVA A IMAGEM EM TODAS AS PASTAS MIPMAP (ÍCONE DA TELA INICIAL)
           tamanhos = {
               "mipmap-mdpi": 48,
               "mipmap-hdpi": 72,
@@ -227,7 +225,7 @@ jobs:
                       String mime = cursor.getString(2);
                       if (name == null || android.provider.DocumentsContract.Document.MIME_TYPE_DIR.equals(mime)) continue;
                       String n = name.toLowerCase();
-                      if (n.equals("intro.mp4") || n.equals("intro2.mp4") || n.equals("intro3.mp4")) {
+                      if (n.equals("intro.mp4") || n.equals("intro2.mp4") || n.equals("intro3.mp4") || n.startsWith("intro")) {
                           intros.add(android.provider.DocumentsContract.buildDocumentUriUsingTree(treeUri, id).toString());
                       }
                   }
@@ -257,7 +255,7 @@ jobs:
                   h = f.read().replace("\r\n", "\n")
 
               css_injetado = """
-              /* BLOQUEIO TOTAL E ABSOLUTO DO PALCO INICIAL */
+              /* BLOQUEIO TOTAL E ABSOLUTO DO PALCO INICIAL ENQUANTO A INTRO RODA */
               #ui-wrapper.oculto-inicio,
               #ui-wrapper:not(.liberado) {
                   display: none !important;
@@ -299,80 +297,54 @@ jobs:
                   touch-action: manipulation !important;
               }
 
-              /* BOTÃO SAIR TRANSLÚCIDO FIXADO NO CANTO SUPERIOR ESQUERDO */
+              /* BOTÃO SAIR TRANSLÚCIDO FIXADO NO CANTO SUPERIOR DIREITO */
               .btn-sair-topo-fixo {
                   position: fixed !important;
-                  top: 10px !important;
-                  left: 14px !important;
-                  width: 38px !important;
-                  height: 38px !important;
-                  border-radius: 12px !important;
-                  background: rgba(10, 6, 20, 0.75) !important;
-                  border: 1.5px solid rgba(212, 128, 255, 0.6) !important;
-                  backdrop-filter: blur(8px) !important;
+                  top: 12px !important;
+                  right: 14px !important;
+                  left: auto !important;
+                  width: 42px !important;
+                  height: 42px !important;
+                  border-radius: 14px !important;
+                  background: rgba(255, 255, 255, 0.08) !important;
+                  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+                  backdrop-filter: blur(10px) !important;
+                  -webkit-backdrop-filter: blur(10px) !important;
                   display: flex !important;
                   align-items: center !important;
                   justify-content: center !important;
                   cursor: pointer !important;
-                  color: #d480ff !important;
-                  box-shadow: 0 0 15px rgba(176, 38, 255, 0.4) !important;
+                  color: rgba(255, 255, 255, 0.8) !important;
+                  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
                   z-index: 99999 !important;
                   transition: all 0.2s ease !important;
               }
               .btn-sair-topo-fixo:hover,
               .btn-sair-topo-fixo:focus,
               .btn-sair-topo-fixo:focus-visible {
-                  background: rgba(176, 38, 255, 0.4) !important;
-                  border-color: #ffffff !important;
-                  box-shadow: 0 0 22px rgba(212, 128, 255, 0.8) !important;
-                  transform: scale(1.08) !important;
+                  background: rgba(176, 38, 255, 0.3) !important;
+                  border-color: #d480ff !important;
+                  color: #ffffff !important;
+                  box-shadow: 0 0 20px rgba(176, 38, 255, 0.7) !important;
+                  transform: scale(1.06) !important;
                   outline: none !important;
               }
               .btn-sair-topo-fixo svg {
-                  width: 20px !important;
-                  height: 20px !important;
+                  width: 22px !important;
+                  height: 22px !important;
                   fill: none !important;
                   stroke: currentColor !important;
-                  stroke-width: 2.2 !important;
+                  stroke-width: 2 !important;
                   stroke-linecap: round !important;
                   stroke-linejoin: round !important;
               }
 
-              /* RECUO DE SEGURANÇA PARA O LETREIRO NÃO COLIDIR COM O BOTÃO SAIR */
-              marquee, .letreiro, #letreiro, [class*="letreiro"], .ticker, [class*="ticker"] {
-                  padding-left: 56px !important;
+              /* MARGEM DE SEGURANÇA PARA O CONTADOR (0) NÃO COLIDIR */
+              .badge-contador, [class*="contador"], [class*="badge"] {
+                  margin-right: 52px !important;
               }
 
-              /* BOTÕES PARAR E LIMPAR DIVIDINDO 50% DA LARGURA CADA */
-              .btn-parar, .btn-limpar {
-                  flex: 1 1 0% !important;
-                  width: 50% !important;
-                  min-width: 0 !important;
-                  height: 68px !important;
-                  border-radius: 22px !important;
-                  font-family: var(--font-title, sans-serif) !important;
-                  font-weight: 900 !important;
-                  font-size: 16px !important;
-                  letter-spacing: 2px !important;
-                  text-transform: uppercase !important;
-                  cursor: pointer !important;
-                  display: flex !important;
-                  align-items: center !important;
-                  justify-content: center !important;
-                  text-align: center !important;
-                  border: none !important;
-                  box-sizing: border-box !important;
-                  padding: 0 8px !important;
-                  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease !important;
-              }
-              .btn-parar span, .btn-limpar span {
-                  font-size: 16px !important;
-                  letter-spacing: 2px !important;
-                  white-space: nowrap !important;
-                  pointer-events: none !important;
-              }
-
-              /* PARAR: LARANJA / ÂMBAR 3D GLOSSY COM TEXTO BRANCO */
+              /* 1. PARAR: LARANJA / ÂMBAR 3D GLOSSY COM TEXTO BRANCO */
               .btn-parar {
                   background: linear-gradient(180deg, #ff9e1b 0%, #f97316 55%, #c2410c 100%) !important;
                   color: #ffffff !important;
@@ -380,7 +352,7 @@ jobs:
                   box-shadow: 0 8px 25px rgba(249, 115, 22, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
               }
 
-              /* LIMPAR: VERMELHO RUBI 3D GLOSSY COM TEXTO BRANCO */
+              /* 2. LIMPAR: VERMELHO RUBI 3D GLOSSY COM TEXTO BRANCO */
               .btn-limpar {
                   background: linear-gradient(180deg, #ff2e51 0%, #ef4444 55%, #b91c1c 100%) !important;
                   color: #ffffff !important;
@@ -534,21 +506,72 @@ jobs:
               """
               h = h.replace("</body>", html_modais + "\n</body>")
 
-              # SCRIPT DEFINITIVO DE AJUSTE DIRETO NO DOM (BOTÃO SAIR FIXO NO TOPO ESQUERDO)
+              # SCRIPT DEFINITIVO DE LAYOUT, INTRO E CONTROLES
               js_layout_garantido = """
+              let _introEmReproducao = false;
+
+              // FUNÇÃO PARA LIBERAR O PALCO APENAS QUANDO A INTRO TERMINAR DE TOCAR 100%
+              function liberarPalcoAposIntro() {
+                  const screen = document.getElementById('intro-screen') || document.querySelector('.intro-screen');
+                  if (screen) screen.classList.remove('active');
+                  const ui = document.getElementById('ui-wrapper');
+                  if (ui) {
+                      ui.classList.remove('oculto-inicio');
+                      ui.classList.add('liberado');
+                      ui.style.display = '';
+                      ui.style.opacity = '';
+                      ui.style.visibility = '';
+                      if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores();
+                  }
+              }
+
+              // ESCUTA A REPRODUÇÃO REAL DA INTRO (RODA O TEMPO REAL COMPLETO)
+              window.onIntroFoundDuringScan = function(uri) {
+                  const vid = document.getElementById('intro-video');
+                  const screen = document.getElementById('intro-screen') || document.querySelector('.intro-screen');
+                  if (vid && uri) {
+                      _introEmReproducao = true;
+                      vid.src = uri;
+                      vid.loop = false; // Garante que toca a duração real completa sem loop infinito prematuro
+                      if (screen) screen.classList.add('active');
+
+                      vid.onended = function() {
+                          _introEmReproducao = false;
+                          liberarPalcoAposIntro();
+                      };
+
+                      vid.play().catch(() => {});
+                  }
+              };
+
               function aplicarLayoutFestaDasCores() {
                   try {
                       // 1. Remove qualquer botão sair antigo
                       const botoes = Array.from(document.querySelectorAll('button'));
                       botoes.forEach(b => {
-                          if (b.textContent.trim() === 'SAIR' || b.className.includes('btn-sair-topo')) {
+                          if (b.textContent.trim() === 'SAIR' || (b.className && b.className.includes('btn-sair-topo') && b.id !== 'btn-sair-app-fixo')) {
                               b.remove();
                           }
                       });
 
-                      // 2. Ajusta os botões PARAR e LIMPAR para 50% cada
+                      // 2. Localiza os botões PARAR e LIMPAR e o botão CATÁLOGO (como base de tamanho)
                       const btnParar = document.querySelector('.btn-parar') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('PARAR'));
                       const btnLimpar = document.querySelector('.btn-limpar') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('LIMPAR'));
+                      const btnCat = document.querySelector('.btn-catalogo') || document.querySelector('[class*="catalogo"]');
+
+                      // Lê as propriedades de formato do botão CATÁLOGO
+                      let alturaBase = '68px';
+                      let raioBase = '20px';
+                      let fonteBase = '16px';
+                      let familiaBase = 'var(--font-title, sans-serif)';
+
+                      if (btnCat) {
+                          const comp = window.getComputedStyle(btnCat);
+                          if (comp.height && comp.height !== '0px') alturaBase = comp.height;
+                          if (comp.borderRadius && comp.borderRadius !== '0px') raioBase = comp.borderRadius;
+                          if (comp.fontFamily) familiaBase = comp.fontFamily;
+                          if (comp.fontSize) fonteBase = comp.fontSize;
+                      }
 
                       if (btnParar && btnLimpar) {
                           const pai = btnParar.parentElement;
@@ -566,10 +589,11 @@ jobs:
                               b.style.flex = '1 1 0%';
                               b.style.width = '50%';
                               b.style.minWidth = '0';
-                              b.style.height = '68px';
-                              b.style.borderRadius = '22px';
+                              b.style.height = alturaBase;
+                              b.style.borderRadius = raioBase;
+                              b.style.fontFamily = familiaBase;
                               b.style.fontWeight = '900';
-                              b.style.fontSize = '16px';
+                              b.style.fontSize = fonteBase;
                               b.style.letterSpacing = '2px';
                               b.style.textTransform = 'uppercase';
                               b.style.border = 'none';
@@ -588,7 +612,7 @@ jobs:
                           btnLimpar.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35)';
                       }
 
-                      // 3. INJETA O BOTÃO SAIR FIXO NO CANTO SUPERIOR ESQUERDO
+                      // 3. INJETA O BOTÃO SAIR TRANSLÚCIDO FIXO NO CANTO SUPERIOR DIREITO
                       if (!document.getElementById('btn-sair-app-fixo')) {
                           const btnSair = document.createElement('button');
                           btnSair.id = 'btn-sair-app-fixo';
@@ -771,120 +795,4 @@ jobs:
               h = h.replace("function processarCodigo(val) {", js_layout_garantido + """
               function processarCodigo(val) {
                   const codStr = String(val).trim();
-                  if (codStr === '0000') { checarDuplicadosCodigo0000(window._arquivosCarregadosCache || []); return; }
-              """)
-
-              h = h.replace("async function handleFolderSelect(e) {", "async function handleFolderSelect(e) {\n    window._arquivosCarregadosCache = Array.from(e.target.files); identificarLogoMestra(window._arquivosCarregadosCache);\n")
-
-              alvo_filtro_cat = "const itens = catFiltro === 'TODAS' ? todos : todos.filter(i => inicialDaMusica(i.nome) === catFiltro);"
-              subst_filtro_cat = """
-                  let itens = catFiltro === 'TODAS' ? todos : todos.filter(i => inicialDaMusica(i.nome) === catFiltro);
-                  if (_termoBuscaCatalogo) {
-                      itens = todos.filter(i => (i.nome || '').toLowerCase().includes(_termoBuscaCatalogo) || (i.code || '').includes(_termoBuscaCatalogo));
-                  }
-              """
-              h = h.replace(alvo_filtro_cat, subst_filtro_cat)
-
-              h = h.replace("if (usaSeletorNativo) setTimeout(() => selectFolder(), 700);", "if (usaSeletorNativo) selectFolder();")
-
-              alvo_start_cross = """const nomes = [singerName, initialChar];
-            for (const nome of nomes) {
-                const arquivo1 = bgCantores[nome];
-                const arquivo2 = bgCantores[nome + "2"];
-                if (arquivo1) urls.push(arquivo1.isUrl ? arquivo1.url : (arquivo1.contentUri || URL.createObjectURL(arquivo1)));
-                if (arquivo2) urls.push(arquivo2.isUrl ? arquivo2.url : (arquivo2.contentUri || URL.createObjectURL(arquivo2)));
-                if (urls.length > 0) break;
-            }
-            iniciarCrossfade(urls);"""
-
-              subst_start_cross = """const nomes = [singerName, initialChar];
-            if (singerName && singerName !== 'CONVIDADO') {
-                for (const nome of nomes) {
-                    if (!nome) continue;
-                    const arquivo1 = bgCantores[nome];
-                    const arquivo2 = bgCantores[nome + "2"];
-                    if (arquivo1) urls.push(arquivo1.isUrl ? arquivo1.url : (arquivo1.contentUri || URL.createObjectURL(arquivo1)));
-                    if (arquivo2) urls.push(arquivo2.isUrl ? arquivo2.url : (arquivo2.contentUri || URL.createObjectURL(arquivo2)));
-                    if (urls.length > 0) break;
-                }
-            }
-            if (urls.length > 0) {
-                iniciarCrossfade(urls);
-            } else if (_bgOficialUrl) {
-                iniciarCrossfade([_bgOficialUrl]);
-            } else {
-                pararCrossfade();
-                if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }
-                if (bgSinger) { bgSinger.style.opacity = '0'; bgSinger.style.backgroundImage = ''; }
-                if (bgSinger2) { bgSinger2.style.opacity = '0'; bgSinger2.style.backgroundImage = ''; }
-            }"""
-              h = h.replace(alvo_start_cross, subst_start_cross)
-
-              alvo_fim_contagem = "pararCrossfade();\n            timerScreen.classList.remove('active');\n            document.body.classList.remove('countdown-ativo');"
-              subst_fim_contagem = """pararCrossfade();
-                          timerScreen.classList.remove('active');
-                          if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }
-                          if (_logoUrlObrigatorio) {
-                              await new Promise(resLogo => {
-                                  exibirLogoPosContagem(1800, resLogo);
-                              });
-                          }
-                          document.body.classList.remove('countdown-ativo');
-                          if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }"""
-              h = h.replace(alvo_fim_contagem, subst_fim_contagem)
-
-              alvo_intro_fim = "introScreen.classList.remove('active');"
-              novo_intro_fim = """
-              introScreen.classList.remove('active');
-              var ui = document.getElementById('ui-wrapper');
-              if (ui) {
-                  ui.classList.remove('oculto-inicio');
-                  ui.classList.add('liberado');
-                  ui.style.display = '';
-                  ui.style.opacity = '';
-                  ui.style.visibility = '';
-                  if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores();
-              }
-              """
-              h = h.replace(alvo_intro_fim, novo_intro_fim)
-
-              h = h.replace("folderLoadFinished = true;",
-                            "folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores(); }")
-
-              with open(p_html, "w", encoding="utf-8") as f:
-                  f.write(h)
-              print(f"[OK] index.html com Sair fixado no canto superior esquerdo e icone aplicado: {p_html}")
-
-          EOF
-          python3 patch_karaoke.py
-
-      - name: Configurar Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Configurar Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.11.1'
-
-      - name: Garantir Gradle Wrapper
-        run: |
-          if [ ! -f "gradlew" ]; then
-            gradle wrapper --gradle-version 8.11.1
-          fi
-          chmod +x gradlew
-
-      - name: Compilar APK (Debug)
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Disponibilizar APK e Ícone para Download
-        uses: actions/upload-artifact@v4
-        with:
-          name: Karaoke-Festa-das-Cores-v2.0
-          path: |
-            app/build/outputs/apk/debug/*.apk
-            master_icon.png
-          if-no-files-found: warn
-          retention-days: 7
+                  if (codStr === '0000') { checarDuplicad
