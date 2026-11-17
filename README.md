@@ -25,3 +25,43 @@ Para publicar o código: crie um repositório GitHub, envie o conteúdo desta pa
 ## Assinatura Android
 
 O APK gerado pelo workflow usa assinatura de depuração. Para atualizar uma instalação existente, será necessário assinar a versão de produção com a mesma chave privada usada no app instalado. A chave privada não faz parte deste projeto; mantenha-a fora do GitHub.
+
+
+## Ajustes v2.1 em preparação
+
+As correções da v2.1 são aplicadas pelo script `tools/patch_karaoke_v21.py` após a extração da fonte ZIP e após o patch de compatibilidade já existente. O catálogo original `lista.txt` e o vínculo entre código e MP4 são preservados.
+
+### Organização recomendada da mídia
+
+Selecione a pasta principal `KARAOKE` no Android TV:
+
+```text
+KARAOKE/
+├── lista.txt
+├── intro.mp4
+├── intro2.mp4
+├── intro3.mp4
+├── intro4.mp4
+├── intro5.mp4
+├── bgpadrao.jpg
+├── bgpadrao2.jpg
+├── bgpadrao3.jpg
+├── bgpadrao4.jpg
+├── bgpadrao5.jpg
+├── logo.png                 (opcional)
+├── bgoficial.png            (opcional)
+├── A/                        (MP4 das músicas)
+├── B/                        (MP4 das músicas)
+├── BGS/                      (fundos/fotos de cantores)
+└── MODO ROCKDOIDO/
+    ├── video.mp4             (opcional; se ausente, mantém áudio/slides)
+    ├── slides/
+    └── ROCKDOIDO/
+        └── easteregg.mp3     (opcional)
+```
+
+Os nomes das pastas não são obrigatórios para o catálogo: os MP4s de músicas continuam associados pelos códigos já presentes no nome do arquivo ou no `lista.txt`. Os cinco vídeos de abertura e os vídeos da pasta RockDoido não entram como músicas no catálogo.
+
+### Segurança das atualizações
+
+A versão principal não é substituída automaticamente. As alterações são propostas em uma ramificação e validadas pelo GitHub Actions antes de qualquer integração.
