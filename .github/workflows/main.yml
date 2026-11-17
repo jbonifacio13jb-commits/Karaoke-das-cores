@@ -3,6 +3,8 @@ name: Gerar APK do Karaoke
 on:
   push:
     branches: [ "principal", "main", "master" ]
+  pull_request:
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
