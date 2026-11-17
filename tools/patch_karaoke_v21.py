@@ -270,7 +270,13 @@ def patch_java(path: Path):
 
     text = text.replace(
         "    private void loadDocumentTree(Uri treeUri, int flags) {\n",
-        "    private void loadDocumentTree(Uri treeUri, int flags) {\n        selectedTreeUri = treeUri;\n"
+        "    private void loadDocumentTree(Uri treeUri, int flags) {\n        loadDocumentTree(treeUri, flags, false);\n    }\n\n    private void loadDocumentTree(Uri treeUri, int flags, boolean silentRefresh) {\n        selectedTreeUri = treeUri;\n"
+    )
+    text = text.replace("                    notifyRootIntro(treeUri, rootId);",
+                        "                    if (!silentRefresh) notifyRootIntro(treeUri, rootId);")
+    text = text.replace(
+        '"window.onNativeFolderLoaded && window.onNativeFolderLoaded(" + json + ")"',
+        '"window.onNativeFolderLoaded && window.onNativeFolderLoaded(" + json + "," + silentRefresh + ")"'
     )
 
     if "writeListaTxt(String uriStr, String conteudo)" not in text:
@@ -288,7 +294,7 @@ def patch_java(path: Path):
             if (tree == null) return;
             runOnUiThread(new Runnable() {
                 @Override public void run() {
-                    loadDocumentTree(tree, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    loadDocumentTree(tree, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION, true);
                 }
             });
         }
