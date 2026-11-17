@@ -61,6 +61,20 @@ def patch_html(path: Path):
     text = text.replace("intro.mp4/intro2.mp4 não encontrados", "intro.mp4 até intro5.mp4 não encontrados")
     text = text.replace("Não encontrei intro.mp4 nem intro2.mp4 na pasta escolhida. Selecione", "Não encontrei intro.mp4 até intro5.mp4 na pasta escolhida. Selecione")
 
+    # Adia a leitura do MP3 até o momento da reprodução, evitando Base64 na varredura.
+    old_eager_audio = """                        let audioSrc = f.contentUri || URL.createObjectURL(f);
+                        if (f.contentUri && window.AndroidHost && AndroidHost.readDataUrl) {
+                            try {
+                                const inlineAudio = AndroidHost.readDataUrl(f.contentUri);
+                                if (inlineAudio && inlineAudio.startsWith('data:audio/')) audioSrc = inlineAudio;
+                            } catch (err) { logAviso('O MP3 será aberto pelo endereço da pasta selecionada.'); }
+                        }
+"""
+    new_lazy_audio = """                        // A leitura nativa do MP3 só ocorre como fallback ao iniciar o áudio.
+                        let audioSrc = f.contentUri || URL.createObjectURL(f);
+"""
+    text = replace_all(text, old_eager_audio, new_lazy_audio, "carregamento sob demanda do MP3 RockDoido")
+
     # Captura um MP4 dentro da pasta RockDoido para reprodução em vídeo.
     text = replace_all(text,
         "let videoFiles = {}, catalog = [], queue = [], rockDoidoSlides = [], bgCantores = {}, exitTimer, slideInterval;",
@@ -278,6 +292,22 @@ def patch_java(path: Path):
         '"window.onNativeFolderLoaded && window.onNativeFolderLoaded(" + json + ")"',
         '"window.onNativeFolderLoaded && window.onNativeFolderLoaded(" + json + "," + silentRefresh + ")"'
     )
+
+    # A leitura SAF envia ao JavaScript apenas tipos de arquivo usados pelo app.
+    collect_anchor = """                } else {
+                    JSONObject item = new JSONObject();
+                    item.put("name", name);"""
+    collect_replacement = """                } else {
+                    String lowerName = name.toLowerCase(java.util.Locale.ROOT);
+                    boolean relevant = lowerName.equals("lista.txt") || lowerName.equals("logo.png") ||
+                        lowerName.equals("bgoficial.png") ||
+                        lowerName.matches(".*\\\\.(mp4|mp3|jpg|jpeg|png|gif|webp|bmp|svg|avif)$");
+                    if (!relevant) continue;
+                    JSONObject item = new JSONObject();
+                    item.put("name", name);"""
+    if collect_anchor in text:
+        text = text.replace(collect_anchor, collect_replacement, 1)
+        changed = True
 
     if "writeListaTxt(String uriStr, String conteudo)" not in text:
         bridge = r"""
