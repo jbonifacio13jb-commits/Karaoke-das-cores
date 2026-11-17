@@ -268,10 +268,6 @@ def patch_java(path: Path):
         text = text.replace("import java.io.InputStream;", "import java.io.InputStream;\nimport java.io.OutputStream;")
         changed = True
 
-    if "private Uri selectedTreeUri;" not in text:
-        text = text.replace("private WebView webView;", "private WebView webView;\n    private Uri selectedTreeUri;")
-        changed = True
-
     text = text.replace(
         "Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION",
         "Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION"
@@ -282,17 +278,9 @@ def patch_java(path: Path):
         "try { getContentResolver().takePersistableUriPermission(treeUri, grants); }"
     )
 
-    text = text.replace(
-        "    private void loadDocumentTree(Uri treeUri, int flags) {\n",
-        "    private void loadDocumentTree(Uri treeUri, int flags) {\n        loadDocumentTree(treeUri, flags, false);\n    }\n\n    private void loadDocumentTree(Uri treeUri, int flags, boolean silentRefresh) {\n        selectedTreeUri = treeUri;\n"
-    )
     # A sequência completa começa após a listagem SAF, evitando tocar intro.mp4 duas vezes.
     text = text.replace("                    notifyRootIntro(treeUri, rootId);",
                         "                    // Intros são iniciadas em ordem pelo JavaScript após a listagem completa.")
-    text = text.replace(
-        '"window.onNativeFolderLoaded && window.onNativeFolderLoaded(" + json + ")"',
-        '"window.onNativeFolderLoaded && window.onNativeFolderLoaded(" + json + "," + silentRefresh + ")"'
-    )
 
     # A leitura SAF envia ao JavaScript apenas tipos de arquivo usados pelo app.
     collect_anchor = """                } else {
@@ -319,15 +307,6 @@ def patch_java(path: Path):
                 out.flush();
                 return true;
             } catch (Exception e) { return false; }
-        }
-        @JavascriptInterface public void refreshFolder() {
-            final Uri tree = selectedTreeUri;
-            if (tree == null) return;
-            runOnUiThread(new Runnable() {
-                @Override public void run() {
-                    loadDocumentTree(tree, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION, true);
-                }
-            });
         }
 """
         text = text.replace("        @JavascriptInterface public String cacheIntroVideo(String value) {",
