@@ -86,8 +86,8 @@ def patch_html(path: Path):
         "videoFiles = {}; rockDoidoSlides = []; bgCantores = {}; catalog = []; _videoRockDoido = null;",
         "reinicialização do vídeo RockDoido ao trocar pasta")
 
-    old_rock = r"const emRockdoido = path.includes('ROCKDOIDO') || path.includes('ROCK DOIDO') || \n                                    path.includes('MODO ROCKDOIDO');"
-    new_rock = r"const emRockdoido = path.includes('ROCKDOIDO') || path.includes('ROCK DOIDO') || \n                                    path.includes('MODO ROCKDOIDO');\n                if (emRockdoido && name.endsWith('.MP4') && !_videoRockDoido) _videoRockDoido = f;"
+    old_rock = "const emRockdoido = path.includes('ROCKDOIDO') || path.includes('ROCK DOIDO') || \\n                                    path.includes('MODO ROCKDOIDO');"
+    new_rock = "const emRockdoido = path.includes('ROCKDOIDO') || path.includes('ROCK DOIDO') || \\n                                    path.includes('MODO ROCKDOIDO');\\n                if (emRockdoido && name.endsWith('.MP4') && !_videoRockDoido) _videoRockDoido = f;"
     text = replace_all(text, old_rock, new_rock, "identificação do MP4 RockDoido")
 
     text = replace_all(text, "                tocarAudioRockDoido();\n\n                startRockDoidoSync();",
