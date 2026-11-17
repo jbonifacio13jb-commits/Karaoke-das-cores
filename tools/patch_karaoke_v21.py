@@ -286,8 +286,9 @@ def patch_java(path: Path):
         "    private void loadDocumentTree(Uri treeUri, int flags) {\n",
         "    private void loadDocumentTree(Uri treeUri, int flags) {\n        loadDocumentTree(treeUri, flags, false);\n    }\n\n    private void loadDocumentTree(Uri treeUri, int flags, boolean silentRefresh) {\n        selectedTreeUri = treeUri;\n"
     )
+    # A sequência completa começa após a listagem SAF, evitando tocar intro.mp4 duas vezes.
     text = text.replace("                    notifyRootIntro(treeUri, rootId);",
-                        "                    if (!silentRefresh) notifyRootIntro(treeUri, rootId);")
+                        "                    // Intros são iniciadas em ordem pelo JavaScript após a listagem completa.")
     text = text.replace(
         '"window.onNativeFolderLoaded && window.onNativeFolderLoaded(" + json + ")"',
         '"window.onNativeFolderLoaded && window.onNativeFolderLoaded(" + json + "," + silentRefresh + ")"'
