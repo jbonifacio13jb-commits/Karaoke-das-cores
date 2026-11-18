@@ -78,6 +78,30 @@ html,body{width:100%;height:100%;background:var(--home-night)!important}
         text = text.replace("</head>", home_css + "\n</head>", 1)
         text = text.replace("        function logOK(msg)", "        function sairAplicativoDaTelaInicial() { try { if (window.AndroidHost && AndroidHost.exitApp) { AndroidHost.exitApp(); return; } } catch (_) {} try { window.close(); } catch (_) {} }\n        function logOK(msg)", 1)
         visual_changed = True
+    if "KARAOKE_STARTUP_GATE_V24" not in text:
+        # Impede que o palco apareça antes da permissão e da leitura da pasta.
+        boot = "        let folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores(); }"
+        text = text.replace(boot, "        let folderLoadFinished = true;", 1)
+        # A intro não pode tocar automaticamente enquanto o Android ainda lê a pasta.
+        text = text.replace("introVideo.autoplay = true;", "introVideo.autoplay = false;")
+        text = text.replace("            introVideo.muted = false;\n            try {\n                await forcarPaisagem();", "            introVideo.muted = true;\n            introVideo.volume = 1;\n            try {\n                await forcarPaisagem();", 1)
+        frame_old = "                    if (introVideo.requestVideoFrameCallback) {\n                        await new Promise(resolve => introVideo.requestVideoFrameCallback(resolve));\n                    }\n                    introCurtain.classList.add('hidden');"
+        frame_new = "                    if (introVideo.requestVideoFrameCallback) {\n                        await new Promise(resolve => introVideo.requestVideoFrameCallback(resolve));\n                    } else {\n                        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));\n                    }\n                    introCurtain.classList.add('hidden');\n                    introVideo.muted = false;"
+        text = text.replace(frame_old, frame_new, 1)
+        # Aguarda a montagem do catálogo antes de iniciar a intro.
+        text = text.replace("                const introPlayback = intro ? iniciarIntroDuranteCarregamento() : null;\n                await handleFolderSelect({ target: { files } });", "                await handleFolderSelect({ target: { files } });\n                const introPlayback = intro ? iniciarIntroDuranteCarregamento() : null;", 1)
+        # handleFolderSelect termina a leitura, mas não revela o palco por conta própria.
+        unlock_old = "            folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores(); }"
+        text = text.replace(unlock_old, "            folderLoadFinished = true;", 1)
+        fail_old = "        window.onNativeFolderLoadFailed = function() {\n            folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores(); }\n        };"
+        fail_new = "        window.onNativeFolderLoadFailed = function() {\n            folderLoadFinished = true;\n            exibirErroIntro('Não foi possível carregar a pasta autorizada. Escolha a pasta novamente.', true);\n        };"
+        text = text.replace(fail_old, fail_new, 1)
+        helper = "        function liberarInterfaceAposCarga() { const ui = document.getElementById('ui-wrapper'); if (!ui) return; ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores(); }\n"
+        text = text.replace("        function exibirErroIntro(mensagem, selecionarPasta) {", helper + "        function exibirErroIntro(mensagem, selecionarPasta) {", 1)
+        text = text.replace("                    logAviso('Pasta autorizada, mas não encontrei slides nem intro.mp4/intro2.mp4. Use Selecionar pasta para tentar outra pasta.');", "                    liberarInterfaceAposCarga();\n                    logAviso('Pasta autorizada, mas não encontrei slides nem intro.mp4/intro2.mp4. Use Selecionar pasta para tentar outra pasta.');", 1)
+        text = text.replace("<!-- KARAOKE_STARTUP_GATE_V22 -->", "<!-- KARAOKE_STARTUP_GATE_V22 -->", 1)
+        text = text.replace("</body>", "\n<!-- KARAOKE_STARTUP_GATE_V24 -->\n</body>", 1)
+        visual_changed = True
     if MARKER in text and "KARAOKE_STARTUP_GATE_V22" in text:
         if visual_changed:
             path.write_text(text, encoding="utf-8")
