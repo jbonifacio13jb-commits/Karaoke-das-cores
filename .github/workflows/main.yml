@@ -2,7 +2,7 @@ name: Gerar APK do Karaoke
 
 on:
   push:
-    branches: [ "principal", "main", "master" ]
+    branches: [ "principal", "main", "master", "melhorias/karaoke-das-cores-v2-1" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
