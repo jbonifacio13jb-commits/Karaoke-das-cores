@@ -19,6 +19,47 @@ def patch_html(path: Path):
     text = path.read_text(encoding="utf-8")
     if MARKER in text:
         return
+    # Corrige a inicialização: a interface permanece oculta até a pasta estar
+    # autorizada e a intro ter exibido o primeiro quadro; o áudio só entra depois.
+    STARTUP_MARKER = "KARAOKE_STARTUP_GATE_V22"
+    if STARTUP_MARKER not in text:
+        old_boot = "        let folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores(); }"
+        text = text.replace(old_boot, "        let folderLoadFinished = true;", 1)
+
+        # Não deixar o elemento de vídeo iniciar sozinho durante a varredura SAF.
+        text = text.replace("introVideo.autoplay = true;", "introVideo.autoplay = false;")
+
+        # Primeiro termina a leitura da pasta/catálogo; só então começa a sequência.
+        old_order = "                const introPlayback = intro ? iniciarIntroDuranteCarregamento() : null;\n                await handleFolderSelect({ target: { files } });"
+        new_order = "                await handleFolderSelect({ target: { files } });\n                const introPlayback = intro ? iniciarIntroDuranteCarregamento() : null;"
+        text = text.replace(old_order, new_order, 1)
+
+        # Sem intro, libera a tela somente depois da leitura completa da pasta.
+        old_no_intro = "                    logAviso('Pasta autorizada, mas não encontrei slides nem intro.mp4/intro2.mp4. Use Selecionar pasta para tentar outra pasta.');"
+        new_no_intro = "                    if (typeof liberarInterfaceAposCarga === 'function') liberarInterfaceAposCarga();\n" + old_no_intro
+        text = text.replace(old_no_intro, new_no_intro, 1)
+
+        # Não liberar o palco por estar simplesmente pausado/sem src.
+        old_final_unlock = "            folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores(); }"
+        text = text.replace(old_final_unlock, "            folderLoadFinished = true;", 1)
+
+        old_fail = "        window.onNativeFolderLoadFailed = function() {\n            folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores(); }\n        };"
+        new_fail = "        window.onNativeFolderLoadFailed = function() {\n            folderLoadFinished = true;\n            if (typeof exibirErroIntro === 'function') exibirErroIntro('Não foi possível carregar a pasta autorizada. Escolha a pasta novamente.', true);\n        };"
+        text = text.replace(old_fail, new_fail, 1)
+
+        # A intro fica muda durante o carregamento e só libera som após o primeiro quadro.
+        old_mute = "            introVideo.muted = false;\n            try {\n                await forcarPaisagem();"
+        new_mute = "            introVideo.muted = true;\n            introVideo.volume = 1;\n            try {\n                await forcarPaisagem();"
+        text = text.replace(old_mute, new_mute, 1)
+
+        old_frame = "                    if (introVideo.requestVideoFrameCallback) {\n                        await new Promise(resolve => introVideo.requestVideoFrameCallback(resolve));\n                    }\n                    introCurtain.classList.add('hidden');"
+        new_frame = "                    if (introVideo.requestVideoFrameCallback) {\n                        await new Promise(resolve => introVideo.requestVideoFrameCallback(resolve));\n                    } else {\n                        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));\n                    }\n                    introCurtain.classList.add('hidden');\n                    introVideo.muted = false;"
+        text = text.replace(old_frame, new_frame, 1)
+
+        text = text.replace("function posicionarBotaoSair() {", "function liberarInterfaceAposCarga() {\n        const ui = document.getElementById('ui-wrapper');\n        if (!ui) return;\n        ui.classList.remove('oculto-inicio');\n        ui.classList.add('liberado');\n        ui.style.display = '';\n        ui.style.opacity = '';\n        ui.style.visibility = '';\n        if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores();\n    }\n    window.liberarInterfaceAposCarga = liberarInterfaceAposCarga;\n\n    function posicionarBotaoSair() {", 1)
+
+        text = text.replace("</body>", "\n<!-- " + STARTUP_MARKER + " -->\n</body>", 1)
+
 
     # Cinco intros em ordem, mantendo intr2.mp4 como nome legado alternativo.
     helper = r"""
