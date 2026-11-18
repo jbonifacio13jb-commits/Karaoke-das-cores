@@ -102,6 +102,53 @@ html,body{width:100%;height:100%;background:var(--home-night)!important}
         text = text.replace("<!-- KARAOKE_STARTUP_GATE_V22 -->", "<!-- KARAOKE_STARTUP_GATE_V22 -->", 1)
         text = text.replace("</body>", "\n<!-- KARAOKE_STARTUP_GATE_V24 -->\n</body>", 1)
         visual_changed = True
+    # V25: inicialização sincronizada com a autorização e a leitura completa da pasta.
+    # O callback nativo apenas registra a intro; nunca inicia áudio durante a varredura SAF.
+    if "KARAOKE_STARTUP_GATE_V25" not in text:
+        text, n = re.subn(
+            r"window\.onIntroFoundDuringScan\s*=\s*function\s*\(uri\)\s*\{[\s\S]*?\n\s*\};",
+            "window.onIntroFoundDuringScan = function(uri) { window._introUriDuringScan = uri || null; };",
+            text, count=1
+        )
+        print("[OK] callback da intro não dispara durante a varredura" if n else "[AVISO] callback de varredura não localizado")
+
+        # Remove a liberação temporizada criada pelo patch legado: ela mostrava o palco
+        # enquanto a intro ainda estava em reprodução.
+        text, n = re.subn(
+            r"folderLoadFinished\s*=\s*true;\s*setTimeout\(function\(\)\s*\{[\s\S]*?liberarPalcoAposIntro\(\);[\s\S]*?\},\s*3000\);",
+            "folderLoadFinished = true;",
+            text, count=1
+        )
+        print("[OK] removida liberação prematura do palco" if n else "[AVISO] liberação temporizada já ausente")
+
+        # A leitura do catálogo e dos BGS termina antes da intro começar.
+        text = text.replace(
+            "                const introPlayback = intro ? iniciarIntroDuranteCarregamento() : null;\n                await handleFolderSelect({ target: { files } });",
+            "                await handleFolderSelect({ target: { files } });\n                const introPlayback = intro ? iniciarIntroDuranteCarregamento() : null;",
+            1
+        )
+
+        # Som da intro só é liberado depois de o primeiro quadro estar efetivamente visível.
+        intro_start = text.find("        async function reproduzirSequenciaIntro() {")
+        intro_end = text.find("        async function reproduzirCicloIntro()", intro_start)
+        if intro_start >= 0 and intro_end > intro_start:
+            intro = text[intro_start:intro_end]
+            intro = intro.replace("            introVideo.muted = false;\n            try {",
+                                  "            introVideo.muted = true;\n            introVideo.volume = 1;\n            try {", 1)
+            intro = intro.replace(
+                "                    if (introVideo.requestVideoFrameCallback) {\n                        await new Promise(resolve => introVideo.requestVideoFrameCallback(resolve));\n                    }\n                    introCurtain.classList.add('hidden');",
+                "                    if (introVideo.requestVideoFrameCallback) {\n                        await new Promise(resolve => introVideo.requestVideoFrameCallback(resolve));\n                    } else {\n                        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));\n                    }\n                    introCurtain.classList.add('hidden');\n                    introVideo.muted = false;",
+                1
+            )
+            text = text[:intro_start] + intro + text[intro_end:]
+
+        # Evita autoplay legado de vídeo em tela preta antes da sequência controlada.
+        text = re.sub(r"introVideo\s*\.\s*autoplay\s*=\s*true\s*;", "introVideo.autoplay = false;", text)
+
+        # Preserva integralmente o teclado numérico original: não aplicar estilos novos
+        # a #numeric-keypad, .numeric-keypad-grid ou seus botões.
+        text = text.replace("</body>", "\n<!-- KARAOKE_STARTUP_GATE_V25 -->\n</body>", 1)
+
     # Cinco intros em ordem, mantendo intr2.mp4 como nome legado alternativo.
     helper = r"""
         function ordemArquivoIntro(nome) {
