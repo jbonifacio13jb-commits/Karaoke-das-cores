@@ -18,6 +18,7 @@ def replace_all(text, old, new, label):
 def patch_html(path: Path):
     text = path.read_text(encoding="utf-8")
     if MARKER in text:
+        path.write_text(text, encoding="utf-8")
         return
     # Corrige a inicialização: a interface permanece oculta até a pasta estar
     # autorizada e a intro ter exibido o primeiro quadro; o áudio só entra depois.
