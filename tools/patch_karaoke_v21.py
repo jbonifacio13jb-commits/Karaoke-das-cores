@@ -17,8 +17,7 @@ def replace_all(text, old, new, label):
 
 def patch_html(path: Path):
     text = path.read_text(encoding="utf-8")
-    if MARKER in text:
-        path.write_text(text, encoding="utf-8")
+    if MARKER in text and "KARAOKE_STARTUP_GATE_V22" in text:
         return
     # Corrige a inicialização: a interface permanece oculta até a pasta estar
     # autorizada e a intro ter exibido o primeiro quadro; o áudio só entra depois.
@@ -61,6 +60,10 @@ def patch_html(path: Path):
 
         text = text.replace("</body>", "\n<!-- " + STARTUP_MARKER + " -->\n</body>", 1)
 
+    if MARKER in text:
+        path.write_text(text, encoding="utf-8")
+        print("[OK] HTML atualizado: inicialização sem tela preta", path)
+        return
 
     # Cinco intros em ordem, mantendo intr2.mp4 como nome legado alternativo.
     helper = r"""
