@@ -136,6 +136,13 @@ public class MainActivity extends Activity {
                 }
             });
         }
+        @JavascriptInterface public void exitApp() {
+            runOnUiThread(new Runnable() {
+                @Override public void run() {
+                    try { finishAffinity(); } catch (Exception e) { finish(); }
+                }
+            });
+        }
         @JavascriptInterface public String readText(String value) {
             try {
                 ByteArrayOutputStream out = readUri(Uri.parse(value), 2 * 1024 * 1024);
@@ -316,4 +323,4 @@ public class MainActivity extends Activity {
     @Override public void onWindowFocusChanged(boolean hasFocus) { super.onWindowFocusChanged(hasFocus); if (hasFocus) enterImmersive(); }
     @Override protected void onSaveInstanceState(Bundle out) { if (webView != null) webView.saveState(out); super.onSaveInstanceState(out); }
     @Override protected void onDestroy() { if (fileCallback != null) fileCallback.onReceiveValue(null); if (fullscreenView != null) hideFullscreenView(); if (webView != null) { webView.destroy(); webView = null; } super.onDestroy(); }
-}
+                }
