@@ -337,7 +337,8 @@ body.countdown-ativo.countdown-sem-foto .stage-background {
 })();
 </script>
 """
-    text = replace_all(text, "</body>", "\n" + MARKER + "\n" + css_js + "\n</body>", "estilos e fallback visual v2.1")
+    if MARKER not in text:
+        text = replace_all(text, "</body>", "\n" + MARKER + "\n" + css_js + "\n</body>", "estilos e fallback visual v2.1")
 
     path.write_text(text, encoding="utf-8")
     print("[OK] HTML atualizado:", path)
