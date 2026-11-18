@@ -1278,7 +1278,48 @@
     #btn-fechar-dup { background: #333; color: #fff; }
     #btn-remover-dup { background: #ff2244; color: #fff; box-shadow: 0 0 20px rgba(255,34,68,0.5); }
     
-</style>
+
+/* ===== Layout Festa das Cores: palco + fila + comandos inferiores ===== */
+@media (min-width: 900px) {
+  #ui-wrapper.liberado {
+    display:grid !important;
+    grid-template-columns:minmax(0, 2.05fr) minmax(320px, 1fr);
+    grid-template-rows:auto minmax(0,1fr) auto;
+    gap:12px;
+    padding:12px 16px 14px;
+    height:100vh;
+    min-height:0;
+    overflow:hidden;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(95,0,150,.28), transparent 55%),
+      linear-gradient(145deg,#080018 0%,#030817 60%,#08001b 100%);
+  }
+  #home-brand-header { grid-column:1 / -1; grid-row:1; min-height:112px; margin:0; }
+  #stage-area { grid-column:1; grid-row:2; width:100%; height:100% !important; min-height:0; border:2px solid #b72cff; border-radius:18px; overflow:hidden; }
+  .ui-panel { grid-column:2; grid-row:2; min-width:0; min-height:0; height:100%; padding:12px; border:2px solid #a92cff; border-radius:18px; background:linear-gradient(160deg,rgba(26,0,48,.94),rgba(3,4,25,.96)); box-shadow:0 0 22px rgba(198,0,255,.22); }
+  .panel-head { flex:0 0 auto; }
+  #track-list { min-height:0; }
+  .search-bar { grid-column:1 / -1; grid-row:3; display:flex; align-items:stretch; gap:12px; padding:0; border:0; background:transparent; min-height:78px; }
+  #btn-teclado,#btn-catalogo,#btn-play-bar,.search-bar > .btn-control { flex:1 1 0; min-width:0; height:76px; border-radius:18px; font-family:var(--font-title); font-size:clamp(13px,1.35vw,21px); font-weight:900; letter-spacing:1px; }
+  #btn-teclado { width:auto; background:linear-gradient(145deg,#a900ff,#410078); border:2px solid #ff65ff; box-shadow:0 0 18px rgba(255,0,255,.42),inset 0 2px rgba(255,255,255,.35); opacity:1; animation:none; }
+  #btn-teclado svg { width:42px; height:42px; }
+  #btn-teclado span { display:none; }
+  #btn-catalogo { display:flex; align-items:center; justify-content:center; gap:10px; background:linear-gradient(145deg,#a900ff,#410078); color:#fff; border:2px solid #ff65ff; box-shadow:0 0 18px rgba(255,0,255,.35); }
+  #btn-catalogo svg { width:38px; height:38px; fill:#fff; }
+  #btn-play-bar { flex:1.25 1 0; background:linear-gradient(180deg,#fff36b,#ffbd00 55%,#df7600); color:#180b00; border:2px solid #fff1a0; box-shadow:0 0 22px rgba(255,190,0,.45),inset 0 2px rgba(255,255,255,.8); }
+  #btn-play-bar::after { content:'▶'; font-size:32px; margin-right:8px; }
+  #btn-play-bar:disabled { filter:grayscale(.8); opacity:.55; }
+  .search-bar > .btn-parar { background:linear-gradient(180deg,#ff4b55,#a90018); color:#fff; border:2px solid #ff9ba1; box-shadow:0 0 18px rgba(255,0,40,.32); }
+  .search-bar > .btn-limpar { background:linear-gradient(180deg,#ffe66a,#d88a00); color:#241400; border:2px solid #fff0a0; box-shadow:0 0 18px rgba(255,190,0,.3); }
+  .search-bar > .btn-control { display:flex; align-items:center; justify-content:center; flex-direction:row; }
+  .controls-grid { display:none !important; }
+  #tv-code-display { z-index:500; }
+}
+@media (max-width: 899px) {
+  #btn-teclado span { display:none; }
+}
+
+    </style>
     <style>
       html.android-tv :focus, html.android-tv button:focus, html.android-tv input:focus {
         outline: 3px solid #00ffff !important; outline-offset: 3px;
@@ -4838,5 +4879,28 @@ html,body{width:100%;height:100%;background:var(--home-night)!important}
         </div>
     </div>
     
+
+<script>
+(function instalarBarraComandosUnificada(){
+  function aplicar(){
+    const barra=document.querySelector('.search-bar');
+    const play=document.getElementById('btn-play-bar');
+    const parar=document.querySelector('.controls-grid .btn-parar');
+    const limpar=document.querySelector('.controls-grid .btn-limpar');
+    if(!barra || !play) return;
+    if(parar && parar.parentElement!==barra) barra.appendChild(parar);
+    if(limpar && limpar.parentElement!==barra) barra.appendChild(limpar);
+    if(parar) parar.setAttribute('aria-label','Parar música');
+    if(limpar) limpar.setAttribute('aria-label','Limpar fila de músicas');
+    const teclado=document.getElementById('btn-teclado');
+    if(teclado){teclado.setAttribute('aria-label','Abrir teclado numérico para digitar o código');teclado.setAttribute('title','Digitar código da música');}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',aplicar,{once:true});
+  else aplicar();
+  window.addEventListener('load',aplicar,{once:true});
+  setTimeout(aplicar,500);
+})();
+</script>
+
 </body>
 </html>
