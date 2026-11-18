@@ -1711,13 +1711,14 @@
     .btn-control { height: clamp(52px, 8vh, 100px); border-radius: 1.8vh; font: 900 clamp(14px, 2.2vh, 28px) var(--font-title); letter-spacing: .1em; }
     .btn-control svg { width: 5.4vh; height: 5.4vh; }
 
-    /* ---------- Janelas (cantor, teclado, OK) ---------- */
-    #modal-cantor-box, #numeric-keypad {
-        background: linear-gradient(160deg, #1a1440, #0a0820 80%); border: .3vh solid var(--vivid-yellow); border-radius: 2.4vh;
+    /* ---------- Janelas: preservar o teclado numérico original ---------- */
+    /* O teclado mantém dimensões, cores, espaçamento e disposição do CSS original. */
+    #modal-cantor-box {
+        background: linear-gradient(160deg, #1a1440, #0a0820 80%);
+        border: .3vh solid var(--vivid-yellow); border-radius: 2.4vh;
         box-shadow: 0 0 6vh rgba(139,92,246,.55);
+        max-width: min(92vw, 760px); padding: 3.4vh;
     }
-    #numeric-keypad { border-color: var(--magenta); width: min(92vw, 560px); }
-    #modal-cantor-box { max-width: min(92vw, 760px); padding: 3.4vh; }
     #modal-cantor-titulo { font: 900 2.8vh var(--font-title); letter-spacing: .08em; }
     #modal-cantor-musica-nome { font: 800 2.8vh/1.25 var(--font-title); }
     #modal-cantor-musica-label, #modal-cantor-input-wrap label { font-size: 1.8vh !important; letter-spacing: .15em; }
