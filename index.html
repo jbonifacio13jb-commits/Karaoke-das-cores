@@ -12,63 +12,259 @@
             --font-title: 'Orbitron', 'Arial Black', sans-serif;
             --font-body: 'Rajdhani', 'Arial', sans-serif;
             --neon: #00ffff; --magenta: #ff00ff; --vivid-yellow: #ffdd00; --emerald: #00ff88;
-            --dark-bg: #050508; --panel-bg: #0d0d14; --icone-size: 42px;
+            --dark-bg: #050508; --panel-bg: #0d0d14; --icone-size: 44px;
+            --stage-radius: 14px;
         }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; user-select: none; margin: 0; padding: 0; }
         body { background: var(--dark-bg); color: #e0e0e0; font-family: var(--font-body); height: 100vh; width: 100vw; overflow: hidden; }
         #ui-wrapper { display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 10; }
-        .stage { height: 320px; width: 100%; position: relative; background: #000; overflow: hidden; flex-shrink: 0; border-bottom: 3px solid var(--vivid-yellow); z-index: 200; }
+
+        /* ============ PALCO ============ */
+        .stage {
+            height: 320px; width: 100%; position: relative; background: #000; overflow: hidden;
+            flex-shrink: 0; border-bottom: 3px solid var(--vivid-yellow); z-index: 200;
+            box-shadow: 0 0 30px rgba(0,255,255,0.15), 0 0 60px rgba(255,0,255,0.08);
+        }
         body.fullscreen-mode .stage { height: 100vh !important; width: 100vw !important; position: fixed; top: 0; left: 0; z-index: 9999; border: none; }
         #intro-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999998; display: none; align-items: center; justify-content: center; }
         #intro-screen.active { display: flex !important; }
         #intro-video { width: 100%; height: 100%; object-fit: cover; background: #000; }
         #intro-curtain { position: absolute; inset: 0; z-index: 1; background: #000; pointer-events: none; }
         #intro-curtain.hidden { display: none; }
-        .stage-background { position: absolute; width: 100%; height: 100%; background-color: #000; background-size: cover; background-position: center center; z-index: 1; opacity: 0.7; }
+
+        .stage-background {
+            position: absolute; inset: 0;
+            background-color: #000; background-size: cover; background-position: center center;
+            z-index: 1; opacity: 0.7; transition: opacity 0.5s ease;
+        }
         body.countdown-ativo .stage-background { opacity: 0 !important; }
-        #bg-singer-layer, #bg-singer-layer-2 { position: absolute; width: 100%; height: 100%; background-size: contain; background-position: center center; background-repeat: no-repeat; z-index: 2; opacity: 0; transition: opacity 0.4s ease-in-out; }
-        #tornado-layer { position: absolute; width: 100%; height: 100%; z-index: 1000; display: none; align-items: center; justify-content: center; overflow: hidden; pointer-events: none; background: radial-gradient(ellipse at center, rgba(30, 5, 50, 0.5) 0%, rgba(0, 0, 0, 0.95) 100%); }
+
+        #bg-singer-layer, #bg-singer-layer-2 {
+            position: absolute; inset: 0;
+            background-size: contain; background-position: center center; background-repeat: no-repeat;
+            z-index: 2; opacity: 0; transition: opacity 0.4s ease-in-out;
+        }
+        /* profundidade na capa do cantor durante a contagem */
+        #bg-singer-layer::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, transparent 30%, transparent 60%, rgba(0,0,0,0.85) 100%);
+            pointer-events: none;
+        }
+
+        #tornado-layer {
+            position: absolute; inset: 0; z-index: 1000; display: none;
+            align-items: center; justify-content: center; overflow: hidden; pointer-events: none;
+            background: radial-gradient(ellipse at center, rgba(30,5,50,0.5) 0%, rgba(0,0,0,0.95) 100%);
+        }
         body.modo-jb #tornado-layer { display: flex; }
-        #bg-singer-layer-rock { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: contain; background-position: center center; background-repeat: no-repeat; z-index: 1005; opacity: 0; transition: opacity 0.3s ease-in-out; }
+        #bg-singer-layer-rock { position: absolute; inset: 0; background-size: contain; background-position: center; background-repeat: no-repeat; z-index: 1005; opacity: 0; transition: opacity 0.3s; }
         #bg-singer-layer-rock.ativo { opacity: 1 !important; }
-        #timer-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+
+        /* ============ PLAYER DE VÍDEO (corrigido) ============ */
+        #video-player {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            object-fit: contain; background: #000;
+            z-index: 100; display: none;
+        }
+
+        /* ============ TIMER / CONTAGEM ============ */
+        #timer-screen {
+            position: absolute; inset: 0; z-index: 10000;
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center; pointer-events: none;
+        }
         #timer-screen.active { display: flex !important; }
-        #countdown-num { position: absolute; z-index: 10001; top: max(7vh, 28px); right: max(6vw, 24px); color: rgba(255, 220, 0, .68); font: 900 clamp(72px, 14vw, 140px)/1 var(--font-title); text-shadow: 0 0 8px rgba(255, 220, 0, .32); }
-        #song-display { position: absolute; left: 50%; bottom: calc(var(--icone-size) + 16px); transform: translateX(-50%); width: 92%; max-height: 72px; overflow: hidden; z-index: 10001; color: var(--vivid-yellow); font-family: var(--font-title); font-size: 14px !important; text-align: center; white-space: pre-line; text-shadow: 0 1px 3px rgba(0,0,0,.95); }
-        #stage-bottom-bar { position: absolute; bottom: 8px; left: 1.5%; width: 97%; display: flex; align-items: center; gap: 10px; z-index: 99999; }
-        .btn-bar-transp { background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.35); color: #fff; width: var(--icone-size); height: var(--icone-size); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        #stage-progress-container { flex: 1; display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.55); padding: 8px 16px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.25); height: var(--icone-size); }
-        #stage-progress-bar-bg { flex: 1; height: 6px; background: rgba(255,255,255,0.25); border-radius: 4px; overflow: hidden; }
-        #stage-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon), var(--magenta)); border-radius: 4px; }
-        #stage-time-remaining { font-family: var(--font-title); font-size: 12px; color: var(--vivid-yellow); min-width: 55px; text-align: right; }
-        #marquee-container { position: absolute; top: 0; left: 0; width: 100%; background: rgba(0, 0, 0, 0.22); border-bottom: 1px solid rgba(255, 221, 0, .45); padding: 8px 12px; z-index: 99999; overflow: hidden; min-height: 38px; box-sizing: border-box; }
-        #marquee-text { display: inline-block; white-space: nowrap; color: var(--vivid-yellow); animation: marqueeAnim 20s linear infinite; font-family: var(--font-title); font-size: 14px; font-weight: 700; }
+        #countdown-num {
+            position: absolute; z-index: 10001;
+            top: max(7vh, 28px); right: max(6vw, 24px);
+            color: rgba(255,220,0,0.9);
+            font: 900 clamp(72px, 14vw, 140px)/1 var(--font-title);
+            text-shadow: 0 0 20px rgba(255,220,0,0.5), 0 0 40px rgba(255,220,0,0.25);
+            animation: countPulse 1s infinite;
+        }
+        @keyframes countPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+        #song-display {
+            position: absolute; left: 50%; bottom: calc(var(--icone-size) + 26px);
+            transform: translateX(-50%); width: 92%; max-height: 90px; overflow: hidden;
+            z-index: 10001; color: var(--vivid-yellow);
+            font-family: var(--font-title); font-size: 18px !important;
+            text-align: center; white-space: pre-line;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.95), 0 0 20px rgba(0,0,0,0.8);
+            line-height: 1.35;
+        }
+
+        /* ============ BARRA INFERIOR DO PALCO (padronizada) ============ */
+        #stage-bottom-bar {
+            position: absolute; bottom: 10px; left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 20px); max-width: 1100px;
+            display: flex; align-items: center; gap: 8px;
+            z-index: 99999;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 50px;
+            padding: 6px 8px;
+            box-shadow: 0 6px 28px rgba(0,0,0,0.6);
+        }
+        .btn-bar-transp {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.22);
+            color: #fff; width: var(--icone-size); height: var(--icone-size);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 18px; flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+        .btn-bar-transp:active { transform: scale(0.92); background: rgba(0,255,255,0.25); border-color: var(--neon); }
+        .btn-bar-transp:hover { background: rgba(0,255,255,0.15); border-color: var(--neon); }
+
+        #stage-progress-container {
+            flex: 1; display: flex; align-items: center; gap: 10px;
+            background: rgba(255,255,255,0.05); padding: 0 14px;
+            border-radius: 22px; border: 1px solid rgba(255,255,255,0.1);
+            height: var(--icone-size);
+        }
+        #stage-progress-bar-bg { flex: 1; height: 6px; background: rgba(255,255,255,0.18); border-radius: 4px; overflow: hidden; }
+        #stage-progress-fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, var(--neon), var(--magenta));
+            border-radius: 4px; box-shadow: 0 0 10px rgba(0,255,255,0.6);
+            transition: width 0.3s linear;
+        }
+        #stage-time-remaining {
+            font-family: var(--font-title); font-size: 12px;
+            color: var(--vivid-yellow); min-width: 55px; text-align: right; font-weight: 700;
+        }
+
+        /* ============ MARQUEE ============ */
+        #marquee-container {
+            position: absolute; top: 0; left: 0; width: 100%;
+            background: linear-gradient(90deg, rgba(0,0,0,0.55), rgba(0,0,0,0.25), rgba(0,0,0,0.55));
+            border-bottom: 1px solid rgba(255,221,0,0.5);
+            padding: 8px 12px; z-index: 99999; overflow: hidden; min-height: 38px;
+        }
+        #marquee-text {
+            display: inline-block; white-space: nowrap; color: var(--vivid-yellow);
+            animation: marqueeAnim 20s linear infinite;
+            font-family: var(--font-title); font-size: 14px; font-weight: 700;
+            text-shadow: 0 0 8px rgba(255,221,0,0.4);
+        }
         @keyframes marqueeAnim { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        .search-bar { background: #111; padding: 15px; display: flex; gap: 10px; border-top: 1px solid #333; align-items: center; }
-        #btn-teclado { background: var(--magenta); height: 60px; width: 85px; border-radius: 18px; border: none; color: #fff; display: flex; align-items: center; justify-content: center; opacity: 0.3; cursor: pointer; flex-shrink: 0; }
-        #btn-teclado.active { opacity: 1; }
-        #btn-play-bar { background: linear-gradient(180deg, #00ff99 0%, #00aa55 100%); border-radius: 18px; border: none; color: #001a0d; font-weight: 900; font-family: var(--font-title); height: 60px; flex: 1; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; }
-        .ui-panel { flex: 1; background: var(--panel-bg); padding: 15px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
-        .controls-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-        .btn-parar, .btn-limpar { flex: 1; height: 68px; border-radius: 22px; font-family: var(--font-title); font-weight: 900; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; border: none; color: #fff; text-transform: uppercase; }
-        .btn-parar { background: linear-gradient(180deg, #ff9e1b 0%, #c2410c 100%); }
-        .btn-limpar { background: linear-gradient(180deg, #ff2e51 0%, #b91c1c 100%); }
-        #track-list { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.6); border-radius: 18px; padding: 12px; border: 1px solid #222; }
-        .item { background: linear-gradient(90deg, rgba(255,255,255,0.07), transparent); padding: 14px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid var(--magenta); font-size: 15px; }
-        .item.now-playing { background: linear-gradient(90deg, rgba(0,255,136,0.22), rgba(0,255,136,0.05)); border-left: 6px solid var(--emerald) !important; }
-        .playing-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--emerald); color: #000; font-family: var(--font-title); font-size: 9px; font-weight: 900; padding: 2px 8px; border-radius: 6px; margin-bottom: 6px; }
-        #modal-cantor-overlay, #numeric-keypad-overlay, #catalogo-overlay, #modal-sair-overlay, #modal-duplicados-overlay, #logo-tela-overlay { position: fixed; inset: 0; z-index: 20000; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; padding: 20px; }
-        #modal-cantor-overlay.active, #numeric-keypad-overlay.active, #catalogo-overlay.active, #modal-sair-overlay.active, #modal-duplicados-overlay.active, #logo-tela-overlay.ativo { display: flex !important; }
+
+        /* ============ BUSCA / CATÁLOGO / INICIAR ============ */
+        .search-bar {
+            background: #0a0a10; padding: 12px 14px;
+            display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 12px;
+            border-top: 1px solid #222; align-items: stretch;
+        }
+        .search-bar button {
+            height: 60px; border-radius: 18px; border: none;
+            font-family: var(--font-title); font-weight: 900; font-size: 15px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            gap: 8px; color: #fff; text-transform: uppercase; letter-spacing: 0.5px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .search-bar button:active { transform: scale(0.97); }
+        #btn-teclado { background: linear-gradient(180deg, #ff44ff 0%, #b300b3 100%); box-shadow: 0 4px 14px rgba(255,0,255,0.3); }
+        #btn-catalogo { background: linear-gradient(180deg, #29e7ff 0%, #0099cc 100%); color: #04202b; box-shadow: 0 4px 14px rgba(41,231,255,0.3); }
+        #btn-play-bar { background: linear-gradient(180deg, #00ff99 0%, #00aa55 100%); color: #001a0d; box-shadow: 0 4px 14px rgba(0,255,153,0.35); font-size: 17px; }
+        #btn-play-bar:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+
+        /* ============ PAINEL DA FILA ============ */
+        .ui-panel {
+            flex: 1; background: linear-gradient(180deg, #0d0d14 0%, #050508 100%);
+            padding: 14px 16px; display: flex; flex-direction: column; gap: 12px;
+            overflow: hidden; border-top: 2px solid #1a1a2e;
+        }
+        .queue-header { display: flex; justify-content: space-between; align-items: center; padding: 0 2px; }
+        .queue-header h3 {
+            font-family: var(--font-title); font-weight: 900; font-size: 14px;
+            color: var(--neon); letter-spacing: 1.2px;
+            text-shadow: 0 0 10px rgba(0,255,255,0.4);
+        }
+        #queue-count-badge {
+            background: var(--magenta); padding: 3px 12px; border-radius: 12px;
+            font-weight: 900; font-family: var(--font-title); font-size: 12px; color: #fff;
+            box-shadow: 0 0 14px rgba(255,0,255,0.5);
+        }
+        .controls-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        .btn-parar, .btn-limpar {
+            height: 60px; border-radius: 16px; font-family: var(--font-title);
+            font-weight: 900; font-size: 15px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            border: none; color: #fff; text-transform: uppercase; letter-spacing: 1px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .btn-parar { background: linear-gradient(180deg, #ff9e1b 0%, #c2410c 100%); box-shadow: 0 4px 14px rgba(255,158,27,0.3); }
+        .btn-limpar { background: linear-gradient(180deg, #ff2e51 0%, #b91c1c 100%); box-shadow: 0 4px 14px rgba(255,46,81,0.3); }
+        .btn-parar:active, .btn-limpar:active { transform: scale(0.97); }
+
+        #track-list {
+            flex: 1; overflow-y: auto;
+            background: rgba(0,0,0,0.6); border-radius: 16px;
+            padding: 10px; border: 1px solid #1e1e2e;
+        }
+        #track-list::-webkit-scrollbar { width: 6px; }
+        #track-list::-webkit-scrollbar-thumb { background: var(--magenta); border-radius: 3px; }
+
+        .item {
+            background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
+            padding: 12px 14px; border-radius: 12px; margin-bottom: 8px;
+            border-left: 4px solid var(--magenta);
+            position: relative; overflow: hidden;
+        }
+        .item.now-playing {
+            background: linear-gradient(90deg, rgba(0,255,136,0.18), rgba(0,255,136,0.02));
+            border-left-color: var(--emerald) !important;
+        }
+        .item-title {
+            font-weight: 700; font-size: 14px; color: #fff;
+            margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .item-meta { display: flex; gap: 10px; align-items: center; font-size: 12px; flex-wrap: wrap; }
+        .item-singer { color: var(--vivid-yellow); font-weight: 700; }
+        .item-code {
+            color: var(--neon); font-family: var(--font-title); font-size: 10px;
+            background: rgba(0,255,255,0.1); padding: 2px 8px; border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+        .playing-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: var(--emerald); color: #000;
+            font-family: var(--font-title); font-size: 9px; font-weight: 900;
+            padding: 2px 8px; border-radius: 6px; margin-bottom: 6px;
+            animation: pulseBadge 1.5s infinite;
+        }
+        @keyframes pulseBadge { 0%,100% { opacity: 1; box-shadow: 0 0 10px rgba(0,255,136,0.6); } 50% { opacity: 0.75; box-shadow: 0 0 4px rgba(0,255,136,0.3); } }
+
+        /* ============ OVERLAYS / MODAIS ============ */
+        #modal-cantor-overlay, #numeric-keypad-overlay, #catalogo-overlay, #modal-sair-overlay, #modal-duplicados-overlay, #logo-tela-overlay {
+            position: fixed; inset: 0; z-index: 20000;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
+            display: none; align-items: center; justify-content: center; padding: 20px;
+        }
+        #modal-cantor-overlay.active, #numeric-keypad-overlay.active, #catalogo-overlay.active,
+        #modal-sair-overlay.active, #modal-duplicados-overlay.active, #logo-tela-overlay.ativo { display: flex !important; }
         #modal-cantor-box { background: var(--panel-bg); border: 2px solid var(--vivid-yellow); border-radius: 20px; padding: 25px; width: 100%; max-width: 480px; color: #fff; }
         #modal-cantor-input { width: 100%; padding: 16px; border-radius: 14px; border: 2px solid #333; background: #0a0a0f; color: #fff; font-size: 18px; margin-top: 10px; }
-        .btn-sair-topo-fixo { position: fixed !important; top: 10px !important; right: 14px !important; width: 38px !important; height: 38px !important; border-radius: 12px !important; background: rgba(10, 6, 20, 0.75) !important; border: 1.5px solid rgba(212, 128, 255, 0.6) !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; color: #d480ff !important; z-index: 99999 !important; }
-        #catalogo-box { flex: 1; display: flex; flex-direction: column; gap: 18px; background: #0f0d2a; border-radius: 24px; padding: 26px; max-width: 800px; width: 100%; max-height: 85vh; }
+
+        .btn-sair-topo-fixo { position: fixed !important; top: 10px !important; right: 14px !important; width: 38px !important; height: 38px !important; border-radius: 12px !important; background: rgba(10,6,20,0.75) !important; border: 1.5px solid rgba(212,128,255,0.6) !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; color: #d480ff !important; z-index: 99999 !important; }
+
+        #catalogo-box { flex: 1; display: flex; flex-direction: column; gap: 18px; background: #0f0d2a; border-radius: 24px; padding: 26px; max-width: 800px; width: 100%; max-height: 85vh; border: 1px solid rgba(0,255,255,0.2); }
         #cat-lista { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        .cat-item { display: flex; align-items: center; gap: 20px; padding: 15px 20px; border-radius: 14px; background: rgba(255,255,255,0.05); color: #fff; border: none; cursor: pointer; font-size: 16px; text-align: left; width: 100%; }
-        #aviso-rapido { position: fixed; left: 50%; bottom: 21vh; transform: translate(-50%, 40vh); z-index: 30000; padding: 16px 34px; border-radius: 10vh; font-weight: 800; color: #04180e; background: var(--emerald); transition: transform .45s; pointer-events: none; }
+        .cat-item { display: flex; align-items: center; gap: 20px; padding: 15px 20px; border-radius: 14px; background: rgba(255,255,255,0.05); color: #fff; border: none; cursor: pointer; font-size: 16px; text-align: left; width: 100%; transition: background 0.15s; }
+        .cat-item:hover { background: rgba(0,255,255,0.1); }
+
+        #aviso-rapido { position: fixed; left: 50%; bottom: 21vh; transform: translate(-50%, 40vh); z-index: 30000; padding: 16px 34px; border-radius: 10vh; font-weight: 800; color: #04180e; background: var(--emerald); transition: transform 0.45s; pointer-events: none; }
         #aviso-rapido.on { transform: translate(-50%, 0); }
         #ui-wrapper.oculto-inicio { display: none !important; }
         #ui-wrapper.liberado { display: flex !important; }
+
+        #idle-hero { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; z-index: 3; }
+        #idle-hero .hero-title { font-family: var(--font-title); font-size: clamp(24px, 5vw, 48px); font-weight: 900; color: #fff; text-shadow: 0 0 20px var(--magenta), 0 0 40px rgba(255,0,255,0.4); }
+        #idle-hero .hero-sub { font-family: var(--font-title); font-size: 16px; color: var(--vivid-yellow); margin-top: 10px; letter-spacing: 1px; }
+        #idle-hero .hero-count { font-family: var(--font-body); font-size: 14px; color: #aaa; margin-top: 5px; }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -76,16 +272,14 @@
     <div id="intro-screen">
         <video id="intro-video" playsinline autoplay preload="auto"><source src="intro.mp4" type="video/mp4"></video>
         <div id="intro-curtain" aria-hidden="true"></div>
-        <div id="intro-error" style="display:none; flex-direction:column; align-items:center; color:#fff; text-align:center; padding:20px;">
-            <span id="intro-error-text"></span><button id="intro-error-action" type="button" style="margin-top:15px; padding:15px; background:var(--emerald); border:none; border-radius:10px; font-weight:bold;">TENTAR NOVAMENTE</button>
-        </div>
     </div>
 
     <div id="overlay-ok" style="position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999999; display:none; flex-direction:column; align-items:center; justify-content:center; padding:40px; font-family:var(--font-title);">
-        <h2 style="color:var(--neon); font-size:24px; margin-bottom:20px; text-align:center;">🎤 PRESSIONE OK PARA COMEÇAR</h2>
-        <button id="btn-ok-overlay" tabindex="1" style="padding:20px 40px; font-size:18px; background:var(--emerald); border:none; border-radius:15px; font-weight:bold; cursor:pointer;">OK - COMEÇAR</button>
+        <h2 style="color:var(--neon); font-size:24px; margin-bottom:20px; text-align:center; text-shadow:0 0 20px rgba(0,255,255,0.5);">🎤 PRESSIONE OK PARA COMEÇAR</h2>
+        <button id="btn-ok-overlay" tabindex="1" style="padding:20px 40px; font-size:18px; background:var(--emerald); border:none; border-radius:15px; font-weight:bold; cursor:pointer; box-shadow:0 0 30px rgba(0,255,136,0.5);">OK - COMEÇAR</button>
     </div>
 
+    <!-- Teclado numérico -->
     <div id="numeric-keypad-overlay">
         <div id="numeric-keypad" style="background:#191020; border:2px solid var(--magenta); padding:20px; border-radius:20px; width:320px; color:#fff;">
             <h2 style="text-align:center; margin-bottom:10px; font-family:var(--font-title);">DIGITE O CÓDIGO</h2>
@@ -123,10 +317,10 @@
             <video id="video-player" playsinline preload="auto"></video>
             <audio id="audio-jb" loop></audio>
 
-            <div id="idle-hero" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; pointer-events:none;">
-                <div style="font-family:var(--font-title); font-size:clamp(24px, 5vw, 48px); font-weight:900; color:#fff; text-shadow:0 0 20px var(--magenta);">KARAOKÊ FESTA DAS CORES</div>
-                <div style="font-family:var(--font-title); font-size:16px; color:var(--vivid-yellow); margin-top:10px;">DIGITE O CÓDIGO DA MÚSICA</div>
-                <div style="font-family:var(--font-body); font-size:14px; color:#aaa; margin-top:5px;"><b id="hero-count">0</b> MÚSICAS DISPONÍVEIS</div>
+            <div id="idle-hero">
+                <div class="hero-title">KARAOKÊ FESTA DAS CORES</div>
+                <div class="hero-sub">DIGITE O CÓDIGO DA MÚSICA</div>
+                <div class="hero-count"><b id="hero-count">0</b> MÚSICAS DISPONÍVEIS</div>
             </div>
 
             <div id="marquee-container">
@@ -150,17 +344,15 @@
         </div>
 
         <div class="search-bar">
-            <button type="button" id="btn-teclado" onclick="abrirTeclado()" title="Teclado">
-                <span>CÓDIGO</span>
-            </button>
-            <button type="button" id="btn-catalogo" onclick="abrirCatalogo()" style="background:#29e7ff; color:#04202b; border-radius:18px; border:none; padding:0 20px; font-weight:bold; font-family:var(--font-title); height:60px; cursor:pointer;">CATÁLOGO</button>
+            <button type="button" id="btn-teclado" onclick="abrirTeclado()" title="Teclado">CÓDIGO</button>
+            <button type="button" id="btn-catalogo" onclick="abrirCatalogo()">CATÁLOGO</button>
             <button type="button" id="btn-play-bar" onclick="startPlaylist()" disabled>INICIAR SHOW</button>
         </div>
 
         <div class="ui-panel">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="font-family:var(--font-title); font-weight:900;">FILA DE MÚSICAS</div>
-                <div id="queue-count-badge" style="background:var(--magenta); padding:2px 10px; border-radius:10px; font-weight:bold;">0</div>
+            <div class="queue-header">
+                <h3>🎵 FILA DE MÚSICAS</h3>
+                <div id="queue-count-badge">0</div>
             </div>
             <div class="controls-grid">
                 <button type="button" class="btn-parar" onclick="stopAudio()">PARAR</button>
@@ -175,7 +367,7 @@
             <h3 style="font-family:var(--font-title); color:var(--vivid-yellow); margin-bottom:10px;">✅ CÓDIGO ENCONTRADO</h3>
             <div id="modal-cantor-musica-nome" style="font-size:16px; font-weight:bold; margin-bottom:15px;"></div>
             <label style="font-size:12px; color:#aaa; font-family:var(--font-title);">🎤 QUEM CANTA?</label>
-            <input type="text" id="modal-cantor-input" placeholder="Digite o nome..." autocomplete="off">
+            <input type="text" id="modal-cantor-input" placeholder="Digite o nome do cantor..." autocomplete="off">
             <div style="display:flex; gap:10px; margin-top:20px;">
                 <button type="button" onclick="fecharModalCantor()" style="flex:1; padding:14px; background:#333; color:#fff; border:none; border-radius:10px;">CANCELAR</button>
                 <button type="button" onclick="confirmarCantor()" style="flex:1; padding:14px; background:var(--magenta); color:#fff; border:none; border-radius:10px; font-weight:bold;">CONFIRMAR</button>
@@ -199,24 +391,27 @@
 
     <script>
         let player, trackList, fileInput, marqueeInfo, bgSinger, bgSinger2, audioJB, mainBg, tornadoLayer, timerScreen, marqueeCont;
-        let videoFiles = {}, catalog = [], queue = [], rockDoidoSlides = [], bgCantores = {}, capasMusicas = {};
+        let videoFiles = {}, catalog = [], queue = [];
         let modalTempCode = null, modalTempNome = null, modalTempFile = null;
-        let bgPadraoList = [], bgPadraoInterval = null, currentBgIndex = -1;
-        let tvBuffer = "", tvBufferTimer = null;
-        let singerBgInterval = null, isVideosLoaded = false, folderLoadFinished = true;
-        let introSequenceFiles = [], introScreensaverActive = false;
-        let camadaAtiva = 1, fotosCantor = [], indiceFotoAtual = 0;
+
+        /* Índices de imagens */
+        let imagensIndex = {};      // key -> File (todas as imagens)
+        let capasCantor = {};       // key -> File (da pasta CAPAS)
+        let bgsPadrao = {};         // key -> File (da pasta BGS)
+
+        let singerBgInterval = null, isVideosLoaded = false;
         let marqueeModo = "padrao", codigoTecladoNumerico = '';
-        let _audioRockDoido = null, _caminhoAudioDetectado = null;
         let _termoBuscaCatalogo = '';
 
         function logOK(m) { console.log('%c[OK] ' + m, 'color: #00ff88; font-weight: bold'); }
         function logAviso(m) { console.log('%c[AVISO] ' + m, 'color: #ffaa00; font-weight: bold'); }
         function logErro(m) { console.log('%c[ERRO] ' + m, 'color: #ff3333; font-weight: bold'); }
 
+        /* ===================== TECLADO ===================== */
         function abrirTeclado() {
             codigoTecladoNumerico = '';
             atualizarTelaTecladoNumerico();
+            document.getElementById('keypad-feedback').textContent = '';
             document.getElementById('numeric-keypad-overlay').classList.add('active');
         }
         function atualizarTelaTecladoNumerico() {
@@ -238,8 +433,13 @@
             }
         }
 
+        /* ===================== INICIALIZAÇÃO ===================== */
         async function forcarPaisagem() {
-            try { if (!document.fullscreenElement && document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen(); } catch (e) {}
+            try {
+                if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+                    await document.documentElement.requestFullscreen();
+                }
+            } catch (e) {}
             document.body.classList.add('fullscreen-mode');
         }
 
@@ -301,59 +501,61 @@
             ui.classList.add('liberado');
         }
 
+        /* ===================== PROGRESSO ===================== */
         function updateStageProgressBar() {
             if (!player.duration) return;
             const cur = player.currentTime, dur = player.duration, rem = Math.max(0, dur - cur);
             document.getElementById('stage-progress-fill').style.width = (cur / dur) * 100 + '%';
-            document.getElementById('stage-time-remaining').innerText = `-${Math.floor(rem/60).toString().padStart(2,'0')}:${Math.floor(rem%60).toString().padStart(2,'0')}`;
+            document.getElementById('stage-time-remaining').innerText =
+                `-${Math.floor(rem/60).toString().padStart(2,'0')}:${Math.floor(rem%60).toString().padStart(2,'0')}`;
         }
 
-        function pararCrossfade() {
-            if (singerBgInterval) { clearInterval(singerBgInterval); singerBgInterval = null; }
-            if (bgSinger) { bgSinger.style.opacity = '0'; bgSinger.style.backgroundImage = ''; }
-            if (bgSinger2) { bgSinger2.style.opacity = '0'; bgSinger2.style.backgroundImage = ''; }
-        }
-
-        function iniciarCrossfade(urls) {
-            pararCrossfade();
-            if (!urls || !urls.length) return;
-            bgSinger.style.backgroundImage = `url("${urls[0]}")`;
+        /* ===================== CAPA DO CANTOR ===================== */
+        function mostrarCapaCantor(url) {
+            if (!url) {
+                bgSinger.style.opacity = '0';
+                bgSinger.style.backgroundImage = '';
+                return;
+            }
+            bgSinger.style.backgroundImage = `url("${url}")`;
             bgSinger.style.opacity = '1';
-            if (urls.length === 1) return;
-            let idx = 0;
-            singerBgInterval = setInterval(() => {
-                idx = (idx + 1) % urls.length;
-                if (camadaAtiva === 1) {
-                    bgSinger2.style.backgroundImage = `url("${urls[idx]}")`;
-                    bgSinger2.style.opacity = '1'; bgSinger.style.opacity = '0'; camadaAtiva = 2;
-                } else {
-                    bgSinger.style.backgroundImage = `url("${urls[idx]}")`;
-                    bgSinger.style.opacity = '1'; bgSinger2.style.opacity = '0'; camadaAtiva = 1;
-                }
-            }, 1500);
+        }
+        function esconderCapaCantor() {
+            bgSinger.style.opacity = '0';
+            bgSinger.style.backgroundImage = '';
+            bgSinger2.style.opacity = '0';
+            bgSinger2.style.backgroundImage = '';
         }
 
+        /* ===================== PLAYLIST ===================== */
         async function startPlaylist() {
             if (!queue.length || player.style.display === 'block') return;
             await forcarPaisagem();
+
             const current = queue[0];
-            const nomeMusicaAtual = nomeSemCodigo(current.line, current.code);
-            const capaMusica = arquivoDaCapa(nomeMusicaAtual);
-            const urls = capaMusica ? [capaMusica.contentUri || URL.createObjectURL(capaMusica)] : [];
-            iniciarCrossfade(urls);
+
+            // 🔎 Busca capa do cantor (pasta capas) ou fallback bg principal (pasta bgs)
+            const capaFile = buscarCapaCantor(current.singer) || buscarBgPadrao();
+            const capaUrl = capaFile ? (capaFile.contentUri || URL.createObjectURL(capaFile)) : '';
+            mostrarCapaCantor(capaUrl);
+
+            // Esconde tela inicial (DIGITE O CÓDIGO)
+            document.getElementById('idle-hero').style.display = 'none';
 
             document.body.classList.add('countdown-ativo');
             const songDisplayEl = document.getElementById('song-display');
-            songDisplayEl.innerHTML = `${current.line}<br>🎤 <span style="color:var(--emerald);">${current.singer}</span>`;
+            songDisplayEl.innerHTML =
+                `${escHtml(current.line)}<br><span style="color:var(--emerald); font-size:16px;">🎤 ${escHtml(current.singer)}</span>`;
             timerScreen.classList.add('active');
 
             const num = document.getElementById('countdown-num');
-            for (let i = 5; i >= 0; i--) {
+            for (let i = 5; i >= 1; i--) {
                 num.innerText = i;
                 await new Promise(r => setTimeout(r, 1000));
             }
 
-            pararCrossfade();
+            // Esconde capa e inicia vídeo
+            esconderCapaCantor();
             timerScreen.classList.remove('active');
             document.body.classList.remove('countdown-ativo');
 
@@ -364,61 +566,159 @@
         }
 
         function fecharVideo() {
-            pararCrossfade();
+            esconderCapaCantor();
             document.body.classList.remove('countdown-ativo');
             player.pause();
             player.src = "";
             player.style.display = 'none';
+            document.getElementById('stage-progress-fill').style.width = '0%';
+            document.getElementById('stage-time-remaining').innerText = '-00:00';
         }
 
+        /* ===================== SELEÇÃO DE PASTA ===================== */
         async function handleFolderSelect(e) {
             const files = Array.from(e.target.files);
             if (!files.length) return;
+
             videoFiles = {}; catalog = [];
+            imagensIndex = {}; capasCantor = {}; bgsPadrao = {};
+
             for (let f of files) {
-                const name = f.name.toUpperCase();
-                if (name.endsWith('.MP4') && !name.includes('INTRO')) {
-                    const m = name.match(/(\d+)/);
-                    const code = m ? m[1].padStart(4, '0') : String(Object.keys(videoFiles).length + 1).padStart(4, '0');
+                const nameUpper = f.name.toUpperCase();
+                const pathUpper = (f.webkitRelativePath || f.name).toUpperCase();
+                const parts = pathUpper.split(/[\/\\]/);
+
+                // ---------- VÍDEOS ----------
+                if (nameUpper.endsWith('.MP4') && !nameUpper.includes('INTRO')) {
+                    const m = nameUpper.match(/(\d+)/);
+                    const code = m ? m[1].padStart(4, '0')
+                                   : String(Object.keys(videoFiles).length + 1).padStart(4, '0');
                     videoFiles[code] = f;
-                    catalog.push({ code, line: f.name.replace('.mp4','') });
+                    catalog.push({ code, line: f.name.replace(/\.mp4$/i, '') });
+                    continue;
                 }
+
+                // ---------- IMAGENS (capas e bgs) ----------
+                const isImg = /\.(PNG|JPE?G)$/i.test(nameUpper);
+                if (!isImg) continue;
+
+                const baseName = f.name.replace(/\.(png|jpe?g)$/i, '');
+                const key = chaveDeBuscaCapa(baseName);
+                if (!key) continue;
+
+                // índice geral
+                imagensIndex[key] = f;
+
+                // classifica por pasta
+                const inCapas = parts.includes('CAPAS') || parts.includes('CAPA');
+                const inBgs   = parts.includes('BGS') || parts.includes('BG');
+
+                if (inCapas) capasCantor[key] = f;
+                else if (inBgs) bgsPadrao[key] = f;
             }
+
             isVideosLoaded = Object.keys(videoFiles).length > 0;
             document.getElementById('btn-play-bar').disabled = !isVideosLoaded;
             document.getElementById('hero-count').textContent = Object.keys(videoFiles).length;
-            logOK(Object.keys(videoFiles).length + ' vídeos carregados.');
+
+            logOK(`${Object.keys(videoFiles).length} vídeos | ` +
+                  `${Object.keys(capasCantor).length} capas | ` +
+                  `${Object.keys(bgsPadrao).length} backgrounds`);
         }
 
+        /* ===================== BUSCA DE CAPA / BG ===================== */
+        function chaveDeBuscaCapa(nome) {
+            return String(nome || '')
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .toUpperCase().trim();
+        }
+
+        function buscarCapaCantor(nomeCantor) {
+            const key = chaveDeBuscaCapa(nomeCantor);
+            if (!key) return null;
+
+            // 1) match exato na pasta CAPAS
+            if (capasCantor[key]) return capasCantor[key];
+
+            // 2) match parcial (ex.: "alcione_1", "alcione-ao-vivo")
+            const regex = new RegExp('^' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:[\\s_\\-]|$)');
+            const foundInCapas = Object.keys(capasCantor).find(k => regex.test(k));
+            if (foundInCapas) return capasCantor[foundInCapas];
+
+            // 3) match exato no índice geral (caso o usuário tenha salvo na raiz)
+            if (imagensIndex[key]) return imagensIndex[key];
+
+            // 4) match parcial no índice geral
+            const foundGeral = Object.keys(imagensIndex).find(k => regex.test(k));
+            return foundGeral ? imagensIndex[foundGeral] : null;
+        }
+
+        function buscarBgPadrao() {
+            const variacoes = [
+                'BG PRINCIPAL', 'BGPRINCIPAL', 'BG_PRINCIPAL',
+                'BG-PRINCIPAL', 'BG PRINCIPAL 1', 'BGP'
+            ];
+            for (const v of variacoes) {
+                if (bgsPadrao[v]) return bgsPadrao[v];
+            }
+            // qualquer imagem começando com "BG" na pasta bgs
+            const key = Object.keys(bgsPadrao).find(k => k.startsWith('BG'));
+            if (key) return bgsPadrao[key];
+            // fallback geral
+            for (const v of variacoes) {
+                if (imagensIndex[v]) return imagensIndex[v];
+            }
+            return null;
+        }
+
+        /* ===================== CÓDIGO / MODAL ===================== */
         function processarCodigo(code) {
             const padCode = String(code).padStart(4, '0');
             if (!videoFiles[padCode]) return;
             modalTempCode = padCode;
             modalTempNome = catalog.find(c => c.code === padCode)?.line || 'MÚSICA ' + padCode;
             modalTempFile = videoFiles[padCode];
-            document.getElementById('modal-cantor-musica-nome').innerText = '#' + padCode + ' - ' + modalTempNome;
+            document.getElementById('modal-cantor-musica-nome').innerText =
+                '#' + padCode + ' - ' + modalTempNome;
             document.getElementById('modal-cantor-input').value = '';
             document.getElementById('modal-cantor-overlay').classList.add('active');
         }
 
         function confirmarCantor() {
-            let singer = document.getElementById('modal-cantor-input').value.trim().toUpperCase() || "CONVIDADO";
-            queue.push({ line: modalTempNome, code: modalTempCode, singer: singer, file: modalTempFile });
+            const singer = (document.getElementById('modal-cantor-input').value || '').trim().toUpperCase() || 'CONVIDADO';
+            queue.push({ line: modalTempNome, code: modalTempCode, singer, file: modalTempFile });
             renderQueue();
             fecharModalCantor();
         }
 
         function fecharModalCantor() { document.getElementById('modal-cantor-overlay').classList.remove('active'); }
 
+        /* ===================== FILA ===================== */
         function renderQueue() {
             const isPlaying = player.style.display === 'block';
-            trackList.innerHTML = queue.map((i, idx) => `
-                <div class="item ${idx === 0 && isPlaying ? 'now-playing' : ''}">
-                    <div>${idx === 0 && isPlaying ? '<div class="playing-badge">▶ Tocando</div>' : ''}</div>
-                    <b>${escHtml(i.line)}</b> - <small style="color:var(--vivid-yellow);">🎤 ${escHtml(i.singer)}</small> (#${i.code})
-                </div>
-            `).join('');
-            document.getElementById('queue-count-badge').innerText = isPlaying ? Math.max(0, queue.length - 1) : queue.length;
+            if (!queue.length) {
+                trackList.innerHTML = '<div style="text-align:center; color:#666; padding:24px; font-family:var(--font-title); font-size:13px;">FILA VAZIA</div>';
+            } else {
+                trackList.innerHTML = queue.map((i, idx) => {
+                    const now = idx === 0 && isPlaying;
+                    return `
+                        <div class="item ${now ? 'now-playing' : ''}">
+                            ${now ? '<div class="playing-badge">▶ TOCANDO</div>' : ''}
+                            <div class="item-title">${escHtml(i.line)}</div>
+                            <div class="item-meta">
+                                <span class="item-singer">🎤 ${escHtml(i.singer)}</span>
+                                <span class="item-code">#${i.code}</span>
+                            </div>
+                        </div>`;
+                }).join('');
+            }
+            document.getElementById('queue-count-badge').innerText =
+                isPlaying ? Math.max(0, queue.length - 1) : queue.length;
+
+            // Tela inicial (DIGITE O CÓDIGO) apenas quando ocioso
+            const shouldShowIdle = !queue.length && !isPlaying &&
+                                   !document.body.classList.contains('countdown-ativo');
+            document.getElementById('idle-hero').style.display = shouldShowIdle ? 'flex' : 'none';
         }
 
         function stopAudio() { fecharVideo(); queue = []; renderQueue(); }
@@ -430,11 +730,11 @@
             else document.exitFullscreen().catch(() => {});
         }
 
-        function escHtml(t) { return String(t || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
-        function nomeSemCodigo(line, code) { return String(line || '').replace(/^\s*\d+\s*[-–—.:)]?\s*/, '').trim(); }
-        function chaveDeBuscaCapa(nome) { return String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim(); }
-        function arquivoDaCapa(nome) { return capasMusicas[chaveDeBuscaCapa(nome)] || null; }
+        function escHtml(t) {
+            return String(t || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
 
+        /* ===================== CATÁLOGO ===================== */
         function abrirCatalogo() {
             document.getElementById('catalogo-overlay').classList.add('active');
             renderCatalogo();
@@ -446,13 +746,16 @@
         }
         function renderCatalogo() {
             const lista = document.getElementById('cat-lista');
-            const itens = catalog.filter(c => c.line.toLowerCase().includes(_termoBuscaCatalogo) || c.code.includes(_termoBuscaCatalogo));
+            const itens = catalog.filter(c =>
+                c.line.toLowerCase().includes(_termoBuscaCatalogo) ||
+                c.code.includes(_termoBuscaCatalogo)
+            );
             lista.innerHTML = itens.map(i => `
                 <button type="button" class="cat-item" onclick="fecharCatalogo(); processarCodigo('${i.code}')">
-                    <span style="color:var(--neon); font-weight:bold;">#${i.code}</span>
+                    <span style="color:var(--neon); font-weight:bold; font-family:var(--font-title);">#${i.code}</span>
                     <span>${escHtml(i.line)}</span>
                 </button>
-            `).join('');
+            `).join('') || '<div style="text-align:center; color:#666; padding:20px;">Nenhuma música encontrada.</div>';
             document.getElementById('cat-total').textContent = itens.length + ' músicas';
         }
         function selectFolder() { fileInput.click(); }
