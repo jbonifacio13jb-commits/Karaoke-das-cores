@@ -60,7 +60,7 @@ body.fullscreen-mode .stage{height:100vh!important;width:100vw!important;positio
 #cat-lista{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
 .cat-item{display:flex;gap:15px;padding:12px;background:rgba(255,255,255,.05);border-radius:10px;border:none;color:#fff;cursor:pointer;text-align:left;width:100%}
 #cat-campo-busca{width:100%;padding:12px;border-radius:10px;border:1px solid var(--neon);background:#000;color:#fff}
-#overlay-ok{position:fixed;inset:0;background:#000;z-index:99999;display:none;align-items:center;justify-content:center;flex-direction:column}
+#start-screen{position:fixed;inset:0;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px}
 #intro-screen{position:fixed;inset:0;background:#000;z-index:99998;display:none;align-items:center;justify-content:center}
 #intro-screen.active{display:flex}
 #intro-video{width:100%;height:100%;object-fit:cover}
@@ -70,8 +70,12 @@ body.fullscreen-mode .stage{height:100vh!important;width:100vw!important;positio
 </head>
 <body>
 
+<div id="start-screen">
+    <h1 style="color:var(--neon); text-align:center;">KARAOKÊ FESTA DAS CORES</h1>
+    <button onclick="iniciarApp()" style="padding:20px 40px;font-size:20px;background:var(--emerald);border:none;border-radius:15px;font-weight:bold;color:#000;cursor:pointer">SELECIONAR PASTA E INICIAR</button>
+</div>
+
 <div id="intro-screen"><video id="intro-video" playsinline webkit-playsinline autoplay></video></div>
-<div id="overlay-ok"><h2 style="color:var(--neon);margin-bottom:20px">PRESSIONE OK</h2><button onclick="document.getElementById('overlay-ok').style.display='none';iniciarIntro()" style="padding:15px 30px;font-size:18px;background:var(--emerald);border:none;border-radius:10px;font-weight:bold">OK</button></div>
 
 <div id="ui-wrapper">
 <div class="stage">
@@ -146,17 +150,20 @@ window.onload = () => {
     document.getElementById('f-folder').addEventListener('change', handleFolder);
     player.onended = () => { fecharVideo(); queue.shift(); renderFila(); if(queue.length) setTimeout(startPlaylist, 800); };
     player.ontimeupdate = updateProgress;
-    
-    if(window.AndroidHost && AndroidHost.chooseFolder) { document.getElementById('f-folder').click(); } 
-    else { document.getElementById('overlay-ok').style.display='flex'; }
 };
 
-function iniciarIntro(){
+function iniciarApp(){
+    // 1. Abre a pasta (Requer clique do usuário, o que temos agora)
+    document.getElementById('f-folder').click();
+    
+    // 2. Toca a Intro
     let intro = videoFiles['INTRO'];
     let tela = document.getElementById('intro-screen');
     let vid = document.getElementById('intro-video');
-    tela.classList.add('active');
+    document.getElementById('start-screen').style.display = 'none';
+    
     if(intro){
+        tela.classList.add('active');
         vid.src = intro.contentUri || URL.createObjectURL(intro);
         vid.play().then(() => { vid.onended = liberarApp; }).catch(liberarApp);
     } else { liberarApp(); }
@@ -165,7 +172,6 @@ function iniciarIntro(){
 function liberarApp(){
     document.getElementById('intro-screen').classList.remove('active');
     document.getElementById('ui-wrapper').classList.add('liberado');
-    if(videoFiles['INTRO'] == null) setTimeout(() => { document.getElementById('ui-wrapper').classList.add('liberado'); }, 1000);
 }
 
 function handleFolder(e){
@@ -193,7 +199,6 @@ function handleFolder(e){
     }
     document.getElementById('btn-play-bar').disabled = Object.keys(videoFiles).length === 0;
     log(`${Object.keys(videoFiles).length} vídeos, ${Object.keys(capasCantor).length} capas, ${Object.keys(bgsPadrao).length} bgs`);
-    liberarApp(); 
 }
 
 function buscarCapaCantor(cantor){
