@@ -2,7 +2,7 @@ name: Gerar APK do Karaoke
 
 on:
   push:
-    branches: [ "principal", "main", "master" ]
+    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
@@ -13,15 +13,11 @@ jobs:
       - name: Baixar repositorio
         uses: actions/checkout@v4
 
-      - name: Descompactar ZIP e achar projeto
+      - name: Descompactar ZIP
         run: |
           sudo apt-get install -y unzip
-          for f in *.zip; do
-            [ -e "$f" ] || continue
-            unzip -o "$f"
-          done
+          for f in *.zip; do [ -e "$f" ] || continue; unzip -o "$f"; done
           if [ -d "FONTE-KARAOKE" ]; then cp -r FONTE-KARAOKE/* .; fi
-          
           if [ ! -f "build.gradle" ] && [ ! -f "settings.gradle" ]; then
             for dir in */; do
               if [ -f "${dir}build.gradle" ] || [ -f "${dir}settings.gradle" ]; then
@@ -31,9 +27,8 @@ jobs:
             done
           fi
 
-      - name: Corrigir Arquivos do Gradle (Baixar Dependências Corretas)
+      - name: Corrigir Bibliotecas do Gradle (Conserta erro de download)
         run: |
-          # Força os repositórios corretos no settings.gradle
           cat << 'EOF' > settings.gradle
           pluginManagement {
               repositories {
@@ -49,11 +44,10 @@ jobs:
                   mavenCentral()
               }
           }
-          rootProject.name = "Karaoke-Festa-das-Cores"
+          rootProject.name = "Karaoke"
           include ':app'
           EOF
 
-          # Força a versão do plugin do Android que é compatível com o Gradle 8.11.1
           cat << 'EOF' > build.gradle
           plugins {
               id 'com.android.application' version '8.5.2' apply false
@@ -62,54 +56,38 @@ jobs:
 
       - name: Corrigir Java e Tela Preta
         run: |
-          cat << 'EOF' > patch_java.py
-          import os
-          def achar(nome):
-              res = []
-              for root, dirs, files in os.walk("."):
-                  if nome in files: res.append(os.path.join(root, nome))
-              return res
-          for p in achar("MainActivity.java"):
-              with open(p, "r", encoding="utf-8") as f: j = f.read().replace("\r\n", "\n")
-              if "setMediaPlaybackRequiresUserGesture" not in j:
-                  j = j.replace("super.onCreate(savedInstanceState);", "super.onCreate(savedInstanceState);\n        try { if (webView != null) webView.getSettings().setMediaPlaybackRequiresUserGesture(false); } catch (Exception ignored) {}")
-              if "FLAG_HARDWARE_ACCELERATED" not in j:
-                  accel = "super.onCreate(savedInstanceState);\n        try { getWindow().setFlags(android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED); if (webView != null) webView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null); } catch (Exception ignored) {}"
-                  j = j.replace("super.onCreate(savedInstanceState);", accel)
-              if "getDefaultVideoPoster" not in j:
-                  poster = "@Override public android.graphics.Bitmap getDefaultVideoPoster() { return android.graphics.Bitmap.createBitmap(1, 1, android.graphics.Bitmap.Config.ARGB_8888); }"
-                  j = j.replace("setWebChromeClient(new WebChromeClient() {", "setWebChromeClient(new WebChromeClient() {" + poster)
-              if "deleteFile" not in j:
-                  metodos = """
-                  @android.webkit.JavascriptInterface public boolean deleteFile(String uriStr) { try { return android.provider.DocumentsContract.deleteDocument(getContentResolver(), android.net.Uri.parse(uriStr)); } catch (Exception e) { return false; } }
-                  @android.webkit.JavascriptInterface public void exitApp() { try { MainActivity.this.runOnUiThread(new Runnable() { @Override public void run() { try { MainActivity.this.finishAffinity(); } catch(Exception ignored) {} System.exit(0); } }); } catch (Exception e) { System.exit(0); } }
-                  @android.webkit.JavascriptInterface public void refreshFolder() { try { runOnUiThread(new Runnable() { @Override public void run() { if (webView != null) webView.reload(); } }); } catch (Exception ignored) {} }
-                  """
-                  j = j.replace("public final class AndroidHost {", "public final class AndroidHost {" + metodos)
-              with open(p, "w", encoding="utf-8") as f: f.write(j)
+          cat << 'EOF' > patch.py
+          import os, glob
+          for p in glob.glob('**/MainActivity.java', recursive=True):
+              with open(p, 'r', encoding='utf-8') as f: j = f.read()
+              if 'setMediaPlaybackRequiresUserGesture' not in j:
+                  j = j.replace("super.onCreate(savedInstanceState);", "super.onCreate(savedInstanceState);\n try { if (webView != null) webView.getSettings().setMediaPlaybackRequiresUserGesture(false); } catch (Exception e) {}")
+              if 'FLAG_HARDWARE_ACCELERATED' not in j:
+                  j = j.replace("super.onCreate(savedInstanceState);", "super.onCreate(savedInstanceState);\n try { getWindow().setFlags(android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED); if (webView != null) webView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null); } catch (Exception e) {}")
+              with open(p, 'w', encoding='utf-8') as f: f.write(j)
           EOF
-          python3 patch_java.py
+          python3 patch.py
 
-      - name: Injetar HTML novo dentro do APK
+      - name: Injetar o HTML novo dentro do APK
         run: |
           mkdir -p app/src/main/assets
           cp index.html app/src/main/assets/index.html
           find . -name "index.html" -not -path "./.git/*" -exec cp index.html {} \;
-          echo "HTML novo injetado com sucesso!"
+          echo "HTML injetado com sucesso!"
 
       - name: Configurar Java 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
       - name: Configurar Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.11.1'
           cache-disabled: true
 
-      - name: Garantir Gradle Wrapper e Compilar APK
+      - name: Compilar APK
         run: |
           if [ ! -f "gradlew" ]; then gradle wrapper --gradle-version 8.11.1; fi
           chmod +x gradlew
@@ -118,6 +96,5 @@ jobs:
       - name: Disponibilizar APK
         uses: actions/upload-artifact@v4
         with:
-          name: Karaoke-APK-Final
+          name: Karaoke-APK-Pronto
           path: app/build/outputs/apk/debug/*.apk
-          retention-days: 7
