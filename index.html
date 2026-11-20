@@ -1,938 +1,260 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>KARAOKÊ FESTA DAS CORES</title>
-    <link rel="icon" id="app-icon-link" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><defs><radialGradient id=%22g%22 cx=%2250%%22 cy=%2250%%22 r=%2250%%22><stop offset=%220%%22 stop-color=%22%230d0d14%22/><stop offset=%22100%%22 stop-color=%22%23050508%22/></radialGradient><linearGradient id=%22l%22 x1=%220%%22 y1=%220%%22 x2=%22100%%22 y2=%22100%%22><stop offset=%220%%22 stop-color=%22%2300ffff%22/><stop offset=%22100%%22 stop-color=%22%23ff00ff%22/></linearGradient></defs><rect width=%22100%22 height=%22100%22 rx=%2215%22 fill=%22url(%23g)%22/><g stroke=%22url(%23l)%22 fill=%22none%22 stroke-width=%224%22 stroke-linecap=%22round%22><path d=%22M50,20 L50,60 M35,45 C35,65 65,65 65,45%22/></g><circle cx=%2250%22 cy=%2250%22 r=%2240%22 stroke=%22url(%23l)%22 stroke-width=%221%22 fill=%22none%22 opacity=%220.3%22/></svg>">
-    <style>
-        @font-face { font-family: 'Orbitron'; src: url('fontes/Orbitron-Bold.ttf') format('truetype'); font-weight: 700; font-display: swap; }
-        @font-face { font-family: 'Rajdhani'; src: url('fontes/Rajdhani-Bold.ttf') format('truetype'); font-weight: 700; font-display: swap; }
-        :root {
-            --font-title: 'Orbitron', 'Arial Black', sans-serif;
-            --font-body: 'Rajdhani', 'Arial', sans-serif;
-            --neon: #00ffff; --magenta: #ff00ff; --vivid-yellow: #ffdd00; --emerald: #00ff88;
-            --dark-bg: #050508; --panel-bg: #0d0d14; --icone-size: 44px;
-        }
-        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; user-select: none; margin: 0; padding: 0; }
-        body { background: var(--dark-bg); color: #e0e0e0; font-family: var(--font-body); height: 100vh; width: 100vw; overflow: hidden; }
-        #ui-wrapper { display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 10; }
-
-        /* ============ PALCO ============ */
-        .stage {
-            height: 320px; width: 100%; position: relative; background: #000; overflow: hidden;
-            flex-shrink: 0; border-bottom: 3px solid var(--vivid-yellow); z-index: 200;
-            box-shadow: 0 0 30px rgba(0,255,255,0.15), 0 0 60px rgba(255,0,255,0.08);
-        }
-        body.fullscreen-mode .stage { height: 100vh !important; width: 100vw !important; position: fixed; top: 0; left: 0; z-index: 9999; border: none; }
-        #intro-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999998; display: none; align-items: center; justify-content: center; }
-        #intro-screen.active { display: flex !important; }
-        #intro-video { width: 100%; height: 100%; object-fit: cover; background: #000; }
-        #intro-curtain { position: absolute; inset: 0; z-index: 1; background: #000; pointer-events: none; }
-        #intro-curtain.hidden { display: none; }
-
-        .stage-background {
-            position: absolute; inset: 0;
-            background-color: #000; background-size: cover; background-position: center center;
-            z-index: 1; opacity: 0.7; transition: opacity 0.5s ease;
-        }
-        body.countdown-ativo .stage-background { opacity: 0 !important; }
-
-        #bg-singer-layer, #bg-singer-layer-2 {
-            position: absolute; inset: 0;
-            background-size: contain; background-position: center center; background-repeat: no-repeat;
-            z-index: 2; opacity: 0; transition: opacity 0.4s ease-in-out;
-        }
-        #bg-singer-layer::after {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, transparent 30%, transparent 60%, rgba(0,0,0,0.85) 100%);
-            pointer-events: none;
-        }
-
-        #tornado-layer {
-            position: absolute; inset: 0; z-index: 1000; display: none;
-            align-items: center; justify-content: center; overflow: hidden; pointer-events: none;
-            background: radial-gradient(ellipse at center, rgba(30,5,50,0.5) 0%, rgba(0,0,0,0.95) 100%);
-        }
-        body.modo-jb #tornado-layer { display: flex; }
-        #bg-singer-layer-rock { position: absolute; inset: 0; background-size: contain; background-position: center; background-repeat: no-repeat; z-index: 1005; opacity: 0; transition: opacity 0.3s; }
-        #bg-singer-layer-rock.ativo { opacity: 1 !important; }
-
-        /* ============ PLAYER DE VÍDEO ============ */
-        #video-player {
-            position: absolute; inset: 0;
-            width: 100%; height: 100%;
-            object-fit: contain; background: #000;
-            z-index: 100; display: none;
-        }
-        video::-webkit-media-controls,
-        video::-webkit-media-controls-start-playback-button,
-        video::-webkit-media-controls-play-button,
-        video::-webkit-media-controls-overlay-play-button,
-        video::-webkit-media-controls-panel,
-        video::-webkit-media-controls-enclosure { display: none !important; -webkit-appearance: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
-
-        /* ============ TIMER / CONTAGEM ============ */
-        #timer-screen {
-            position: absolute; inset: 0; z-index: 10000;
-            display: none; flex-direction: column;
-            align-items: center; justify-content: center; pointer-events: none;
-        }
-        #timer-screen.active { display: flex !important; }
-        #countdown-num {
-            position: absolute; z-index: 10001;
-            top: max(7vh, 28px); right: max(6vw, 24px);
-            color: rgba(255,220,0,0.9);
-            font: 900 clamp(72px, 14vw, 140px)/1 var(--font-title);
-            text-shadow: 0 0 20px rgba(255,220,0,0.5), 0 0 40px rgba(255,220,0,0.25);
-            animation: countPulse 1s infinite;
-        }
-        @keyframes countPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-        #song-display {
-            position: absolute; left: 50%; bottom: calc(var(--icone-size) + 26px);
-            transform: translateX(-50%); width: 92%; max-height: 90px; overflow: hidden;
-            z-index: 10001; color: var(--vivid-yellow);
-            font-family: var(--font-title); font-size: 18px !important;
-            text-align: center; white-space: pre-line;
-            text-shadow: 0 2px 6px rgba(0,0,0,0.95), 0 0 20px rgba(0,0,0,0.8);
-            line-height: 1.35;
-        }
-
-        /* ============ BARRA INFERIOR DO PALCO ============ */
-        #stage-bottom-bar {
-            position: absolute; bottom: 10px; left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 20px); max-width: 1100px;
-            display: flex; align-items: center; gap: 8px;
-            z-index: 99999;
-            background: rgba(0,0,0,0.65);
-            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-            border: 1px solid rgba(255,255,255,0.18);
-            border-radius: 50px;
-            padding: 6px 8px;
-            box-shadow: 0 6px 28px rgba(0,0,0,0.6);
-        }
-        .btn-bar-transp {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.22);
-            color: #fff; width: var(--icone-size); height: var(--icone-size);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 18px; flex-shrink: 0;
-            transition: all 0.2s ease;
-        }
-        .btn-bar-transp:active { transform: scale(0.92); background: rgba(0,255,255,0.25); border-color: var(--neon); }
-        .btn-bar-transp:hover { background: rgba(0,255,255,0.15); border-color: var(--neon); }
-
-        #stage-progress-container {
-            flex: 1; display: flex; align-items: center; gap: 10px;
-            background: rgba(255,255,255,0.05); padding: 0 14px;
-            border-radius: 22px; border: 1px solid rgba(255,255,255,0.1);
-            height: var(--icone-size);
-        }
-        #stage-progress-bar-bg { flex: 1; height: 6px; background: rgba(255,255,255,0.18); border-radius: 4px; overflow: hidden; }
-        #stage-progress-fill {
-            height: 100%; width: 0%;
-            background: linear-gradient(90deg, var(--neon), var(--magenta));
-            border-radius: 4px; box-shadow: 0 0 10px rgba(0,255,255,0.6);
-            transition: width 0.3s linear;
-        }
-        #stage-time-remaining {
-            font-family: var(--font-title); font-size: 12px;
-            color: var(--vivid-yellow); min-width: 55px; text-align: right; font-weight: 700;
-        }
-
-        /* ============ MARQUEE ============ */
-        #marquee-container {
-            position: absolute; top: 0; left: 0; width: 100%;
-            background: linear-gradient(90deg, rgba(0,0,0,0.55), rgba(0,0,0,0.25), rgba(0,0,0,0.55));
-            border-bottom: 1px solid rgba(255,221,0,0.5);
-            padding: 8px 12px; z-index: 99999; overflow: hidden; min-height: 38px;
-        }
-        #marquee-text {
-            display: inline-block; white-space: nowrap; color: var(--vivid-yellow);
-            animation: marqueeAnim 20s linear infinite;
-            font-family: var(--font-title); font-size: 14px; font-weight: 700;
-            text-shadow: 0 0 8px rgba(255,221,0,0.4);
-        }
-        @keyframes marqueeAnim { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-
-        /* ============ BUSCA / CATÁLOGO / INICIAR ============ */
-        .search-bar {
-            background: #0a0a10; padding: 12px 14px;
-            display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 12px;
-            border-top: 1px solid #222; align-items: stretch;
-        }
-        .search-bar button {
-            height: 60px; border-radius: 18px; border: none;
-            font-family: var(--font-title); font-weight: 900; font-size: 15px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            gap: 8px; color: #fff; text-transform: uppercase; letter-spacing: 0.5px;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-        .search-bar button:active { transform: scale(0.97); }
-        #btn-teclado { background: linear-gradient(180deg, #ff44ff 0%, #b300b3 100%); box-shadow: 0 4px 14px rgba(255,0,255,0.3); }
-        #btn-catalogo { background: linear-gradient(180deg, #29e7ff 0%, #0099cc 100%); color: #04202b; box-shadow: 0 4px 14px rgba(41,231,255,0.3); }
-        #btn-play-bar { background: linear-gradient(180deg, #00ff99 0%, #00aa55 100%); color: #001a0d; box-shadow: 0 4px 14px rgba(0,255,153,0.35); font-size: 17px; }
-        #btn-play-bar:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
-
-        /* ============ PAINEL DA FILA ============ */
-        .ui-panel {
-            flex: 1; background: linear-gradient(180deg, #0d0d14 0%, #050508 100%);
-            padding: 14px 16px; display: flex; flex-direction: column; gap: 12px;
-            overflow: hidden; border-top: 2px solid #1a1a2e;
-        }
-        .queue-header { display: flex; justify-content: space-between; align-items: center; padding: 0 2px; }
-        .queue-header h3 {
-            font-family: var(--font-title); font-weight: 900; font-size: 14px;
-            color: var(--neon); letter-spacing: 1.2px;
-            text-shadow: 0 0 10px rgba(0,255,255,0.4);
-        }
-        #queue-count-badge {
-            background: var(--magenta); padding: 3px 12px; border-radius: 12px;
-            font-weight: 900; font-family: var(--font-title); font-size: 12px; color: #fff;
-            box-shadow: 0 0 14px rgba(255,0,255,0.5);
-        }
-        .controls-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-        .btn-parar, .btn-limpar {
-            height: 60px; border-radius: 16px; font-family: var(--font-title);
-            font-weight: 900; font-size: 15px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            border: none; color: #fff; text-transform: uppercase; letter-spacing: 1px;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-        .btn-parar { background: linear-gradient(180deg, #ff9e1b 0%, #c2410c 100%); box-shadow: 0 4px 14px rgba(255,158,27,0.3); }
-        .btn-limpar { background: linear-gradient(180deg, #ff2e51 0%, #b91c1c 100%); box-shadow: 0 4px 14px rgba(255,46,81,0.3); }
-        .btn-parar:active, .btn-limpar:active { transform: scale(0.97); }
-
-        #track-list {
-            flex: 1; overflow-y: auto;
-            background: rgba(0,0,0,0.6); border-radius: 16px;
-            padding: 10px; border: 1px solid #1e1e2e;
-        }
-        #track-list::-webkit-scrollbar { width: 6px; }
-        #track-list::-webkit-scrollbar-thumb { background: var(--magenta); border-radius: 3px; }
-
-        .item {
-            background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
-            padding: 12px 14px; border-radius: 12px; margin-bottom: 8px;
-            border-left: 4px solid var(--magenta);
-            position: relative; overflow: hidden;
-        }
-        .item.now-playing {
-            background: linear-gradient(90deg, rgba(0,255,136,0.18), rgba(0,255,136,0.02));
-            border-left-color: var(--emerald) !important;
-        }
-        .item-title {
-            font-weight: 700; font-size: 14px; color: #fff;
-            margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .item-meta { display: flex; gap: 10px; align-items: center; font-size: 12px; flex-wrap: wrap; }
-        .item-singer { color: var(--vivid-yellow); font-weight: 700; }
-        .item-code {
-            color: var(--neon); font-family: var(--font-title); font-size: 10px;
-            background: rgba(0,255,255,0.1); padding: 2px 8px; border-radius: 6px;
-            letter-spacing: 0.5px;
-        }
-        .playing-badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            background: var(--emerald); color: #000;
-            font-family: var(--font-title); font-size: 9px; font-weight: 900;
-            padding: 2px 8px; border-radius: 6px; margin-bottom: 6px;
-            animation: pulseBadge 1.5s infinite;
-        }
-        @keyframes pulseBadge { 0%,100% { opacity: 1; box-shadow: 0 0 10px rgba(0,255,136,0.6); } 50% { opacity: 0.75; box-shadow: 0 0 4px rgba(0,255,136,0.3); } }
-
-        /* ============ OVERLAYS / MODAIS ============ */
-        #modal-cantor-overlay, #numeric-keypad-overlay, #catalogo-overlay, #modal-sair-overlay, #modal-duplicados-overlay, #logo-tela-overlay {
-            position: fixed; inset: 0; z-index: 20000;
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
-            display: none; align-items: center; justify-content: center; padding: 20px;
-        }
-        #modal-cantor-overlay.active, #numeric-keypad-overlay.active, #catalogo-overlay.active,
-        #modal-sair-overlay.active, #modal-duplicados-overlay.active, #logo-tela-overlay.ativo { display: flex !important; }
-        #modal-cantor-box { background: var(--panel-bg); border: 2px solid var(--vivid-yellow); border-radius: 20px; padding: 25px; width: 100%; max-width: 480px; color: #fff; }
-        #modal-cantor-input { width: 100%; padding: 16px; border-radius: 14px; border: 2px solid #333; background: #0a0a0f; color: #fff; font-size: 18px; margin-top: 10px; }
-
-        .btn-sair-transparente {
-            width: 38px; height: 38px; border-radius: 12px;
-            background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.45);
-            backdrop-filter: blur(8px); display: inline-flex; align-items: center; justify-content: center;
-            cursor: pointer; color: #fff; box-shadow: 0 0 12px rgba(212,128,255,0.35);
-            transition: all 0.2s ease; box-sizing: border-box; padding: 0;
-        }
-        .btn-sair-transparente:hover, .btn-sair-transparente:focus { background: rgba(176,38,255,0.35); border-color: #fff; transform: scale(1.08); outline: none; }
-
-        #modal-sair-overlay { position: fixed; inset: 0; z-index: 40000; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); padding: 20px; }
-        #modal-sair-overlay.active { display: flex !important; }
-        #modal-sair-box { background: linear-gradient(160deg,#1f1435,#0c0817); border: 2px solid #d480ff; border-radius: 20px; padding: 24px; width: min(90vw,420px); display: flex; flex-direction: column; gap: 14px; text-align: center; box-shadow: 0 0 35px rgba(176,38,255,0.45); color: #fff; }
-        #modal-sair-titulo { font: 900 20px var(--font-title); color: #d480ff; letter-spacing: 2px; }
-        .modal-sair-acoes { display: flex; gap: 10px; margin-top: 10px; }
-        .modal-sair-acoes button { flex: 1; padding: 12px; border: none; border-radius: 12px; font: 800 14px var(--font-title); cursor: pointer; }
-        #btn-cancelar-sair { background: #333; color: #fff; }
-        #btn-confirmar-sair { background: linear-gradient(135deg,#b026ff,#7a00e6); color: #fff; box-shadow: 0 0 20px rgba(176,38,255,0.6); }
-
-        #logo-tela-overlay { position: absolute; inset: 0; z-index: 20000; background: #000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
-        #logo-tela-overlay.ativo { display: flex !important; opacity: 1 !important; }
-        #logo-tela-img { max-width: 75%; max-height: 75%; object-fit: contain; filter: drop-shadow(0 0 35px rgba(0,255,255,0.45)); animation: zoomLogoAparecer 1.8s ease-out forwards; }
-        @keyframes zoomLogoAparecer { 0% { transform: scale(0.92); opacity: 0.2; } 20% { opacity: 1; } 100% { transform: scale(1.03); opacity: 1; } }
-
-        #modal-duplicados-overlay { position: fixed; inset: 0; z-index: 35000; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); padding: 20px; }
-        #modal-duplicados-overlay.active { display: flex !important; }
-        #modal-duplicados-box { background: linear-gradient(160deg,#181226,#090812); border: 2px solid var(--vivid-yellow); border-radius: 20px; padding: 24px; width: min(92vw,650px); max-height: 85vh; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 0 40px rgba(255,221,0,0.3); color: #fff; }
-        #modal-duplicados-titulo { font: 900 20px var(--font-title); color: var(--vivid-yellow); text-align: center; letter-spacing: 2px; }
-        #modal-duplicados-lista { flex: 1; overflow-y: auto; max-height: 45vh; display: flex; flex-direction: column; gap: 8px; padding-right: 6px; }
-        .item-dup { background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 10px; border-left: 4px solid #ff4444; font-size: 13px; }
-        .item-dup b { color: var(--neon); display: block; margin-bottom: 2px; }
-        .item-dup small { color: #aaa; word-break: break-all; }
-        .modal-dup-acoes { display: flex; gap: 10px; margin-top: 6px; }
-        .modal-dup-acoes button { flex: 1; padding: 14px; border: none; border-radius: 12px; font: 800 14px var(--font-title); cursor: pointer; }
-        #btn-fechar-dup { background: #333; color: #fff; }
-        #btn-remover-dup { background: #ff2244; color: #fff; box-shadow: 0 0 20px rgba(255,34,68,0.5); }
-
-        #catalogo-box { flex: 1; display: flex; flex-direction: column; gap: 18px; background: #0f0d2a; border-radius: 24px; padding: 26px; max-width: 800px; width: 100%; max-height: 85vh; border: 1px solid rgba(0,255,255,0.2); }
-        #cat-lista { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        .cat-item { display: flex; align-items: center; gap: 20px; padding: 15px 20px; border-radius: 14px; background: rgba(255,255,255,0.05); color: #fff; border: none; cursor: pointer; font-size: 16px; text-align: left; width: 100%; transition: background 0.15s; }
-        .cat-item:hover { background: rgba(0,255,255,0.1); }
-
-        #aviso-rapido { position: fixed; left: 50%; bottom: 21vh; transform: translate(-50%, 40vh); z-index: 30000; padding: 16px 34px; border-radius: 10vh; font-weight: 800; color: #04180e; background: var(--emerald); transition: transform 0.45s; pointer-events: none; }
-        #aviso-rapido.on { transform: translate(-50%, 0); }
-        #ui-wrapper.oculto-inicio { display: none !important; }
-        #ui-wrapper.liberado { display: flex !important; }
-
-        #idle-hero { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; z-index: 3; }
-        #idle-hero .hero-title { font-family: var(--font-title); font-size: clamp(24px, 5vw, 48px); font-weight: 900; color: #fff; text-shadow: 0 0 20px var(--magenta), 0 0 40px rgba(255,0,255,0.4); }
-        #idle-hero .hero-sub { font-family: var(--font-title); font-size: 16px; color: var(--vivid-yellow); margin-top: 10px; letter-spacing: 1px; }
-        #idle-hero .hero-count { font-family: var(--font-body); font-size: 14px; color: #aaa; margin-top: 5px; }
-
-        button:focus-visible { outline: 3px solid #fff !important; box-shadow: 0 0 25px #fff, 0 0 35px rgba(255,255,255,0.8) !important; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>KARAOKÊ FESTA DAS CORES</title>
+<style>
+:root { --font-title: 'Arial Black', sans-serif; --font-body: Arial, sans-serif; --neon:#00ffff; --magenta:#ff00ff; --vivid-yellow:#ffdd00; --emerald:#00ff88; --dark-bg:#050508; --icone-size:44px; }
+*{box-sizing:border-box;outline:none;-webkit-tap-highlight-color:transparent;user-select:none;margin:0;padding:0}
+body{background:var(--dark-bg);color:#e0e0e0;font-family:var(--font-body);height:100vh;width:100vw;overflow:hidden}
+#ui-wrapper{display:flex;flex-direction:column;height:100vh;position:relative;z-index:10}
+.stage{height:320px;width:100%;position:relative;background:#000;overflow:hidden;flex-shrink:0;border-bottom:3px solid var(--vivid-yellow);z-index:200}
+body.fullscreen-mode .stage{height:100vh!important;width:100vw!important;position:fixed;top:0;left:0;z-index:9999;border:none}
+.stage-background{position:absolute;inset:0;background-color:#000;background-size:cover;background-position:center;z-index:1;opacity:.7}
+#bg-singer-layer{position:absolute;inset:0;background-size:contain;background-position:center;background-repeat:no-repeat;z-index:2;opacity:0;transition:opacity .4s}
+#video-player{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:100;display:none}
+#timer-screen{position:absolute;inset:0;z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+#timer-screen.active{display:flex!important}
+#countdown-num{position:absolute;z-index:10001;top:max(7vh,28px);right:max(6vw,24px);color:rgba(255,220,0,.9);font:900 clamp(72px,14vw,140px)/1 var(--font-title);text-shadow:0 0 20px rgba(255,220,0,.5)}
+#song-display{position:absolute;left:50%;bottom:calc(var(--icone-size) + 26px);transform:translateX(-50%);width:92%;max-height:90px;overflow:hidden;z-index:10001;color:var(--vivid-yellow);font-family:var(--font-title);font-size:18px!important;text-align:center;text-shadow:0 2px 6px rgba(0,0,0,.95);line-height:1.35}
+#stage-bottom-bar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:calc(100% - 20px);max-width:1100px;display:flex;align-items:center;gap:8px;z-index:99999;background:rgba(0,0,0,.65);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.18);border-radius:50px;padding:6px 8px}
+.btn-bar-transp{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);color:#fff;width:var(--icone-size);height:var(--icone-size);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;flex-shrink:0}
+#stage-progress-container{flex:1;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);padding:0 14px;border-radius:22px;border:1px solid rgba(255,255,255,.1);height:var(--icone-size)}
+#stage-progress-bar-bg{flex:1;height:6px;background:rgba(255,255,255,.18);border-radius:4px;overflow:hidden}
+#stage-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--neon),var(--magenta));border-radius:4px}
+#stage-time-remaining{font-family:var(--font-title);font-size:12px;color:var(--vivid-yellow);min-width:55px;text-align:right;font-weight:700}
+#marquee-container{position:absolute;top:0;left:0;width:100%;background:rgba(0,0,0,.4);border-bottom:1px solid rgba(255,221,0,.5);padding:8px 12px;z-index:99999;overflow:hidden;min-height:38px}
+#marquee-text{display:inline-block;white-space:nowrap;color:var(--vivid-yellow);animation:marqueeAnim 20s linear infinite;font-family:var(--font-title);font-size:14px;font-weight:700}
+@keyframes marqueeAnim{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+.search-bar{background:#0a0a10;padding:12px 14px;display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:12px;border-top:1px solid #222}
+.search-bar button{height:60px;border-radius:18px;border:none;font-family:var(--font-title);font-weight:900;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;text-transform:uppercase}
+#btn-teclado{background:linear-gradient(180deg,#ff44ff,#b300b3);box-shadow:0 4px 14px rgba(255,0,255,.3)}
+#btn-catalogo{background:linear-gradient(180deg,#29e7ff,#0099cc);color:#04202b;box-shadow:0 4px 14px rgba(41,231,255,.3)}
+#btn-play-bar{background:linear-gradient(180deg,#00ff99,#00aa55);color:#001a0d;box-shadow:0 4px 14px rgba(0,255,153,.35);font-size:17px}
+#btn-play-bar:disabled{opacity:.35;cursor:not-allowed}
+.ui-panel{flex:1;background:linear-gradient(180deg,#0d0d14,#050508);padding:14px 16px;display:flex;flex-direction:column;gap:12px;overflow:hidden;border-top:2px solid #1a1a2e}
+.queue-header{display:flex;justify-content:space-between;align-items:center;padding:0 2px}
+.queue-header h3{font-family:var(--font-title);font-weight:900;font-size:14px;color:var(--neon);letter-spacing:1.2px}
+#queue-count-badge{background:var(--magenta);padding:3px 12px;border-radius:12px;font-weight:900;font-family:var(--font-title);font-size:12px;color:#fff}
+.controls-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.btn-parar,.btn-limpar{height:60px;border-radius:16px;font-family:var(--font-title);font-weight:900;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;border:none;color:#fff;text-transform:uppercase}
+.btn-parar{background:linear-gradient(180deg,#ff9e1b,#c2410c);box-shadow:0 4px 14px rgba(255,158,27,.3)}
+.btn-limpar{background:linear-gradient(180deg,#ff2e51,#b91c1c);box-shadow:0 4px 14px rgba(255,46,81,.3)}
+#track-list{flex:1;overflow-y:auto;background:rgba(0,0,0,.6);border-radius:16px;padding:10px;border:1px solid #1e1e2e}
+.item{background:linear-gradient(90deg,rgba(255,255,255,.06),transparent);padding:12px 14px;border-radius:12px;margin-bottom:8px;border-left:4px solid var(--magenta)}
+.item.now-playing{background:linear-gradient(90deg,rgba(0,255,136,.18),transparent);border-left-color:var(--emerald)!important}
+.item-title{font-weight:700;font-size:14px;color:#fff;margin-bottom:4px}
+.item-meta{display:flex;gap:10px;align-items:center;font-size:12px;flex-wrap:wrap}
+.item-singer{color:var(--vivid-yellow);font-weight:700}
+.item-code{color:var(--neon);font-family:var(--font-title);font-size:10px;background:rgba(0,255,255,.1);padding:2px 8px;border-radius:6px}
+.playing-badge{display:inline-flex;align-items:center;gap:4px;background:var(--emerald);color:#000;font-family:var(--font-title);font-size:9px;font-weight:900;padding:2px 8px;border-radius:6px;margin-bottom:6px}
+#modal-cantor-overlay,#numeric-keypad-overlay,#catalogo-overlay,#modal-sair-overlay,#modal-duplicados-overlay,#logo-tela-overlay{position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px}
+#modal-cantor-overlay.active,#numeric-keypad-overlay.active,#catalogo-overlay.active,#modal-sair-overlay.active,#modal-duplicados-overlay.active,#logo-tela-overlay.ativo{display:flex!important}
+#modal-cantor-box{background:#0d0d14;border:2px solid var(--vivid-yellow);border-radius:20px;padding:25px;width:100%;max-width:480px;color:#fff}
+#modal-cantor-input{width:100%;padding:16px;border-radius:14px;border:2px solid #333;background:#0a0a0f;color:#fff;font-size:18px;margin-top:10px}
+.btn-sair-transparente{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.45);backdrop-filter:blur(8px);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#fff}
+#modal-sair-overlay{position:fixed;inset:0;z-index:40000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);padding:20px}
+#modal-sair-overlay.active{display:flex!important}
+#modal-sair-box{background:linear-gradient(160deg,#1f1435,#0c0817);border:2px solid #d480ff;border-radius:20px;padding:24px;width:min(90vw,420px);display:flex;flex-direction:column;gap:14px;text-align:center;color:#fff}
+#modal-sair-titulo{font:900 20px var(--font-title);color:#d480ff;letter-spacing:2px}
+.modal-sair-acoes{display:flex;gap:10px;margin-top:10px}
+.modal-sair-acoes button{flex:1;padding:12px;border:none;border-radius:12px;font:800 14px var(--font-title);cursor:pointer}
+#btn-cancelar-sair{background:#333;color:#fff}
+#btn-confirmar-sair{background:linear-gradient(135deg,#b026ff,#7a00e6);color:#fff}
+#logo-tela-overlay{position:absolute;inset:0;z-index:20000;background:#000;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .3s}
+#logo-tela-overlay.ativo{display:flex!important;opacity:1!important}
+#logo-tela-img{max-width:75%;max-height:75%;object-fit:contain;filter:drop-shadow(0 0 35px rgba(0,255,255,.45))}
+#modal-duplicados-overlay{position:fixed;inset:0;z-index:35000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.88);padding:20px}
+#modal-duplicados-overlay.active{display:flex!important}
+#modal-duplicados-box{background:linear-gradient(160deg,#181226,#090812);border:2px solid var(--vivid-yellow);border-radius:20px;padding:24px;width:min(92vw,650px);max-height:85vh;display:flex;flex-direction:column;gap:14px;color:#fff}
+#modal-duplicados-titulo{font:900 20px var(--font-title);color:var(--vivid-yellow);text-align:center}
+#modal-duplicados-lista{flex:1;overflow-y:auto;max-height:45vh;display:flex;flex-direction:column;gap:8px}
+.item-dup{background:rgba(255,255,255,.06);padding:10px 14px;border-radius:10px;border-left:4px solid #ff4444;font-size:13px}
+.modal-dup-acoes{display:flex;gap:10px}
+.modal-dup-acoes button{flex:1;padding:14px;border:none;border-radius:12px;font:800 14px var(--font-title);cursor:pointer}
+#btn-fechar-dup{background:#333;color:#fff}
+#btn-remover-dup{background:#ff2244;color:#fff}
+#catalogo-box{flex:1;display:flex;flex-direction:column;gap:18px;background:#0f0d2a;border-radius:24px;padding:26px;max-width:800px;width:100%;max-height:85vh}
+#cat-lista{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.cat-item{display:flex;align-items:center;gap:20px;padding:15px 20px;border-radius:14px;background:rgba(255,255,255,.05);color:#fff;border:none;cursor:pointer;font-size:16px;text-align:left;width:100%}
+#ui-wrapper.oculto-inicio,#ui-wrapper:not(.liberado){display:none!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+#ui-wrapper.liberado{display:flex!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+#idle-hero{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;z-index:3}
+#idle-hero .hero-title{font-family:var(--font-title);font-size:clamp(24px,5vw,48px);font-weight:900;color:#fff;text-shadow:0 0 20px var(--magenta)}
+#idle-hero .hero-sub{font-family:var(--font-title);font-size:16px;color:var(--vivid-yellow);margin-top:10px}
+#idle-hero .hero-count{font-family:var(--font-body);font-size:14px;color:#aaa;margin-top:5px}
+#overlay-ok{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999999;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px;font-family:var(--font-title)}
+#intro-screen{position:fixed;inset:0;background:#000;z-index:9999998;display:none;align-items:center;justify-content:center}
+#intro-screen.active{display:flex!important}
+#intro-video{width:100%;height:100%;object-fit:cover;background:#000}
+video::-webkit-media-controls-start-playback-button,video::-webkit-media-controls-play-button{display:none!important;-webkit-appearance:none!important}
+button:focus-visible{outline:3px solid #fff!important;box-shadow:0 0 25px #fff!important}
+</style>
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="intro-screen">
-        <video id="intro-video" playsinline webkit-playsinline autoplay preload="auto"><source src="intro.mp4" type="video/mp4"></video>
-        <div id="intro-curtain" aria-hidden="true"></div>
-    </div>
-
-    <div id="overlay-ok" style="position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999999; display:none; flex-direction:column; align-items:center; justify-content:center; padding:40px; font-family:var(--font-title);">
-        <h2 style="color:var(--neon); font-size:24px; margin-bottom:20px; text-align:center; text-shadow:0 0 20px rgba(0,255,255,0.5);">🎤 PRESSIONE OK PARA COMEÇAR</h2>
-        <button id="btn-ok-overlay" tabindex="1" style="padding:20px 40px; font-size:18px; background:var(--emerald); border:none; border-radius:15px; font-weight:bold; cursor:pointer; box-shadow:0 0 30px rgba(0,255,136,0.5);">OK - COMEÇAR</button>
-    </div>
-
-    <!-- Teclado numérico -->
-    <div id="numeric-keypad-overlay">
-        <div id="numeric-keypad" style="background:#191020; border:2px solid var(--magenta); padding:20px; border-radius:20px; width:320px; color:#fff;">
-            <h2 style="text-align:center; margin-bottom:10px; font-family:var(--font-title);">DIGITE O CÓDIGO</h2>
-            <div id="keypad-code" style="background:#030306; padding:10px; text-align:center; font-size:24px; color:var(--vivid-yellow); margin-bottom:10px; letter-spacing:6px; border-radius:8px;">—</div>
-            <p id="keypad-feedback" style="color:#ff7777; font-size:12px; text-align:center; min-height:16px;"></p>
-            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:10px;">
-                <button type="button" onclick="adicionarDigitoTeclado('1')">1</button>
-                <button type="button" onclick="adicionarDigitoTeclado('2')">2</button>
-                <button type="button" onclick="adicionarDigitoTeclado('3')">3</button>
-                <button type="button" onclick="adicionarDigitoTeclado('4')">4</button>
-                <button type="button" onclick="adicionarDigitoTeclado('5')">5</button>
-                <button type="button" onclick="adicionarDigitoTeclado('6')">6</button>
-                <button type="button" onclick="adicionarDigitoTeclado('7')">7</button>
-                <button type="button" onclick="adicionarDigitoTeclado('8')">8</button>
-                <button type="button" onclick="adicionarDigitoTeclado('9')">9</button>
-                <button type="button" onclick="limparCodigoTeclado()">LIMPAR</button>
-                <button type="button" onclick="adicionarDigitoTeclado('0')">0</button>
-                <button type="button" onclick="apagarDigitoTeclado()">⌫</button>
-            </div>
-            <div style="display:flex; gap:8px;">
-                <button type="button" onclick="fecharTecladoNumerico()" style="flex:1; padding:12px; background:#333; color:#fff; border:none; border-radius:8px;">FECHAR</button>
-                <button type="button" onclick="confirmarCodigoTeclado()" style="flex:1; padding:12px; background:var(--emerald); color:#000; border:none; border-radius:8px; font-weight:bold;">BUSCAR</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="ui-wrapper" class="oculto-inicio" style="display:none;opacity:0;visibility:hidden;">
-        <div class="stage" id="stage-area">
-            <div class="stage-background" id="main-bg"></div>
-            <div id="bg-singer-layer"></div>
-            <div id="bg-singer-layer-2"></div>
-            <div id="tornado-layer">
-                <div id="bg-singer-layer-rock"></div>
-            </div>
-            <video id="video-player" playsinline webkit-playsinline preload="auto"></video>
-            <audio id="audio-jb" loop></audio>
-
-            <div id="idle-hero">
-                <div class="hero-title">KARAOKÊ FESTA DAS CORES</div>
-                <div class="hero-sub">DIGITE O CÓDIGO DA MÚSICA</div>
-                <div class="hero-count"><b id="hero-count">0</b> MÚSICAS DISPONÍVEIS</div>
-            </div>
-
-            <div id="marquee-container">
-                <div id="marquee-text">★ KARAOKÊ FESTA DAS CORES ★ <span id="marquee-info">| AGUARDANDO MÚSICA...</span></div>
-            </div>
-
-            <div id="stage-bottom-bar">
-                <button type="button" class="btn-bar-transp" onclick="acionarControleApresentacao()" title="Tela Cheia">🖥️</button>
-                <button type="button" class="btn-bar-transp" onclick="voltarMusica()" title="Voltar">⏮</button>
-                <div id="stage-progress-container">
-                    <div id="stage-progress-bar-bg"><div id="stage-progress-fill"></div></div>
-                    <div id="stage-time-remaining">-00:00</div>
-                </div>
-                <button type="button" class="btn-bar-transp" onclick="pularMusica()" title="Pular">⏭</button>
-            </div>
-
-            <div id="timer-screen">
-                <div id="song-display"></div>
-                <div id="countdown-num">5</div>
-            </div>
-        </div>
-
-        <div class="search-bar">
-            <button type="button" id="btn-teclado" onclick="abrirTeclado()" title="Teclado">CÓDIGO</button>
-            <button type="button" id="btn-catalogo" onclick="abrirCatalogo()">CATÁLOGO</button>
-            <button type="button" id="btn-play-bar" onclick="startPlaylist()" disabled>INICIAR SHOW</button>
-        </div>
-
-        <div class="ui-panel">
-            <div class="queue-header">
-                <h3>🎵 FILA DE MÚSICAS</h3>
-                <div id="queue-count-badge">0</div>
-            </div>
-            <div class="controls-grid">
-                <button type="button" class="btn-parar" onclick="stopAudio()">PARAR</button>
-                <button type="button" class="btn-limpar" onclick="limparLista()">LIMPAR</button>
-            </div>
-            <div id="track-list"></div>
-        </div>
-    </div>
-
-    <div id="modal-cantor-overlay">
-        <div id="modal-cantor-box">
-            <h3 style="font-family:var(--font-title); color:var(--vivid-yellow); margin-bottom:10px;">✅ CÓDIGO ENCONTRADO</h3>
-            <div id="modal-cantor-musica-nome" style="font-size:16px; font-weight:bold; margin-bottom:15px;"></div>
-            <label style="font-size:12px; color:#aaa; font-family:var(--font-title);">🎤 QUEM CANTA?</label>
-            <input type="text" id="modal-cantor-input" placeholder="Digite o nome do cantor..." autocomplete="off">
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button type="button" onclick="fecharModalCantor()" style="flex:1; padding:14px; background:#333; color:#fff; border:none; border-radius:10px;">CANCELAR</button>
-                <button type="button" onclick="confirmarCantor()" style="flex:1; padding:14px; background:var(--magenta); color:#fff; border:none; border-radius:10px; font-weight:bold;">CONFIRMAR</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="catalogo-overlay">
-        <div id="catalogo-box">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2 style="font-family:var(--font-title);">CATÁLOGO <small id="cat-total" style="font-size:14px; color:var(--neon);"></small></h2>
-                <button type="button" onclick="fecharCatalogo()" style="padding:10px 20px; background:var(--magenta); color:#fff; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">FECHAR ✕</button>
-            </div>
-            <input type="text" id="cat-campo-busca" placeholder="🔍 Pesquisar música ou cantor..." oninput="filtrarBuscaCatalogo(this.value)" style="width:100%; padding:14px; border-radius:12px; border:2px solid var(--neon); background:#050508; color:#fff; font-size:16px;">
-            <div id="cat-lista"></div>
-        </div>
-    </div>
-
-    <div id="logo-tela-overlay"><img id="logo-tela-img" alt="Logo"></div>
-
-    <div id="modal-duplicados-overlay">
-        <div id="modal-duplicados-box">
-            <div id="modal-duplicados-titulo">VERIFICADOR DE DUPLICADOS</div>
-            <p id="modal-duplicados-sub" style="text-align:center; font-size:14px; color:#bbb;"></p>
-            <div id="modal-duplicados-lista"></div>
-            <div class="modal-dup-acoes">
-                <button type="button" id="btn-fechar-dup" onclick="fecharModalDuplicados()">CANCELAR</button>
-                <button type="button" id="btn-remover-dup" onclick="confirmarRemoverDuplicados()">ELIMINAR DUPLICADOS</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-sair-overlay">
-        <div id="modal-sair-box">
-            <div id="modal-sair-titulo">SAIR DO KARAOKE</div>
-            <p style="font-size:14px; color:#ddd;">Tem certeza de que deseja fechar o aplicativo?</p>
-            <div class="modal-sair-acoes">
-                <button type="button" id="btn-cancelar-sair" onclick="fecharModalSair()">CONTINUAR</button>
-                <button type="button" id="btn-confirmar-sair" onclick="confirmarSairApp()">SIM, SAIR</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="aviso-rapido"></div>
-    <input type="file" id="f-folder" webkitdirectory directory multiple style="display:none">
-
-    <script>
-        let player, trackList, fileInput, marqueeInfo, bgSinger, bgSinger2, audioJB, mainBg, tornadoLayer, timerScreen, marqueeCont;
-        let videoFiles = {}, catalog = [], queue = [];
-        let modalTempCode = null, modalTempNome = null, modalTempFile = null;
-
-        let imagensIndex = {};
-        let capasCantor = {};
-        let bgsPadrao = {};
-
-        let singerBgInterval = null, isVideosLoaded = false;
-        let codigoTecladoNumerico = '';
-        let _termoBuscaCatalogo = '';
-        let _logoUrlObrigatorio = null;
-        let _duplicadosEncontrados = [];
-        let _introEmReproducao = false;
-        window._arquivosCarregadosCache = [];
-
-        function logOK(m) { console.log('%c[OK] ' + m, 'color: #00ff88; font-weight: bold'); }
-        function logAviso(m) { console.log('%c[AVISO] ' + m, 'color: #ffaa00; font-weight: bold'); }
-        function logErro(m) { console.log('%c[ERRO] ' + m, 'color: #ff3333; font-weight: bold'); }
-
-        function forcarPaisagem() {
-            try {
-                if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                }
-            } catch (e) {}
-            document.body.classList.add('fullscreen-mode');
-        }
-
-        function initKaraoke() {
-            player = document.getElementById('video-player');
-            trackList = document.getElementById('track-list');
-            fileInput = document.getElementById('f-folder');
-            marqueeInfo = document.getElementById('marquee-info');
-            bgSinger = document.getElementById('bg-singer-layer');
-            bgSinger2 = document.getElementById('bg-singer-layer-2');
-            audioJB = document.getElementById('audio-jb');
-            mainBg = document.getElementById('main-bg');
-            tornadoLayer = document.getElementById('tornado-layer');
-            timerScreen = document.getElementById('timer-screen');
-            marqueeCont = document.getElementById('marquee-container');
-
-            fileInput.addEventListener('change', handleFolderSelect);
-            player.onended = () => {
-                fecharVideo();
-                queue.shift();
-                renderQueue();
-                if (queue.length > 0) setTimeout(startPlaylist, 800);
-            };
-            player.ontimeupdate = updateStageProgressBar;
-
-            const usaNativo = !!(window.AndroidHost && AndroidHost.chooseFolder);
-            if (usaNativo) selectFolder();
-            else mostrarOverlayOK();
-
-            instalarBotaoSair();
-            setTimeout(instalarBotaoSair, 800);
-        }
-
-        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initKaraoke);
-        else initKaraoke();
-
-        function mostrarOverlayOK() {
-            const ov = document.getElementById('overlay-ok');
-            ov.style.display = 'flex';
-            document.getElementById('btn-ok-overlay').onclick = () => {
-                ov.style.display = 'none';
-                reproduzirCicloIntro();
-            };
-        }
-
-        async function reproduzirCicloIntro() {
-            const introScreen = document.getElementById('intro-screen');
-            const introVideo = document.getElementById('intro-video');
-            introScreen.classList.add('active');
-            try {
-                await introVideo.play();
-                introVideo.onended = () => finalizarIntro();
-            } catch(e) {
-                finalizarIntro();
-            }
-        }
-
-        function finalizarIntro() {
-            document.getElementById('intro-screen').classList.remove('active');
-            const ui = document.getElementById('ui-wrapper');
-            ui.classList.remove('oculto-inicio');
-            ui.classList.add('liberado');
-            ui.style.display = 'flex';
-            ui.style.opacity = '1';
-            ui.style.visibility = 'visible';
-        }
-
-        function updateStageProgressBar() {
-            if (!player.duration) return;
-            const cur = player.currentTime, dur = player.duration, rem = Math.max(0, dur - cur);
-            document.getElementById('stage-progress-fill').style.width = (cur / dur) * 100 + '%';
-            document.getElementById('stage-time-remaining').innerText =
-                `-${Math.floor(rem/60).toString().padStart(2,'0')}:${Math.floor(rem%60).toString().padStart(2,'0')}`;
-        }
-
-        function mostrarCapaCantor(url) {
-            if (!url) { bgSinger.style.opacity = '0'; bgSinger.style.backgroundImage = ''; return; }
-            bgSinger.style.backgroundImage = `url("${url}")`;
-            bgSinger.style.opacity = '1';
-        }
-        function esconderCapaCantor() {
-            bgSinger.style.opacity = '0'; bgSinger.style.backgroundImage = '';
-            bgSinger2.style.opacity = '0'; bgSinger2.style.backgroundImage = '';
-        }
-
-        async function startPlaylist() {
-            if (!queue.length || player.style.display === 'block') return;
-            await forcarPaisagem();
-            const current = queue[0];
-
-            const capaFile = buscarCapaCantor(current.singer) || buscarBgPadrao();
-            const capaUrl = capaFile ? (capaFile.contentUri || URL.createObjectURL(capaFile)) : '';
-            mostrarCapaCantor(capaUrl);
-
-            document.getElementById('idle-hero').style.display = 'none';
-            document.body.classList.add('countdown-ativo');
-            const songDisplayEl = document.getElementById('song-display');
-            songDisplayEl.innerHTML =
-                `${escHtml(current.line)}<br><span style="color:var(--emerald); font-size:16px;">🎤 ${escHtml(current.singer)}</span>`;
-            timerScreen.classList.add('active');
-
-            const num = document.getElementById('countdown-num');
-            for (let i = 5; i >= 1; i--) {
-                num.innerText = i;
-                await new Promise(r => setTimeout(r, 1000));
-            }
-
-            esconderCapaCantor();
-            timerScreen.classList.remove('active');
-            if (_logoUrlObrigatorio) {
-                await new Promise(res => exibirLogoPosContagem(1800, res));
-            }
-            document.body.classList.remove('countdown-ativo');
-
-            player.src = current.file.contentUri || URL.createObjectURL(current.file);
-            player.style.display = 'block';
-            player.play().catch(() => {});
-            renderQueue();
-        }
-
-        function fecharVideo() {
-            esconderCapaCantor();
-            document.body.classList.remove('countdown-ativo');
-            player.pause();
-            player.src = "";
-            player.style.display = 'none';
-            document.getElementById('stage-progress-fill').style.width = '0%';
-            document.getElementById('stage-time-remaining').innerText = '-00:00';
-        }
-
-        async function handleFolderSelect(e) {
-            const files = Array.from(e.target.files);
-            if (!files.length) return;
-
-            window._arquivosCarregadosCache = files;
-            identificarLogoMestra(files);
-
-            videoFiles = {}; catalog = [];
-            imagensIndex = {}; capasCantor = {}; bgsPadrao = {};
-
-            for (let f of files) {
-                const nameUpper = f.name.toUpperCase();
-                const pathUpper = (f.webkitRelativePath || f.name).toUpperCase();
-                const parts = pathUpper.split(/[\/\\]/);
-
-                if (nameUpper.endsWith('.MP4') && !nameUpper.includes('INTRO')) {
-                    const m = nameUpper.match(/(\d+)/);
-                    const code = m ? m[1].padStart(4, '0')
-                                   : String(Object.keys(videoFiles).length + 1).padStart(4, '0');
-                    videoFiles[code] = f;
-                    catalog.push({ code, line: f.name.replace(/\.mp4$/i, '') });
-                    continue;
-                }
-
-                const isImg = /\.(PNG|JPE?G)$/i.test(nameUpper);
-                if (!isImg) continue;
-
-                const baseName = f.name.replace(/\.(png|jpe?g)$/i, '');
-                const key = chaveDeBuscaCapa(baseName);
-                if (!key) continue;
-
-                imagensIndex[key] = f;
-                if (parts.includes('CAPAS') || parts.includes('CAPA')) capasCantor[key] = f;
-                else if (parts.includes('BGS') || parts.includes('BG')) bgsPadrao[key] = f;
-            }
-
-            isVideosLoaded = Object.keys(videoFiles).length > 0;
-            document.getElementById('btn-play-bar').disabled = !isVideosLoaded;
-            document.getElementById('hero-count').textContent = Object.keys(videoFiles).length;
-
-            setTimeout(() => {
-                if (!_introEmReproducao) {
-                    const _ui = document.getElementById('ui-wrapper');
-                    if (_ui && !_ui.classList.contains('liberado')) finalizarIntro();
-                }
-            }, 2500);
-
-            logOK(`${Object.keys(videoFiles).length} vídeos | ` +
-                  `${Object.keys(capasCantor).length} capas | ` +
-                  `${Object.keys(bgsPadrao).length} backgrounds`);
-        }
-
-        function chaveDeBuscaCapa(nome) {
-            return String(nome || '')
-                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                .toUpperCase().trim();
-        }
-
-        function buscarCapaCantor(nomeCantor) {
-            const key = chaveDeBuscaCapa(nomeCantor);
-            if (!key) return null;
-            if (capasCantor[key]) return capasCantor[key];
-            const regex = new RegExp('^' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:[\\s_\\-]|$)');
-            const foundInCapas = Object.keys(capasCantor).find(k => regex.test(k));
-            if (foundInCapas) return capasCantor[foundInCapas];
-            if (imagensIndex[key]) return imagensIndex[key];
-            const foundGeral = Object.keys(imagensIndex).find(k => regex.test(k));
-            return foundGeral ? imagensIndex[foundGeral] : null;
-        }
-
-        function buscarBgPadrao() {
-            const variacoes = [
-                'BG PRINCIPAL', 'BGPRINCIPAL', 'BG_PRINCIPAL', 'BG-PRINCIPAL',
-                'BG PRINCIPAL 1', 'BGP', 'BGOFICIAL', 'BG OFICIAL'
-            ];
-            for (const v of variacoes) if (bgsPadrao[v]) return bgsPadrao[v];
-            const key = Object.keys(bgsPadrao).find(k => k.startsWith('BG'));
-            if (key) return bgsPadrao[key];
-            for (const v of variacoes) if (imagensIndex[v]) return imagensIndex[v];
-            return null;
-        }
-
-        function processarCodigo(code) {
-            if (String(code).trim() === '0000') {
-                checarDuplicadosCodigo0000(window._arquivosCarregadosCache || []);
-                return;
-            }
-            const padCode = String(code).padStart(4, '0');
-            if (!videoFiles[padCode]) return;
-            modalTempCode = padCode;
-            modalTempNome = catalog.find(c => c.code === padCode)?.line || 'MÚSICA ' + padCode;
-            modalTempFile = videoFiles[padCode];
-            document.getElementById('modal-cantor-musica-nome').innerText =
-                '#' + padCode + ' - ' + modalTempNome;
-            document.getElementById('modal-cantor-input').value = '';
-            document.getElementById('modal-cantor-overlay').classList.add('active');
-        }
-
-        function confirmarCantor() {
-            const singer = (document.getElementById('modal-cantor-input').value || '').trim().toUpperCase() || 'CONVIDADO';
-            queue.push({ line: modalTempNome, code: modalTempCode, singer, file: modalTempFile });
-            renderQueue();
-            fecharModalCantor();
-        }
-
-        function fecharModalCantor() { document.getElementById('modal-cantor-overlay').classList.remove('active'); }
-
-        function renderQueue() {
-            const isPlaying = player.style.display === 'block';
-            if (!queue.length) {
-                trackList.innerHTML = '<div style="text-align:center; color:#666; padding:24px; font-family:var(--font-title); font-size:13px;">FILA VAZIA</div>';
-            } else {
-                trackList.innerHTML = queue.map((i, idx) => {
-                    const now = idx === 0 && isPlaying;
-                    return `
-                        <div class="item ${now ? 'now-playing' : ''}">
-                            ${now ? '<div class="playing-badge">▶ TOCANDO</div>' : ''}
-                            <div class="item-title">${escHtml(i.line)}</div>
-                            <div class="item-meta">
-                                <span class="item-singer">🎤 ${escHtml(i.singer)}</span>
-                                <span class="item-code">#${i.code}</span>
-                            </div>
-                        </div>`;
-                }).join('');
-            }
-            document.getElementById('queue-count-badge').innerText =
-                isPlaying ? Math.max(0, queue.length - 1) : queue.length;
-
-            const shouldShowIdle = !queue.length && !isPlaying &&
-                                   !document.body.classList.contains('countdown-ativo');
-            document.getElementById('idle-hero').style.display = shouldShowIdle ? 'flex' : 'none';
-        }
-
-        function stopAudio() { fecharVideo(); queue = []; renderQueue(); }
-        function limparLista() { queue = []; renderQueue(); }
-        function pularMusica() { if (queue.length) player.dispatchEvent(new Event('ended')); }
-        function voltarMusica() {}
-        function acionarControleApresentacao() {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
-            else document.exitFullscreen().catch(() => {});
-        }
-
-        function escHtml(t) {
-            return String(t || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-        }
-
-        function abrirCatalogo() {
-            document.getElementById('catalogo-overlay').classList.add('active');
-            renderCatalogo();
-        }
-        function fecharCatalogo() { document.getElementById('catalogo-overlay').classList.remove('active'); }
-        function filtrarBuscaCatalogo(termo) {
-            _termoBuscaCatalogo = termo.toLowerCase();
-            renderCatalogo();
-        }
-        function renderCatalogo() {
-            const lista = document.getElementById('cat-lista');
-            const itens = catalog.filter(c =>
-                c.line.toLowerCase().includes(_termoBuscaCatalogo) ||
-                c.code.includes(_termoBuscaCatalogo)
-            );
-            lista.innerHTML = itens.map(i => `
-                <button type="button" class="cat-item" onclick="fecharCatalogo(); processarCodigo('${i.code}')">
-                    <span style="color:var(--neon); font-weight:bold; font-family:var(--font-title);">#${i.code}</span>
-                    <span>${escHtml(i.line)}</span>
-                </button>
-            `).join('') || '<div style="text-align:center; color:#666; padding:20px;">Nenhuma música encontrada.</div>';
-            document.getElementById('cat-total').textContent = itens.length + ' músicas';
-        }
-        function selectFolder() { fileInput.click(); }
-
-        /* ============== TECLADO ============== */
-        function abrirTeclado() {
-            codigoTecladoNumerico = '';
-            atualizarTelaTecladoNumerico();
-            document.getElementById('keypad-feedback').textContent = '';
-            document.getElementById('numeric-keypad-overlay').classList.add('active');
-        }
-        function atualizarTelaTecladoNumerico() {
-            document.getElementById('keypad-code').textContent = codigoTecladoNumerico || '—';
-        }
-        function adicionarDigitoTeclado(d) {
-            if (codigoTecladoNumerico.length < 10) { codigoTecladoNumerico += d; atualizarTelaTecladoNumerico(); }
-        }
-        function apagarDigitoTeclado() { codigoTecladoNumerico = codigoTecladoNumerico.slice(0, -1); atualizarTelaTecladoNumerico(); }
-        function limparCodigoTeclado() { codigoTecladoNumerico = ''; atualizarTelaTecladoNumerico(); }
-        function fecharTecladoNumerico() { document.getElementById('numeric-keypad-overlay').classList.remove('active'); }
-        function confirmarCodigoTeclado() {
-            const v = codigoTecladoNumerico.trim();
-            if (v && videoFiles[v.padStart(4, '0')]) {
-                fecharTecladoNumerico();
-                processarCodigo(v);
-            } else {
-                document.getElementById('keypad-feedback').textContent = 'Código não encontrado.';
-            }
-        }
-
-        /* ============== LOGO / SAIR / DUPLICADOS ============== */
-        function identificarLogoMestra(files) {
-            _logoUrlObrigatorio = null;
-            for (let f of (files || [])) {
-                const nome = (f.name || '').toLowerCase();
-                const path = f.webkitRelativePath || f.name;
-                const partes = path.split('/').filter(Boolean);
-                if (nome === 'logo.png' && partes.length <= 2) {
-                    _logoUrlObrigatorio = f.contentUri || URL.createObjectURL(f);
-                    return;
-                }
-            }
-            for (let f of (files || [])) {
-                if ((f.name || '').toLowerCase() === 'logo.png') {
-                    _logoUrlObrigatorio = f.contentUri || URL.createObjectURL(f);
-                    return;
-                }
-            }
-        }
-
-        function exibirLogoPosContagem(duracaoMs, callback) {
-            const overlay = document.getElementById('logo-tela-overlay');
-            const img = document.getElementById('logo-tela-img');
-            if (!overlay || !_logoUrlObrigatorio) { if (callback) callback(); return; }
-            img.src = _logoUrlObrigatorio;
-            overlay.classList.add('ativo');
-            setTimeout(() => {
-                overlay.style.opacity = '0';
-                setTimeout(() => { overlay.classList.remove('ativo'); overlay.style.opacity = '1'; if (callback) callback(); }, 250);
-            }, duracaoMs);
-        }
-
-        function pedirConfirmacaoSair() { document.getElementById('modal-sair-overlay').classList.add('active'); }
-        function fecharModalSair() { document.getElementById('modal-sair-overlay').classList.remove('active'); }
-        function confirmarSairApp() {
-            fecharModalSair();
-            if (window.AndroidHost && AndroidHost.exitApp) AndroidHost.exitApp();
-            else window.close();
-        }
-
-        function instalarBotaoSair() {
-            if (document.getElementById('btn-sair-topo-oficial')) return;
-            const header = document.querySelector('.queue-header');
-            if (!header) return;
-            const btn = document.createElement('button');
-            btn.id = 'btn-sair-topo-oficial';
-            btn.className = 'btn-sair-transparente';
-            btn.title = 'Sair do Karaoke';
-            btn.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" stroke="#ffffff" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>';
-            btn.onclick = pedirConfirmacaoSair;
-            header.style.display = 'flex';
-            header.style.alignItems = 'center';
-            header.appendChild(btn);
-        }
-
-        window.onIntroFoundDuringScan = function(uri) {
-            _introEmReproducao = true;
-            const vid = document.getElementById('intro-video');
-            const screen = document.getElementById('intro-screen');
-            if (!vid || !uri) { _introEmReproducao = false; finalizarIntro(); return; }
-            vid.src = uri;
-            vid.loop = false;
-            if (screen) { screen.classList.add('active'); screen.style.display = 'flex'; }
-            const liberar = () => { _introEmReproducao = false; finalizarIntro(); };
-            vid.ontimeupdate = function() { if (vid.currentTime >= 30) { vid.ontimeupdate = null; vid.pause(); liberar(); } };
-            vid.onended = function() { vid.ontimeupdate = null; liberar(); };
-            vid.play().catch(() => liberar());
-        };
-
-        function checarDuplicadosCodigo0000(arquivos) {
-            _duplicadosEncontrados = [];
-            const mapa = new Map();
-            for (let f of (arquivos || [])) {
-                const nome = f.name || '';
-                if (!/[.]mp4$/i.test(nome) || nome.toLowerCase().startsWith('intro')) continue;
-                const chave = chaveDeBuscaCapa(nome.replace(/[.]mp4$/i, '').replace(/^[0-9]+[ -.:)]*/i, ''));
-                if (!chave) continue;
-                if (mapa.has(chave)) _duplicadosEncontrados.push({ original: mapa.get(chave), duplicado: f });
-                else mapa.set(chave, f);
-            }
-            const sub = document.getElementById('modal-duplicados-sub');
-            const lista = document.getElementById('modal-duplicados-lista');
-            const btn = document.getElementById('btn-remover-dup');
-            if (!_duplicadosEncontrados.length) {
-                sub.innerHTML = '<span style="color:#00ff88;font-weight:bold;">Nenhum duplicado encontrado.</span>';
-                lista.innerHTML = ''; btn.style.display = 'none';
-                document.getElementById('modal-duplicados-overlay').classList.add('active');
-                return;
-            }
-            sub.innerHTML = 'Encontrados <b style="color:#ff4444;">' + _duplicadosEncontrados.length + '</b> duplicado(s).';
-            btn.style.display = 'block';
-            lista.innerHTML = _duplicadosEncontrados.map(d => `
-                <div class="item-dup">
-                    <b>${escHtml(d.duplicado.name)}</b>
-                    <small>Mantendo: ${escHtml(d.original.name)}</small>
-                </div>`).join('');
-            document.getElementById('modal-duplicados-overlay').classList.add('active');
-        }
-        function fecharModalDuplicados() { document.getElementById('modal-duplicados-overlay').classList.remove('active'); }
-        async function confirmarRemoverDuplicados() {
-            document.getElementById('modal-duplicados-sub').innerHTML = '<span style="color:#ffdd00;">Excluindo...</span>';
-            let n = 0;
-            for (let d of _duplicadosEncontrados) {
-                if (d.duplicado.contentUri && window.AndroidHost && AndroidHost.deleteFile) {
-                    try { if (AndroidHost.deleteFile(d.duplicado.contentUri)) n++; } catch(e) {}
-                }
-            }
-            fecharModalDuplicados();
-            setTimeout(() => { if (window.AndroidHost && AndroidHost.refreshFolder) AndroidHost.refreshFolder(); else location.reload(); }, 600);
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (/^[0-9]$/.test(e.key) && typeof adicionarDigitoTeclado === 'function' &&
-                document.getElementById('numeric-keypad-overlay') &&
-                document.getElementById('numeric-keypad-overlay').classList.contains('active')) {
-                adicionarDigitoTeclado(e.key);
-            }
-            if (e.key === 'Escape' || e.key === 'GoBack' || e.keyCode === 27 || e.keyCode === 4) {
-                const dup = document.getElementById('modal-duplicados-overlay');
-                const sair = document.getElementById('modal-sair-overlay');
-                if (dup && dup.classList.contains('active')) fecharModalDuplicados();
-                else if (sair && sair.classList.contains('active')) fecharModalSair();
-                else pedirConfirmacaoSair();
-            }
-        });
-    </script>
+<div id="intro-screen"><video id="intro-video" playsinline webkit-playsinline autoplay preload="auto"><source src="intro.mp4" type="video/mp4"></video></div>
+
+<div id="overlay-ok"><h2 style="color:var(--neon);font-size:24px;margin-bottom:20px;text-align:center">PRESSIONE OK PARA COMECAR</h2><button id="btn-ok-overlay" tabindex="1" style="padding:20px 40px;font-size:18px;background:var(--emerald);border:none;border-radius:15px;font-weight:bold;cursor:pointer">OK - COMECAR</button></div>
+
+<div id="numeric-keypad-overlay">
+<div id="numeric-keypad" style="background:#191020;border:2px solid var(--magenta);padding:20px;border-radius:20px;width:320px;color:#fff">
+<h2 style="text-align:center;margin-bottom:10px;font-family:var(--font-title)">DIGITE O CODIGO</h2>
+<div id="keypad-code" style="background:#030306;padding:10px;text-align:center;font-size:24px;color:var(--vivid-yellow);margin-bottom:10px;letter-spacing:6px;border-radius:8px">—</div>
+<p id="keypad-feedback" style="color:#ff7777;font-size:12px;text-align:center;min-height:16px"></p>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+<button type="button" onclick="adicionarDigitoTeclado('1')">1</button><button type="button" onclick="adicionarDigitoTeclado('2')">2</button><button type="button" onclick="adicionarDigitoTeclado('3')">3</button>
+<button type="button" onclick="adicionarDigitoTeclado('4')">4</button><button type="button" onclick="adicionarDigitoTeclado('5')">5</button><button type="button" onclick="adicionarDigitoTeclado('6')">6</button>
+<button type="button" onclick="adicionarDigitoTeclado('7')">7</button><button type="button" onclick="adicionarDigitoTeclado('8')">8</button><button type="button" onclick="adicionarDigitoTeclado('9')">9</button>
+<button type="button" onclick="limparCodigoTeclado()">LIMPAR</button><button type="button" onclick="adicionarDigitoTeclado('0')">0</button><button type="button" onclick="apagarDigitoTeclado()">⌫</button>
+</div>
+<div style="display:flex;gap:8px"><button type="button" onclick="fecharTecladoNumerico()" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:8px">FECHAR</button><button type="button" onclick="confirmarCodigoTeclado()" style="flex:1;padding:12px;background:var(--emerald);color:#000;border:none;border-radius:8px;font-weight:bold">BUSCAR</button></div>
+</div>
+</div>
+
+<div id="ui-wrapper" class="oculto-inicio" style="display:none;opacity:0;visibility:hidden;">
+<div class="stage" id="stage-area">
+<div class="stage-background" id="main-bg"></div>
+<div id="bg-singer-layer"></div>
+<video id="video-player" playsinline webkit-playsinline preload="auto"></video>
+<div id="idle-hero"><div class="hero-title">KARAOKE FESTA DAS CORES</div><div class="hero-sub">DIGITE O CODIGO DA MUSICA</div><div class="hero-count"><b id="hero-count">0</b> MUSICAS DISPONIVEIS</div></div>
+<div id="marquee-container"><div id="marquee-text">★ KARAOKE FESTA DAS CORES ★ <span id="marquee-info">| AGUARDANDO MUSICA...</span></div></div>
+<div id="stage-bottom-bar">
+<button type="button" class="btn-bar-transp" onclick="acionarControleApresentacao()" title="Tela Cheia">🖥️</button>
+<button type="button" class="btn-bar-transp" onclick="voltarMusica()" title="Voltar">⏮</button>
+<div id="stage-progress-container"><div id="stage-progress-bar-bg"><div id="stage-progress-fill"></div></div><div id="stage-time-remaining">-00:00</div></div>
+<button type="button" class="btn-bar-transp" onclick="pularMusica()" title="Pular">⏭</button>
+</div>
+<div id="timer-screen"><div id="song-display"></div><div id="countdown-num">5</div></div>
+</div>
+
+<div class="search-bar">
+<button type="button" id="btn-teclado" onclick="abrirTeclado()">CODIGO</button>
+<button type="button" id="btn-catalogo" onclick="abrirCatalogo()">CATALOGO</button>
+<button type="button" id="btn-play-bar" onclick="startPlaylist()" disabled>INICIAR SHOW</button>
+</div>
+
+<div class="ui-panel">
+<div class="queue-header"><h3>🎵 FILA DE MUSICAS</h3><div id="queue-count-badge">0</div></div>
+<div class="controls-grid"><button type="button" class="btn-parar" onclick="stopAudio()">PARAR</button><button type="button" class="btn-limpar" onclick="limparLista()">LIMPAR</button></div>
+<div id="track-list"></div>
+</div>
+</div>
+
+<div id="modal-cantor-overlay"><div id="modal-cantor-box"><h3 style="font-family:var(--font-title);color:var(--vivid-yellow);margin-bottom:10px">CODIGO ENCONTRADO</h3><div id="modal-cantor-musica-nome" style="font-size:16px;font-weight:bold;margin-bottom:15px"></div><label style="font-size:12px;color:#aaa;font-family:var(--font-title)">QUEM CANTA?</label><input type="text" id="modal-cantor-input" placeholder="Digite o nome do cantor..." autocomplete="off"><div style="display:flex;gap:10px;margin-top:20px"><button type="button" onclick="fecharModalCantor()" style="flex:1;padding:14px;background:#333;color:#fff;border:none;border-radius:10px">CANCELAR</button><button type="button" onclick="confirmarCantor()" style="flex:1;padding:14px;background:var(--magenta);color:#fff;border:none;border-radius:10px;font-weight:bold">CONFIRMAR</button></div></div></div>
+
+<div id="catalogo-overlay"><div id="catalogo-box"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font-family:var(--font-title)">CATALOGO <small id="cat-total" style="font-size:14px;color:var(--neon)"></small></h2><button type="button" onclick="fecharCatalogo()" style="padding:10px 20px;background:var(--magenta);color:#fff;border:none;border-radius:10px;font-weight:bold;cursor:pointer">FECHAR ✕</button></div><input type="text" id="cat-campo-busca" placeholder="Pesquisar musica ou cantor..." oninput="filtrarBuscaCatalogo(this.value)" style="width:100%;padding:14px;border-radius:12px;border:2px solid var(--neon);background:#050508;color:#fff;font-size:16px"><div id="cat-lista"></div></div></div>
+
+<div id="logo-tela-overlay"><img id="logo-tela-img" alt="Logo"></div>
+
+<div id="modal-duplicados-overlay"><div id="modal-duplicados-box"><div id="modal-duplicados-titulo">VERIFICADOR DE DUPLICADOS</div><p id="modal-duplicados-sub" style="text-align:center;font-size:14px;color:#bbb"></p><div id="modal-duplicados-lista"></div><div class="modal-dup-acoes"><button type="button" id="btn-fechar-dup" onclick="fecharModalDuplicados()">CANCELAR</button><button type="button" id="btn-remover-dup" onclick="confirmarRemoverDuplicados()">ELIMINAR DUPLICADOS</button></div></div></div>
+
+<div id="modal-sair-overlay"><div id="modal-sair-box"><div id="modal-sair-titulo">SAIR DO KARAOKE</div><p style="font-size:14px;color:#ddd">Tem certeza de que deseja fechar o aplicativo?</p><div class="modal-sair-acoes"><button type="button" id="btn-cancelar-sair" onclick="fecharModalSair()">CONTINUAR</button><button type="button" id="btn-confirmar-sair" onclick="confirmarSairApp()">SIM, SAIR</button></div></div></div>
+
+<input type="file" id="f-folder" webkitdirectory directory multiple style="display:none">
+
+<script>
+let player,trackList,fileInput,marqueeInfo,bgSinger,mainBg,timerScreen;
+let videoFiles={},catalog=[],queue=[],modalTempCode=null,modalTempNome=null,modalTempFile=null;
+let imagensIndex={},capasCantor={},bgsPadrao={},isVideosLoaded=false,codigoTecladoNumerico='',_termoBuscaCatalogo='';
+let _logoUrlObrigatorio=null,_duplicadosEncontrados=[],_introEmReproducao=false;
+window._arquivosCarregadosCache=[];
+
+function logOK(m){console.log('%c[OK] '+m,'color:#00ff88;font-weight:bold')}
+function forcarPaisagem(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}catch(e){}document.body.classList.add('fullscreen-mode')}
+
+function initKaraoke(){
+player=document.getElementById('video-player');trackList=document.getElementById('track-list');fileInput=document.getElementById('f-folder');
+marqueeInfo=document.getElementById('marquee-info');bgSinger=document.getElementById('bg-singer-layer');mainBg=document.getElementById('main-bg');timerScreen=document.getElementById('timer-screen');
+fileInput.addEventListener('change',handleFolderSelect);
+player.onended=()=>{fecharVideo();queue.shift();renderQueue();if(queue.length>0)setTimeout(startPlaylist,800)};
+player.ontimeupdate=updateStageProgressBar;
+const usaNativo=!!(window.AndroidHost&&AndroidHost.chooseFolder);
+if(usaNativo)selectFolder();else mostrarOverlayOK();
+instalarBotaoSair();setTimeout(instalarBotaoSair,800);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initKaraoke);else initKaraoke();
+
+function mostrarOverlayOK(){const ov=document.getElementById('overlay-ok');ov.style.display='flex';document.getElementById('btn-ok-overlay').onclick=()=>{ov.style.display='none';reproduzirCicloIntro()}}
+async function reproduzirCicloIntro(){const s=document.getElementById('intro-screen'),v=document.getElementById('intro-video');s.classList.add('active');try{await v.play();v.onended=()=>finalizarIntro()}catch(e){finalizarIntro()}}
+function finalizarIntro(){document.getElementById('intro-screen').classList.remove('active');const ui=document.getElementById('ui-wrapper');ui.classList.remove('oculto-inicio');ui.classList.add('liberado');ui.style.display='flex';ui.style.opacity='1';ui.style.visibility='visible'}
+function updateStageProgressBar(){if(!player.duration)return;const cur=player.currentTime,dur=player.duration,rem=Math.max(0,dur-cur);document.getElementById('stage-progress-fill').style.width=(cur/dur)*100+'%';document.getElementById('stage-time-remaining').innerText=`-${Math.floor(rem/60).toString().padStart(2,'0')}:${Math.floor(rem%60).toString().padStart(2,'0')}`}
+function mostrarCapaCantor(url){if(!url){bgSinger.style.opacity='0';bgSinger.style.backgroundImage='';return}bgSinger.style.backgroundImage=`url("${url}")`;bgSinger.style.opacity='1'}
+function esconderCapaCantor(){bgSinger.style.opacity='0';bgSinger.style.backgroundImage=''}
+
+async function startPlaylist(){
+if(!queue.length||player.style.display==='block')return;await forcarPaisagem();const current=queue[0];
+const capaFile=buscarCapaCantor(current.singer)||buscarBgPadrao();const capaUrl=capaFile?(capaFile.contentUri||URL.createObjectURL(capaFile)):'';mostrarCapaCantor(capaUrl);
+document.getElementById('idle-hero').style.display='none';document.body.classList.add('countdown-ativo');
+document.getElementById('song-display').innerHTML=`${escHtml(current.line)}<br><span style="color:var(--emerald);font-size:16px">🎤 ${escHtml(current.singer)}</span>`;
+timerScreen.classList.add('active');const num=document.getElementById('countdown-num');
+for(let i=5;i>=1;i--){num.innerText=i;await new Promise(r=>setTimeout(r,1000))}
+esconderCapaCantor();timerScreen.classList.remove('active');
+if(_logoUrlObrigatorio){await new Promise(res=>exibirLogoPosContagem(1800,res))}
+document.body.classList.remove('countdown-ativo');
+player.src=current.file.contentUri||URL.createObjectURL(current.file);player.style.display='block';player.play().catch(()=>{});renderQueue();
+}
+function fecharVideo(){esconderCapaCantor();document.body.classList.remove('countdown-ativo');player.pause();player.src='';player.style.display='none';document.getElementById('stage-progress-fill').style.width='0%';document.getElementById('stage-time-remaining').innerText='-00:00'}
+
+async function handleFolderSelect(e){
+const files=Array.from(e.target.files);if(!files.length)return;window._arquivosCarregadosCache=files;identificarLogoMestra(files);
+videoFiles={};catalog=[];imagensIndex={};capasCantor={};bgsPadrao={};
+for(let f of files){const nameUpper=f.name.toUpperCase();const pathUpper=(f.webkitRelativePath||f.name).toUpperCase();const parts=pathUpper.split(/[\/\\]/);
+if(nameUpper.endsWith('.MP4')&&!nameUpper.includes('INTRO')){const m=nameUpper.match(/(\d+)/);const code=m?m[1].padStart(4,'0'):String(Object.keys(videoFiles).length+1).padStart(4,'0');videoFiles[code]=f;catalog.push({code,line:f.name.replace(/\.mp4$/i,'')});continue}
+const isImg=/\.(PNG|JPE?G)$/i.test(nameUpper);if(!isImg)continue;const baseName=f.name.replace(/\.(png|jpe?g)$/i,'');const key=chaveDeBuscaCapa(baseName);if(!key)continue;
+imagensIndex[key]=f;if(parts.includes('CAPAS')||parts.includes('CAPA'))capasCantor[key]=f;else if(parts.includes('BGS')||parts.includes('BG'))bgsPadrao[key]=f}
+isVideosLoaded=Object.keys(videoFiles).length>0;document.getElementById('btn-play-bar').disabled=!isVideosLoaded;document.getElementById('hero-count').textContent=Object.keys(videoFiles).length;
+setTimeout(()=>{if(!_introEmReproducao){const ui=document.getElementById('ui-wrapper');if(ui&&!ui.classList.contains('liberado'))finalizarIntro()}},2500);
+logOK(`${Object.keys(videoFiles).length} videos | ${Object.keys(capasCantor).length} capas | ${Object.keys(bgsPadrao).length} bgs`);
+}
+
+function chaveDeBuscaCapa(nome){return String(nome||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim()}
+function buscarCapaCantor(nomeCantor){const key=chaveDeBuscaCapa(nomeCantor);if(!key)return null;if(capasCantor[key])return capasCantor[key];const regex=new RegExp('^'+key.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:[\\s_\\-]|$)');const found=Object.keys(capasCantor).find(k=>regex.test(k));if(found)return capasCantor[found];if(imagensIndex[key])return imagensIndex[key];const fg=Object.keys(imagensIndex).find(k=>regex.test(k));return fg?imagensIndex[fg]:null}
+function buscarBgPadrao(){const variacoes=['BG PRINCIPAL','BGPRINCIPAL','BG_PRINCIPAL','BG-PRINCIPAL','BGOFICIAL','BG OFICIAL'];for(const v of variacoes)if(bgsPadrao[v])return bgsPadrao[v];const key=Object.keys(bgsPadrao).find(k=>k.startsWith('BG'));if(key)return bgsPadrao[key];for(const v of variacoes)if(imagensIndex[v])return imagensIndex[v];return null}
+
+function processarCodigo(code){if(String(code).trim()==='0000'){checarDuplicadosCodigo0000(window._arquivosCarregadosCache||[]);return}const padCode=String(code).padStart(4,'0');if(!videoFiles[padCode])return;modalTempCode=padCode;modalTempNome=catalog.find(c=>c.code===padCode)?.line||'MUSICA '+padCode;modalTempFile=videoFiles[padCode];document.getElementById('modal-cantor-musica-nome').innerText='#'+padCode+' - '+modalTempNome;document.getElementById('modal-cantor-input').value='';document.getElementById('modal-cantor-overlay').classList.add('active')}
+function confirmarCantor(){const singer=(document.getElementById('modal-cantor-input').value||'').trim().toUpperCase()||'CONVIDADO';queue.push({line:modalTempNome,code:modalTempCode,singer,file:modalTempFile});renderQueue();fecharModalCantor()}
+function fecharModalCantor(){document.getElementById('modal-cantor-overlay').classList.remove('active')}
+
+function renderQueue(){const isPlaying=player.style.display==='block';if(!queue.length){trackList.innerHTML='<div style="text-align:center;color:#666;padding:24px;font-family:var(--font-title);font-size:13px">FILA VAZIA</div>'}else{trackList.innerHTML=queue.map((i,idx)=>{const now=idx===0&&isPlaying;return `<div class="item ${now?'now-playing':''}">${now?'<div class="playing-badge">▶ TOCANDO</div>':''}<div class="item-title">${escHtml(i.line)}</div><div class="item-meta"><span class="item-singer">🎤 ${escHtml(i.singer)}</span><span class="item-code">#${i.code}</span></div></div>`}).join('')}document.getElementById('queue-count-badge').innerText=isPlaying?Math.max(0,queue.length-1):queue.length;const showIdle=!queue.length&&!isPlaying&&!document.body.classList.contains('countdown-ativo');document.getElementById('idle-hero').style.display=showIdle?'flex':'none'}
+
+function stopAudio(){fecharVideo();queue=[];renderQueue()}
+function limparLista(){queue=[];renderQueue()}
+function pularMusica(){if(queue.length)player.dispatchEvent(new Event('ended'))}
+function voltarMusica(){}
+function acionarControleApresentacao(){if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen().catch(()=>{})}
+function escHtml(t){return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function abrirCatalogo(){document.getElementById('catalogo-overlay').classList.add('active');renderCatalogo()}
+function fecharCatalogo(){document.getElementById('catalogo-overlay').classList.remove('active')}
+function filtrarBuscaCatalogo(termo){_termoBuscaCatalogo=termo.toLowerCase();renderCatalogo()}
+function renderCatalogo(){const lista=document.getElementById('cat-lista');const itens=catalog.filter(c=>c.line.toLowerCase().includes(_termoBuscaCatalogo)||c.code.includes(_termoBuscaCatalogo));lista.innerHTML=itens.map(i=>`<button type="button" class="cat-item" onclick="fecharCatalogo();processarCodigo('${i.code}')"><span style="color:var(--neon);font-weight:bold;font-family:var(--font-title)">#${i.code}</span><span>${escHtml(i.line)}</span></button>`).join('')||'<div style="text-align:center;color:#666;padding:20px">Nenhuma musica encontrada.</div>';document.getElementById('cat-total').textContent=itens.length+' musicas'}
+function selectFolder(){fileInput.click()}
+
+function abrirTeclado(){codigoTecladoNumerico='';atualizarTelaTecladoNumerico();document.getElementById('keypad-feedback').textContent='';document.getElementById('numeric-keypad-overlay').classList.add('active')}
+function atualizarTelaTecladoNumerico(){document.getElementById('keypad-code').textContent=codigoTecladoNumerico||'—'}
+function adicionarDigitoTeclado(d){if(codigoTecladoNumerico.length<10){codigoTecladoNumerico+=d;atualizarTelaTecladoNumerico()}}
+function apagarDigitoTeclado(){codigoTecladoNumerico=codigoTecladoNumerico.slice(0,-1);atualizarTelaTecladoNumerico()}
+function limparCodigoTeclado(){codigoTecladoNumerico='';atualizarTelaTecladoNumerico()}
+function fecharTecladoNumerico(){document.getElementById('numeric-keypad-overlay').classList.remove('active')}
+function confirmarCodigoTeclado(){const v=codigoTecladoNumerico.trim();if(v&&videoFiles[v.padStart(4,'0')]){fecharTecladoNumerico();processarCodigo(v)}else{document.getElementById('keypad-feedback').textContent='Codigo nao encontrado.'}}
+
+function identificarLogoMestra(files){_logoUrlObrigatorio=null;for(let f of(files||[])){const nome=(f.name||'').toLowerCase();const path=f.webkitRelativePath||f.name;const partes=path.split('/').filter(Boolean);if(nome==='logo.png'&&partes.length<=2){_logoUrlObrigatorio=f.contentUri||URL.createObjectURL(f);return}}for(let f of(files||[])){if((f.name||'').toLowerCase()==='logo.png'){_logoUrlObrigatorio=f.contentUri||URL.createObjectURL(f);return}}}
+function exibirLogoPosContagem(duracaoMs,callback){const overlay=document.getElementById('logo-tela-overlay'),img=document.getElementById('logo-tela-img');if(!overlay||!_logoUrlObrigatorio){if(callback)callback();return}img.src=_logoUrlObrigatorio;overlay.classList.add('ativo');setTimeout(()=>{overlay.style.opacity='0';setTimeout(()=>{overlay.classList.remove('ativo');overlay.style.opacity='1';if(callback)callback()},250)},duracaoMs)}
+
+function pedirConfirmacaoSair(){document.getElementById('modal-sair-overlay').classList.add('active')}
+function fecharModalSair(){document.getElementById('modal-sair-overlay').classList.remove('active')}
+function confirmarSairApp(){fecharModalSair();if(window.AndroidHost&&AndroidHost.exitApp)AndroidHost.exitApp();else window.close()}
+function instalarBotaoSair(){if(document.getElementById('btn-sair-topo-oficial'))return;const header=document.querySelector('.queue-header');if(!header)return;const btn=document.createElement('button');btn.id='btn-sair-topo-oficial';btn.className='btn-sair-transparente';btn.title='Sair';btn.innerHTML='<svg viewBox="0 0 24 24" width="22" height="22" stroke="#fff" fill="none" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>';btn.onclick=pedirConfirmacaoSair;header.style.display='flex';header.style.alignItems='center';header.appendChild(btn)}
+
+window.onIntroFoundDuringScan=function(uri){_introEmReproducao=true;const vid=document.getElementById('intro-video'),screen=document.getElementById('intro-screen');if(!vid||!uri){_introEmReproducao=false;finalizarIntro();return}vid.src=uri;vid.loop=false;if(screen){screen.classList.add('active');screen.style.display='flex'}const liberar=()=>{_introEmReproducao=false;finalizarIntro()};vid.ontimeupdate=function(){if(vid.currentTime>=30){vid.ontimeupdate=null;vid.pause();liberar()}};vid.onended=function(){vid.ontimeupdate=null;liberar()};vid.play().catch(()=>liberar())}
+
+function checarDuplicadosCodigo0000(arquivos){_duplicadosEncontrados=[];const mapa=new Map();for(let f of(arquivos||[])){const nome=f.name||'';if(!/[.]mp4$/i.test(nome)||nome.toLowerCase().startsWith('intro'))continue;const chave=chaveDeBuscaCapa(nome.replace(/[.]mp4$/i,'').replace(/^[0-9]+[ -.:)]*/i,''));if(!chave)continue;if(mapa.has(chave))_duplicadosEncontrados.push({original:mapa.get(chave),duplicado:f});else mapa.set(chave,f)}const sub=document.getElementById('modal-duplicados-sub'),lista=document.getElementById('modal-duplicados-lista'),btn=document.getElementById('btn-remover-dup');if(!_duplicadosEncontrados.length){sub.innerHTML='<span style="color:#00ff88;font-weight:bold">Nenhum duplicado encontrado.</span>';lista.innerHTML='';btn.style.display='none';document.getElementById('modal-duplicados-overlay').classList.add('active');return}sub.innerHTML='Encontrados <b style="color:#ff4444">'+_duplicadosEncontrados.length+'</b> duplicado(s).';btn.style.display='block';lista.innerHTML=_duplicadosEncontrados.map(d=>`<div class="item-dup"><b>${escHtml(d.duplicado.name)}</b><small>Mantendo: ${escHtml(d.original.name)}</small></div>`).join('');document.getElementById('modal-duplicados-overlay').classList.add('active')}
+function fecharModalDuplicados(){document.getElementById('modal-duplicados-overlay').classList.remove('active')}
+async function confirmarRemoverDuplicados(){document.getElementById('modal-duplicados-sub').innerHTML='<span style="color:#ffdd00">Excluindo...</span>';let n=0;for(let d of _duplicadosEncontrados){if(d.duplicado.contentUri&&window.AndroidHost&&AndroidHost.deleteFile){try{if(AndroidHost.deleteFile(d.duplicado.contentUri))n++}catch(e){}}}fecharModalDuplicados();setTimeout(()=>{if(window.AndroidHost&&AndroidHost.refreshFolder)AndroidHost.refreshFolder();else location.reload()},600)}
+
+window.addEventListener('keydown',e=>{if(/^[0-9]$/.test(e.key)&&typeof adicionarDigitoTeclado==='function'&&document.getElementById('numeric-keypad-overlay')&&document.getElementById('numeric-keypad-overlay').classList.contains('active')){adicionarDigitoTeclado(e.key)}if(e.key==='Escape'||e.key==='GoBack'||e.keyCode===27||e.keyCode===4){const dup=document.getElementById('modal-duplicados-overlay'),sair=document.getElementById('modal-sair-overlay');if(dup&&dup.classList.contains('active'))fecharModalDuplicados();else if(sair&&sair.classList.contains('active'))fecharModalSair();else pedirConfirmacaoSair()}})
+</script>
 </body>
 </html>
