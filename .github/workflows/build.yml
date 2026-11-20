@@ -27,7 +27,7 @@ jobs:
             done
           fi
 
-      - name: Corrigir Bibliotecas do Gradle (Conserta erro de download)
+      - name: Corrigir Bibliotecas do Gradle
         run: |
           cat << 'EOF' > settings.gradle
           pluginManagement {
@@ -54,26 +54,45 @@ jobs:
           }
           EOF
 
-      - name: Corrigir Java e Tela Preta
+      - name: Corrigir Java (Habilitar Video e JS)
         run: |
           cat << 'EOF' > patch.py
           import os, glob
           for p in glob.glob('**/MainActivity.java', recursive=True):
               with open(p, 'r', encoding='utf-8') as f: j = f.read()
-              if 'setMediaPlaybackRequiresUserGesture' not in j:
-                  j = j.replace("super.onCreate(savedInstanceState);", "super.onCreate(savedInstanceState);\n try { if (webView != null) webView.getSettings().setMediaPlaybackRequiresUserGesture(false); } catch (Exception e) {}")
+              
+              # Injeta configurações cruciais para o WebView não ficar em tela preta
+              setup = """
+              if (webView != null) {
+                  webView.getSettings().setJavaScriptEnabled(true);
+                  webView.getSettings().setDomStorageEnabled(true);
+                  webView.getSettings().setAllowFileAccess(true);
+                  webView.getSettings().setAllowContentAccess(true);
+                  webView.getSettings().setAllowFileAccessFromFileURLs(true);
+                  webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+                  webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
+                  webView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
+                  webView.setBackgroundColor(android.graphics.Color.BLACK);
+                  webView.setWebViewClient(new android.webkit.WebViewClient());
+              }
+              """
+              # Insere antes do setContentView
+              if 'setJavaScriptEnabled' not in j:
+                  j = j.replace("setContentView(", setup + "\n setContentView(")
+              
+              # Tenta forçar a aceleração no Android inteiro também
               if 'FLAG_HARDWARE_ACCELERATED' not in j:
-                  j = j.replace("super.onCreate(savedInstanceState);", "super.onCreate(savedInstanceState);\n try { getWindow().setFlags(android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED); if (webView != null) webView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null); } catch (Exception e) {}")
+                  j = j.replace("super.onCreate(savedInstanceState);", "super.onCreate(savedInstanceState);\n try { getWindow().setFlags(android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED); } catch (Exception e) {}")
+              
               with open(p, 'w', encoding='utf-8') as f: f.write(j)
           EOF
           python3 patch.py
 
-      - name: Injetar o HTML novo dentro do APK
+      - name: Injetar HTML novo
         run: |
           mkdir -p app/src/main/assets
           cp index.html app/src/main/assets/index.html
           find . -name "index.html" -not -path "./.git/*" -exec cp index.html {} \;
-          echo "HTML injetado com sucesso!"
 
       - name: Configurar Java 17
         uses: actions/setup-java@v4
