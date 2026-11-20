@@ -1,8 +1,6 @@
 name: Gerar APK do Karaoke
 
 on:
-  push:
-    branches: [ "principal", "main", "master" ]
   workflow_dispatch:
 
 jobs:
@@ -13,299 +11,281 @@ jobs:
       - name: Baixar repositorio
         uses: actions/checkout@v4
 
+      - name: Escrever index.html novo
+        run: |
+          cat << 'HTML_FIM' > index.html
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>KARAOKÊ FESTA DAS CORES</title>
+<style>
+:root { --font-title: 'Arial Black', sans-serif; --font-body: Arial, sans-serif; --neon:#00ffff; --magenta:#ff00ff; --vivid-yellow:#ffdd00; --emerald:#00ff88; --dark-bg:#050508; --icone-size:44px; }
+*{box-sizing:border-box;outline:none;-webkit-tap-highlight-color:transparent;user-select:none;margin:0;padding:0}
+body{background:var(--dark-bg);color:#e0e0e0;font-family:var(--font-body);height:100vh;width:100vw;overflow:hidden}
+#ui-wrapper{display:flex;flex-direction:column;height:100vh;position:relative;z-index:10}
+.stage{height:320px;width:100%;position:relative;background:#000;overflow:hidden;flex-shrink:0;border-bottom:3px solid var(--vivid-yellow);z-index:200}
+body.fullscreen-mode .stage{height:100vh!important;width:100vw!important;position:fixed;top:0;left:0;z-index:9999;border:none}
+.stage-background{position:absolute;inset:0;background-color:#000;background-size:cover;background-position:center;z-index:1;opacity:.7}
+#bg-singer-layer{position:absolute;inset:0;background-size:contain;background-position:center;background-repeat:no-repeat;z-index:2;opacity:0;transition:opacity .4s}
+#video-player{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:100;display:none}
+#timer-screen{position:absolute;inset:0;z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+#timer-screen.active{display:flex!important}
+#countdown-num{position:absolute;z-index:10001;top:max(7vh,28px);right:max(6vw,24px);color:rgba(255,220,0,.9);font:900 clamp(72px,14vw,140px)/1 var(--font-title);text-shadow:0 0 20px rgba(255,220,0,.5)}
+#song-display{position:absolute;left:50%;bottom:calc(var(--icone-size) + 26px);transform:translateX(-50%);width:92%;max-height:90px;overflow:hidden;z-index:10001;color:var(--vivid-yellow);font-family:var(--font-title);font-size:18px!important;text-align:center;text-shadow:0 2px 6px rgba(0,0,0,.95);line-height:1.35}
+#stage-bottom-bar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:calc(100% - 20px);max-width:1100px;display:flex;align-items:center;gap:8px;z-index:99999;background:rgba(0,0,0,.65);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.18);border-radius:50px;padding:6px 8px}
+.btn-bar-transp{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);color:#fff;width:var(--icone-size);height:var(--icone-size);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;flex-shrink:0}
+#stage-progress-container{flex:1;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);padding:0 14px;border-radius:22px;border:1px solid rgba(255,255,255,.1);height:var(--icone-size)}
+#stage-progress-bar-bg{flex:1;height:6px;background:rgba(255,255,255,.18);border-radius:4px;overflow:hidden}
+#stage-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--neon),var(--magenta));border-radius:4px}
+#stage-time-remaining{font-family:var(--font-title);font-size:12px;color:var(--vivid-yellow);min-width:55px;text-align:right;font-weight:700}
+#marquee-container{position:absolute;top:0;left:0;width:100%;background:rgba(0,0,0,.4);border-bottom:1px solid rgba(255,221,0,.5);padding:8px 12px;z-index:99999;overflow:hidden;min-height:38px}
+#marquee-text{display:inline-block;white-space:nowrap;color:var(--vivid-yellow);animation:marqueeAnim 20s linear infinite;font-family:var(--font-title);font-size:14px;font-weight:700}
+@keyframes marqueeAnim{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+.search-bar{background:#0a0a10;padding:12px 14px;display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:12px;border-top:1px solid #222}
+.search-bar button{height:60px;border-radius:18px;border:none;font-family:var(--font-title);font-weight:900;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;text-transform:uppercase}
+#btn-teclado{background:linear-gradient(180deg,#ff44ff,#b300b3);box-shadow:0 4px 14px rgba(255,0,255,.3)}
+#btn-catalogo{background:linear-gradient(180deg,#29e7ff,#0099cc);color:#04202b;box-shadow:0 4px 14px rgba(41,231,255,.3)}
+#btn-play-bar{background:linear-gradient(180deg,#00ff99,#00aa55);color:#001a0d;box-shadow:0 4px 14px rgba(0,255,153,.35);font-size:17px}
+#btn-play-bar:disabled{opacity:.35;cursor:not-allowed}
+.ui-panel{flex:1;background:linear-gradient(180deg,#0d0d14,#050508);padding:14px 16px;display:flex;flex-direction:column;gap:12px;overflow:hidden;border-top:2px solid #1a1a2e}
+.queue-header{display:flex;justify-content:space-between;align-items:center;padding:0 2px}
+.queue-header h3{font-family:var(--font-title);font-weight:900;font-size:14px;color:var(--neon);letter-spacing:1.2px}
+#queue-count-badge{background:var(--magenta);padding:3px 12px;border-radius:12px;font-weight:900;font-family:var(--font-title);font-size:12px;color:#fff}
+.controls-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.btn-parar,.btn-limpar{height:60px;border-radius:16px;font-family:var(--font-title);font-weight:900;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;border:none;color:#fff;text-transform:uppercase}
+.btn-parar{background:linear-gradient(180deg,#ff9e1b,#c2410c);box-shadow:0 4px 14px rgba(255,158,27,.3)}
+.btn-limpar{background:linear-gradient(180deg,#ff2e51,#b91c1c);box-shadow:0 4px 14px rgba(255,46,81,.3)}
+#track-list{flex:1;overflow-y:auto;background:rgba(0,0,0,.6);border-radius:16px;padding:10px;border:1px solid #1e1e2e}
+.item{background:linear-gradient(90deg,rgba(255,255,255,.06),transparent);padding:12px 14px;border-radius:12px;margin-bottom:8px;border-left:4px solid var(--magenta)}
+.item.now-playing{background:linear-gradient(90deg,rgba(0,255,136,.18),transparent);border-left-color:var(--emerald)!important}
+.item-title{font-weight:700;font-size:14px;color:#fff;margin-bottom:4px}
+.item-meta{display:flex;gap:10px;align-items:center;font-size:12px;flex-wrap:wrap}
+.item-singer{color:var(--vivid-yellow);font-weight:700}
+.item-code{color:var(--neon);font-family:var(--font-title);font-size:10px;background:rgba(0,255,255,.1);padding:2px 8px;border-radius:6px}
+.playing-badge{display:inline-flex;align-items:center;gap:4px;background:var(--emerald);color:#000;font-family:var(--font-title);font-size:9px;font-weight:900;padding:2px 8px;border-radius:6px;margin-bottom:6px}
+#modal-cantor-overlay,#numeric-keypad-overlay,#catalogo-overlay,#modal-sair-overlay,#modal-duplicados-overlay,#logo-tela-overlay{position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px}
+#modal-cantor-overlay.active,#numeric-keypad-overlay.active,#catalogo-overlay.active,#modal-sair-overlay.active,#modal-duplicados-overlay.active,#logo-tela-overlay.ativo{display:flex!important}
+#modal-cantor-box{background:#0d0d14;border:2px solid var(--vivid-yellow);border-radius:20px;padding:25px;width:100%;max-width:480px;color:#fff}
+#modal-cantor-input{width:100%;padding:16px;border-radius:14px;border:2px solid #333;background:#0a0a0f;color:#fff;font-size:18px;margin-top:10px}
+.btn-sair-transparente{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.45);backdrop-filter:blur(8px);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#fff}
+#modal-sair-overlay{position:fixed;inset:0;z-index:40000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);padding:20px}
+#modal-sair-overlay.active{display:flex!important}
+#modal-sair-box{background:linear-gradient(160deg,#1f1435,#0c0817);border:2px solid #d480ff;border-radius:20px;padding:24px;width:min(90vw,420px);display:flex;flex-direction:column;gap:14px;text-align:center;color:#fff}
+#modal-sair-titulo{font:900 20px var(--font-title);color:#d480ff;letter-spacing:2px}
+.modal-sair-acoes{display:flex;gap:10px;margin-top:10px}
+.modal-sair-acoes button{flex:1;padding:12px;border:none;border-radius:12px;font:800 14px var(--font-title);cursor:pointer}
+#btn-cancelar-sair{background:#333;color:#fff}
+#btn-confirmar-sair{background:linear-gradient(135deg,#b026ff,#7a00e6);color:#fff}
+#logo-tela-overlay{position:absolute;inset:0;z-index:20000;background:#000;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .3s}
+#logo-tela-overlay.ativo{display:flex!important;opacity:1!important}
+#logo-tela-img{max-width:75%;max-height:75%;object-fit:contain;filter:drop-shadow(0 0 35px rgba(0,255,255,.45))}
+#modal-duplicados-overlay{position:fixed;inset:0;z-index:35000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.88);padding:20px}
+#modal-duplicados-overlay.active{display:flex!important}
+#modal-duplicados-box{background:linear-gradient(160deg,#181226,#090812);border:2px solid var(--vivid-yellow);border-radius:20px;padding:24px;width:min(92vw,650px);max-height:85vh;display:flex;flex-direction:column;gap:14px;color:#fff}
+#modal-duplicados-titulo{font:900 20px var(--font-title);color:var(--vivid-yellow);text-align:center}
+#modal-duplicados-lista{flex:1;overflow-y:auto;max-height:45vh;display:flex;flex-direction:column;gap:8px}
+.item-dup{background:rgba(255,255,255,.06);padding:10px 14px;border-radius:10px;border-left:4px solid #ff4444;font-size:13px}
+.modal-dup-acoes{display:flex;gap:10px}
+.modal-dup-acoes button{flex:1;padding:14px;border:none;border-radius:12px;font:800 14px var(--font-title);cursor:pointer}
+#btn-fechar-dup{background:#333;color:#fff}
+#btn-remover-dup{background:#ff2244;color:#fff}
+#catalogo-box{flex:1;display:flex;flex-direction:column;gap:18px;background:#0f0d2a;border-radius:24px;padding:26px;max-width:800px;width:100%;max-height:85vh}
+#cat-lista{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.cat-item{display:flex;align-items:center;gap:20px;padding:15px 20px;border-radius:14px;background:rgba(255,255,255,.05);color:#fff;border:none;cursor:pointer;font-size:16px;text-align:left;width:100%}
+#ui-wrapper.oculto-inicio,#ui-wrapper:not(.liberado){display:none!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+#ui-wrapper.liberado{display:flex!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+#idle-hero{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;z-index:3}
+#idle-hero .hero-title{font-family:var(--font-title);font-size:clamp(24px,5vw,48px);font-weight:900;color:#fff;text-shadow:0 0 20px var(--magenta)}
+#idle-hero .hero-sub{font-family:var(--font-title);font-size:16px;color:var(--vivid-yellow);margin-top:10px}
+#idle-hero .hero-count{font-family:var(--font-body);font-size:14px;color:#aaa;margin-top:5px}
+#overlay-ok{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999999;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px;font-family:var(--font-title)}
+#intro-screen{position:fixed;inset:0;background:#000;z-index:9999998;display:none;align-items:center;justify-content:center}
+#intro-screen.active{display:flex!important}
+#intro-video{width:100%;height:100%;object-fit:cover;background:#000}
+video::-webkit-media-controls-start-playback-button,video::-webkit-media-controls-play-button{display:none!important;-webkit-appearance:none!important}
+button:focus-visible{outline:3px solid #fff!important;box-shadow:0 0 25px #fff!important}
+</style>
+</head>
+<body oncontextmenu="return false;">
+
+<div id="intro-screen"><video id="intro-video" playsinline webkit-playsinline autoplay preload="auto"><source src="intro.mp4" type="video/mp4"></video></div>
+
+<div id="overlay-ok"><h2 style="color:var(--neon);font-size:24px;margin-bottom:20px;text-align:center">PRESSIONE OK PARA COMECAR</h2><button id="btn-ok-overlay" tabindex="1" style="padding:20px 40px;font-size:18px;background:var(--emerald);border:none;border-radius:15px;font-weight:bold;cursor:pointer">OK - COMECAR</button></div>
+
+<div id="numeric-keypad-overlay">
+<div id="numeric-keypad" style="background:#191020;border:2px solid var(--magenta);padding:20px;border-radius:20px;width:320px;color:#fff">
+<h2 style="text-align:center;margin-bottom:10px;font-family:var(--font-title)">DIGITE O CODIGO</h2>
+<div id="keypad-code" style="background:#030306;padding:10px;text-align:center;font-size:24px;color:var(--vivid-yellow);margin-bottom:10px;letter-spacing:6px;border-radius:8px">—</div>
+<p id="keypad-feedback" style="color:#ff7777;font-size:12px;text-align:center;min-height:16px"></p>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+<button type="button" onclick="adicionarDigitoTeclado('1')">1</button><button type="button" onclick="adicionarDigitoTeclado('2')">2</button><button type="button" onclick="adicionarDigitoTeclado('3')">3</button>
+<button type="button" onclick="adicionarDigitoTeclado('4')">4</button><button type="button" onclick="adicionarDigitoTeclado('5')">5</button><button type="button" onclick="adicionarDigitoTeclado('6')">6</button>
+<button type="button" onclick="adicionarDigitoTeclado('7')">7</button><button type="button" onclick="adicionarDigitoTeclado('8')">8</button><button type="button" onclick="adicionarDigitoTeclado('9')">9</button>
+<button type="button" onclick="limparCodigoTeclado()">LIMPAR</button><button type="button" onclick="adicionarDigitoTeclado('0')">0</button><button type="button" onclick="apagarDigitoTeclado()">⌫</button>
+</div>
+<div style="display:flex;gap:8px"><button type="button" onclick="fecharTecladoNumerico()" style="flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:8px">FECHAR</button><button type="button" onclick="confirmarCodigoTeclado()" style="flex:1;padding:12px;background:var(--emerald);color:#000;border:none;border-radius:8px;font-weight:bold">BUSCAR</button></div>
+</div>
+</div>
+
+<div id="ui-wrapper" class="oculto-inicio" style="display:none;opacity:0;visibility:hidden;">
+<div class="stage" id="stage-area">
+<div class="stage-background" id="main-bg"></div>
+<div id="bg-singer-layer"></div>
+<video id="video-player" playsinline webkit-playsinline preload="auto"></video>
+<div id="idle-hero"><div class="hero-title">KARAOKE FESTA DAS CORES</div><div class="hero-sub">DIGITE O CODIGO DA MUSICA</div><div class="hero-count"><b id="hero-count">0</b> MUSICAS DISPONIVEIS</div></div>
+<div id="marquee-container"><div id="marquee-text">★ KARAOKE FESTA DAS CORES ★ <span id="marquee-info">| AGUARDANDO MUSICA...</span></div></div>
+<div id="stage-bottom-bar">
+<button type="button" class="btn-bar-transp" onclick="acionarControleApresentacao()" title="Tela Cheia">🖥️</button>
+<button type="button" class="btn-bar-transp" onclick="voltarMusica()" title="Voltar">⏮</button>
+<div id="stage-progress-container"><div id="stage-progress-bar-bg"><div id="stage-progress-fill"></div></div><div id="stage-time-remaining">-00:00</div></div>
+<button type="button" class="btn-bar-transp" onclick="pularMusica()" title="Pular">⏭</button>
+</div>
+<div id="timer-screen"><div id="song-display"></div><div id="countdown-num">5</div></div>
+</div>
+
+<div class="search-bar">
+<button type="button" id="btn-teclado" onclick="abrirTeclado()">CODIGO</button>
+<button type="button" id="btn-catalogo" onclick="abrirCatalogo()">CATALOGO</button>
+<button type="button" id="btn-play-bar" onclick="startPlaylist()" disabled>INICIAR SHOW</button>
+</div>
+
+<div class="ui-panel">
+<div class="queue-header"><h3>🎵 FILA DE MUSICAS</h3><div id="queue-count-badge">0</div></div>
+<div class="controls-grid"><button type="button" class="btn-parar" onclick="stopAudio()">PARAR</button><button type="button" class="btn-limpar" onclick="limparLista()">LIMPAR</button></div>
+<div id="track-list"></div>
+</div>
+</div>
+
+<div id="modal-cantor-overlay"><div id="modal-cantor-box"><h3 style="font-family:var(--font-title);color:var(--vivid-yellow);margin-bottom:10px">CODIGO ENCONTRADO</h3><div id="modal-cantor-musica-nome" style="font-size:16px;font-weight:bold;margin-bottom:15px"></div><label style="font-size:12px;color:#aaa;font-family:var(--font-title)">QUEM CANTA?</label><input type="text" id="modal-cantor-input" placeholder="Digite o nome do cantor..." autocomplete="off"><div style="display:flex;gap:10px;margin-top:20px"><button type="button" onclick="fecharModalCantor()" style="flex:1;padding:14px;background:#333;color:#fff;border:none;border-radius:10px">CANCELAR</button><button type="button" onclick="confirmarCantor()" style="flex:1;padding:14px;background:var(--magenta);color:#fff;border:none;border-radius:10px;font-weight:bold">CONFIRMAR</button></div></div></div>
+
+<div id="catalogo-overlay"><div id="catalogo-box"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font-family:var(--font-title)">CATALOGO <small id="cat-total" style="font-size:14px;color:var(--neon)"></small></h2><button type="button" onclick="fecharCatalogo()" style="padding:10px 20px;background:var(--magenta);color:#fff;border:none;border-radius:10px;font-weight:bold;cursor:pointer">FECHAR ✕</button></div><input type="text" id="cat-campo-busca" placeholder="Pesquisar musica ou cantor..." oninput="filtrarBuscaCatalogo(this.value)" style="width:100%;padding:14px;border-radius:12px;border:2px solid var(--neon);background:#050508;color:#fff;font-size:16px"><div id="cat-lista"></div></div></div>
+
+<div id="logo-tela-overlay"><img id="logo-tela-img" alt="Logo"></div>
+
+<div id="modal-duplicados-overlay"><div id="modal-duplicados-box"><div id="modal-duplicados-titulo">VERIFICADOR DE DUPLICADOS</div><p id="modal-duplicados-sub" style="text-align:center;font-size:14px;color:#bbb"></p><div id="modal-duplicados-lista"></div><div class="modal-dup-acoes"><button type="button" id="btn-fechar-dup" onclick="fecharModalDuplicados()">CANCELAR</button><button type="button" id="btn-remover-dup" onclick="confirmarRemoverDuplicados()">ELIMINAR DUPLICADOS</button></div></div></div>
+
+<div id="modal-sair-overlay"><div id="modal-sair-box"><div id="modal-sair-titulo">SAIR DO KARAOKE</div><p style="font-size:14px;color:#ddd">Tem certeza de que deseja fechar o aplicativo?</p><div class="modal-sair-acoes"><button type="button" id="btn-cancelar-sair" onclick="fecharModalSair()">CONTINUAR</button><button type="button" id="btn-confirmar-sair" onclick="confirmarSairApp()">SIM, SAIR</button></div></div></div>
+
+<input type="file" id="f-folder" webkitdirectory directory multiple style="display:none">
+
+<script>
+let player,trackList,fileInput,marqueeInfo,bgSinger,mainBg,timerScreen;
+let videoFiles={},catalog=[],queue=[],modalTempCode=null,modalTempNome=null,modalTempFile=null;
+let imagensIndex={},capasCantor={},bgsPadrao={},isVideosLoaded=false,codigoTecladoNumerico='',_termoBuscaCatalogo='';
+let _logoUrlObrigatorio=null,_duplicadosEncontrados=[],_introEmReproducao=false;
+window._arquivosCarregadosCache=[];
+
+function logOK(m){console.log('%c[OK] '+m,'color:#00ff88;font-weight:bold')}
+function forcarPaisagem(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}catch(e){}document.body.classList.add('fullscreen-mode')}
+
+function initKaraoke(){
+player=document.getElementById('video-player');trackList=document.getElementById('track-list');fileInput=document.getElementById('f-folder');
+marqueeInfo=document.getElementById('marquee-info');bgSinger=document.getElementById('bg-singer-layer');mainBg=document.getElementById('main-bg');timerScreen=document.getElementById('timer-screen');
+fileInput.addEventListener('change',handleFolderSelect);
+player.onended=()=>{fecharVideo();queue.shift();renderQueue();if(queue.length>0)setTimeout(startPlaylist,800)};
+player.ontimeupdate=updateStageProgressBar;
+const usaNativo=!!(window.AndroidHost&&AndroidHost.chooseFolder);
+if(usaNativo)selectFolder();else mostrarOverlayOK();
+instalarBotaoSair();setTimeout(instalarBotaoSair,800);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initKaraoke);else initKaraoke();
+
+function mostrarOverlayOK(){const ov=document.getElementById('overlay-ok');ov.style.display='flex';document.getElementById('btn-ok-overlay').onclick=()=>{ov.style.display='none';reproduzirCicloIntro()}}
+async function reproduzirCicloIntro(){const s=document.getElementById('intro-screen'),v=document.getElementById('intro-video');s.classList.add('active');try{await v.play();v.onended=()=>finalizarIntro()}catch(e){finalizarIntro()}}
+function finalizarIntro(){document.getElementById('intro-screen').classList.remove('active');const ui=document.getElementById('ui-wrapper');ui.classList.remove('oculto-inicio');ui.classList.add('liberado');ui.style.display='flex';ui.style.opacity='1';ui.style.visibility='visible'}
+function updateStageProgressBar(){if(!player.duration)return;const cur=player.currentTime,dur=player.duration,rem=Math.max(0,dur-cur);document.getElementById('stage-progress-fill').style.width=(cur/dur)*100+'%';document.getElementById('stage-time-remaining').innerText=`-${Math.floor(rem/60).toString().padStart(2,'0')}:${Math.floor(rem%60).toString().padStart(2,'0')}`}
+function mostrarCapaCantor(url){if(!url){bgSinger.style.opacity='0';bgSinger.style.backgroundImage='';return}bgSinger.style.backgroundImage=`url("${url}")`;bgSinger.style.opacity='1'}
+function esconderCapaCantor(){bgSinger.style.opacity='0';bgSinger.style.backgroundImage=''}
+
+async function startPlaylist(){
+if(!queue.length||player.style.display==='block')return;await forcarPaisagem();const current=queue[0];
+const capaFile=buscarCapaCantor(current.singer)||buscarBgPadrao();const capaUrl=capaFile?(capaFile.contentUri||URL.createObjectURL(capaFile)):'';mostrarCapaCantor(capaUrl);
+document.getElementById('idle-hero').style.display='none';document.body.classList.add('countdown-ativo');
+document.getElementById('song-display').innerHTML=`${escHtml(current.line)}<br><span style="color:var(--emerald);font-size:16px">🎤 ${escHtml(current.singer)}</span>`;
+timerScreen.classList.add('active');const num=document.getElementById('countdown-num');
+for(let i=5;i>=1;i--){num.innerText=i;await new Promise(r=>setTimeout(r,1000))}
+esconderCapaCantor();timerScreen.classList.remove('active');
+if(_logoUrlObrigatorio){await new Promise(res=>exibirLogoPosContagem(1800,res))}
+document.body.classList.remove('countdown-ativo');
+player.src=current.file.contentUri||URL.createObjectURL(current.file);player.style.display='block';player.play().catch(()=>{});renderQueue();
+}
+function fecharVideo(){esconderCapaCantor();document.body.classList.remove('countdown-ativo');player.pause();player.src='';player.style.display='none';document.getElementById('stage-progress-fill').style.width='0%';document.getElementById('stage-time-remaining').innerText='-00:00'}
+
+async function handleFolderSelect(e){
+const files=Array.from(e.target.files);if(!files.length)return;window._arquivosCarregadosCache=files;identificarLogoMestra(files);
+videoFiles={};catalog=[];imagensIndex={};capasCantor={};bgsPadrao={};
+for(let f of files){const nameUpper=f.name.toUpperCase();const pathUpper=(f.webkitRelativePath||f.name).toUpperCase();const parts=pathUpper.split(/[\/\\]/);
+if(nameUpper.endsWith('.MP4')&&!nameUpper.includes('INTRO')){const m=nameUpper.match(/(\d+)/);const code=m?m[1].padStart(4,'0'):String(Object.keys(videoFiles).length+1).padStart(4,'0');videoFiles[code]=f;catalog.push({code,line:f.name.replace(/\.mp4$/i,'')});continue}
+const isImg=/\.(PNG|JPE?G)$/i.test(nameUpper);if(!isImg)continue;const baseName=f.name.replace(/\.(png|jpe?g)$/i,'');const key=chaveDeBuscaCapa(baseName);if(!key)continue;
+imagensIndex[key]=f;if(parts.includes('CAPAS')||parts.includes('CAPA'))capasCantor[key]=f;else if(parts.includes('BGS')||parts.includes('BG'))bgsPadrao[key]=f}
+isVideosLoaded=Object.keys(videoFiles).length>0;document.getElementById('btn-play-bar').disabled=!isVideosLoaded;document.getElementById('hero-count').textContent=Object.keys(videoFiles).length;
+setTimeout(()=>{if(!_introEmReproducao){const ui=document.getElementById('ui-wrapper');if(ui&&!ui.classList.contains('liberado'))finalizarIntro()}},2500);
+logOK(`${Object.keys(videoFiles).length} videos | ${Object.keys(capasCantor).length} capas | ${Object.keys(bgsPadrao).length} bgs`);
+}
+
+function chaveDeBuscaCapa(nome){return String(nome||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim()}
+function buscarCapaCantor(nomeCantor){const key=chaveDeBuscaCapa(nomeCantor);if(!key)return null;if(capasCantor[key])return capasCantor[key];const regex=new RegExp('^'+key.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:[\\s_\\-]|$)');const found=Object.keys(capasCantor).find(k=>regex.test(k));if(found)return capasCantor[found];if(imagensIndex[key])return imagensIndex[key];const fg=Object.keys(imagensIndex).find(k=>regex.test(k));return fg?imagensIndex[fg]:null}
+function buscarBgPadrao(){const variacoes=['BG PRINCIPAL','BGPRINCIPAL','BG_PRINCIPAL','BG-PRINCIPAL','BGOFICIAL','BG OFICIAL'];for(const v of variacoes)if(bgsPadrao[v])return bgsPadrao[v];const key=Object.keys(bgsPadrao).find(k=>k.startsWith('BG'));if(key)return bgsPadrao[key];for(const v of variacoes)if(imagensIndex[v])return imagensIndex[v];return null}
+
+function processarCodigo(code){if(String(code).trim()==='0000'){checarDuplicadosCodigo0000(window._arquivosCarregadosCache||[]);return}const padCode=String(code).padStart(4,'0');if(!videoFiles[padCode])return;modalTempCode=padCode;modalTempNome=catalog.find(c=>c.code===padCode)?.line||'MUSICA '+padCode;modalTempFile=videoFiles[padCode];document.getElementById('modal-cantor-musica-nome').innerText='#'+padCode+' - '+modalTempNome;document.getElementById('modal-cantor-input').value='';document.getElementById('modal-cantor-overlay').classList.add('active')}
+function confirmarCantor(){const singer=(document.getElementById('modal-cantor-input').value||'').trim().toUpperCase()||'CONVIDADO';queue.push({line:modalTempNome,code:modalTempCode,singer,file:modalTempFile});renderQueue();fecharModalCantor()}
+function fecharModalCantor(){document.getElementById('modal-cantor-overlay').classList.remove('active')}
+
+function renderQueue(){const isPlaying=player.style.display==='block';if(!queue.length){trackList.innerHTML='<div style="text-align:center;color:#666;padding:24px;font-family:var(--font-title);font-size:13px">FILA VAZIA</div>'}else{trackList.innerHTML=queue.map((i,idx)=>{const now=idx===0&&isPlaying;return `<div class="item ${now?'now-playing':''}">${now?'<div class="playing-badge">▶ TOCANDO</div>':''}<div class="item-title">${escHtml(i.line)}</div><div class="item-meta"><span class="item-singer">🎤 ${escHtml(i.singer)}</span><span class="item-code">#${i.code}</span></div></div>`}).join('')}document.getElementById('queue-count-badge').innerText=isPlaying?Math.max(0,queue.length-1):queue.length;const showIdle=!queue.length&&!isPlaying&&!document.body.classList.contains('countdown-ativo');document.getElementById('idle-hero').style.display=showIdle?'flex':'none'}
+
+function stopAudio(){fecharVideo();queue=[];renderQueue()}
+function limparLista(){queue=[];renderQueue()}
+function pularMusica(){if(queue.length)player.dispatchEvent(new Event('ended'))}
+function voltarMusica(){}
+function acionarControleApresentacao(){if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen().catch(()=>{})}
+function escHtml(t){return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function abrirCatalogo(){document.getElementById('catalogo-overlay').classList.add('active');renderCatalogo()}
+function fecharCatalogo(){document.getElementById('catalogo-overlay').classList.remove('active')}
+function filtrarBuscaCatalogo(termo){_termoBuscaCatalogo=termo.toLowerCase();renderCatalogo()}
+function renderCatalogo(){const lista=document.getElementById('cat-lista');const itens=catalog.filter(c=>c.line.toLowerCase().includes(_termoBuscaCatalogo)||c.code.includes(_termoBuscaCatalogo));lista.innerHTML=itens.map(i=>`<button type="button" class="cat-item" onclick="fecharCatalogo();processarCodigo('${i.code}')"><span style="color:var(--neon);font-weight:bold;font-family:var(--font-title)">#${i.code}</span><span>${escHtml(i.line)}</span></button>`).join('')||'<div style="text-align:center;color:#666;padding:20px">Nenhuma musica encontrada.</div>';document.getElementById('cat-total').textContent=itens.length+' musicas'}
+function selectFolder(){fileInput.click()}
+
+function abrirTeclado(){codigoTecladoNumerico='';atualizarTelaTecladoNumerico();document.getElementById('keypad-feedback').textContent='';document.getElementById('numeric-keypad-overlay').classList.add('active')}
+function atualizarTelaTecladoNumerico(){document.getElementById('keypad-code').textContent=codigoTecladoNumerico||'—'}
+function adicionarDigitoTeclado(d){if(codigoTecladoNumerico.length<10){codigoTecladoNumerico+=d;atualizarTelaTecladoNumerico()}}
+function apagarDigitoTeclado(){codigoTecladoNumerico=codigoTecladoNumerico.slice(0,-1);atualizarTelaTecladoNumerico()}
+function limparCodigoTeclado(){codigoTecladoNumerico='';atualizarTelaTecladoNumerico()}
+function fecharTecladoNumerico(){document.getElementById('numeric-keypad-overlay').classList.remove('active')}
+function confirmarCodigoTeclado(){const v=codigoTecladoNumerico.trim();if(v&&videoFiles[v.padStart(4,'0')]){fecharTecladoNumerico();processarCodigo(v)}else{document.getElementById('keypad-feedback').textContent='Codigo nao encontrado.'}}
+
+function identificarLogoMestra(files){_logoUrlObrigatorio=null;for(let f of(files||[])){const nome=(f.name||'').toLowerCase();const path=f.webkitRelativePath||f.name;const partes=path.split('/').filter(Boolean);if(nome==='logo.png'&&partes.length<=2){_logoUrlObrigatorio=f.contentUri||URL.createObjectURL(f);return}}for(let f of(files||[])){if((f.name||'').toLowerCase()==='logo.png'){_logoUrlObrigatorio=f.contentUri||URL.createObjectURL(f);return}}}
+function exibirLogoPosContagem(duracaoMs,callback){const overlay=document.getElementById('logo-tela-overlay'),img=document.getElementById('logo-tela-img');if(!overlay||!_logoUrlObrigatorio){if(callback)callback();return}img.src=_logoUrlObrigatorio;overlay.classList.add('ativo');setTimeout(()=>{overlay.style.opacity='0';setTimeout(()=>{overlay.classList.remove('ativo');overlay.style.opacity='1';if(callback)callback()},250)},duracaoMs)}
+
+function pedirConfirmacaoSair(){document.getElementById('modal-sair-overlay').classList.add('active')}
+function fecharModalSair(){document.getElementById('modal-sair-overlay').classList.remove('active')}
+function confirmarSairApp(){fecharModalSair();if(window.AndroidHost&&AndroidHost.exitApp)AndroidHost.exitApp();else window.close()}
+function instalarBotaoSair(){if(document.getElementById('btn-sair-topo-oficial'))return;const header=document.querySelector('.queue-header');if(!header)return;const btn=document.createElement('button');btn.id='btn-sair-topo-oficial';btn.className='btn-sair-transparente';btn.title='Sair';btn.innerHTML='<svg viewBox="0 0 24 24" width="22" height="22" stroke="#fff" fill="none" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>';btn.onclick=pedirConfirmacaoSair;header.style.display='flex';header.style.alignItems='center';header.appendChild(btn)}
+
+window.onIntroFoundDuringScan=function(uri){_introEmReproducao=true;const vid=document.getElementById('intro-video'),screen=document.getElementById('intro-screen');if(!vid||!uri){_introEmReproducao=false;finalizarIntro();return}vid.src=uri;vid.loop=false;if(screen){screen.classList.add('active');screen.style.display='flex'}const liberar=()=>{_introEmReproducao=false;finalizarIntro()};vid.ontimeupdate=function(){if(vid.currentTime>=30){vid.ontimeupdate=null;vid.pause();liberar()}};vid.onended=function(){vid.ontimeupdate=null;liberar()};vid.play().catch(()=>liberar())}
+
+function checarDuplicadosCodigo0000(arquivos){_duplicadosEncontrados=[];const mapa=new Map();for(let f of(arquivos||[])){const nome=f.name||'';if(!/[.]mp4$/i.test(nome)||nome.toLowerCase().startsWith('intro'))continue;const chave=chaveDeBuscaCapa(nome.replace(/[.]mp4$/i,'').replace(/^[0-9]+[ -.:)]*/i,''));if(!chave)continue;if(mapa.has(chave))_duplicadosEncontrados.push({original:mapa.get(chave),duplicado:f});else mapa.set(chave,f)}const sub=document.getElementById('modal-duplicados-sub'),lista=document.getElementById('modal-duplicados-lista'),btn=document.getElementById('btn-remover-dup');if(!_duplicadosEncontrados.length){sub.innerHTML='<span style="color:#00ff88;font-weight:bold">Nenhum duplicado encontrado.</span>';lista.innerHTML='';btn.style.display='none';document.getElementById('modal-duplicados-overlay').classList.add('active');return}sub.innerHTML='Encontrados <b style="color:#ff4444">'+_duplicadosEncontrados.length+'</b> duplicado(s).';btn.style.display='block';lista.innerHTML=_duplicadosEncontrados.map(d=>`<div class="item-dup"><b>${escHtml(d.duplicado.name)}</b><small>Mantendo: ${escHtml(d.original.name)}</small></div>`).join('');document.getElementById('modal-duplicados-overlay').classList.add('active')}
+function fecharModalDuplicados(){document.getElementById('modal-duplicados-overlay').classList.remove('active')}
+async function confirmarRemoverDuplicados(){document.getElementById('modal-duplicados-sub').innerHTML='<span style="color:#ffdd00">Excluindo...</span>';let n=0;for(let d of _duplicadosEncontrados){if(d.duplicado.contentUri&&window.AndroidHost&&AndroidHost.deleteFile){try{if(AndroidHost.deleteFile(d.duplicado.contentUri))n++}catch(e){}}}fecharModalDuplicados();setTimeout(()=>{if(window.AndroidHost&&AndroidHost.refreshFolder)AndroidHost.refreshFolder();else location.reload()},600)}
+
+window.addEventListener('keydown',e=>{if(/^[0-9]$/.test(e.key)&&typeof adicionarDigitoTeclado==='function'&&document.getElementById('numeric-keypad-overlay')&&document.getElementById('numeric-keypad-overlay').classList.contains('active')){adicionarDigitoTeclado(e.key)}if(e.key==='Escape'||e.key==='GoBack'||e.keyCode===27||e.keyCode===4){const dup=document.getElementById('modal-duplicados-overlay'),sair=document.getElementById('modal-sair-overlay');if(dup&&dup.classList.contains('active'))fecharModalDuplicados();else if(sair&&sair.classList.contains('active'))fecharModalSair();else pedirConfirmacaoSair()}})
+</script>
+</body>
+</html>
+HTML_FIM
+
       - name: Descompactar ZIP e normalizar layout
         run: |
           sudo apt-get install -y unzip
-          for f in *.zip; do
-            [ -e "$f" ] || continue
-            unzip -o "$f"
-          done
-
-          if [ -d "FONTE-KARAOKE" ]; then
-            cp -r FONTE-KARAOKE/* .
-          fi
-
-          if [ ! -f "build.gradle" ] && [ ! -f "build.gradle.kts" ] && [ ! -f "settings.gradle" ]; then
+          for f in *.zip; do [ -e "$f" ] || continue; unzip -o "$f"; done
+          if [ -d "FONTE-KARAOKE" ]; then cp -r FONTE-KARAOKE/* .; fi
+          if [ ! -f "build.gradle" ] && [ ! -f "build.gradle.kts" ]; then
             for dir in */; do
-              if [ -f "${dir}build.gradle" ] || [ -f "${dir}settings.gradle" ] || [ -f "${dir}build.gradle.kts" ]; then
-                echo "Projeto encontrado em $dir. Movendo para raiz..."
-                cp -r "${dir}"* .
-                break
-              fi
+              if [ -f "${dir}build.gradle" ] || [ -f "${dir}settings.gradle" ]; then cp -r "${dir}"* .; break; fi
             done
           fi
-          ls -la
-
-      - name: Aplicar Icone Oficial
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y python3-cairosvg python3-pil
-
-          cat << 'PYEOF' > gerar_icone.py
-          import os, re, cairosvg
-          from PIL import Image
-
-          svg_icone = """<svg viewBox="0 0 512 512" width="512" height="512" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="bgFesta" x1="15%" y1="10%" x2="85%" y2="90%">
-                <stop offset="0%" stop-color="#ff007f" />
-                <stop offset="45%" stop-color="#b026ff" />
-                <stop offset="100%" stop-color="#3d0075" />
-              </linearGradient>
-              <radialGradient id="auraGlow" cx="50%" cy="45%" r="50%">
-                <stop offset="0%" stop-color="#ffe600" stop-opacity="0.35" />
-                <stop offset="50%" stop-color="#ff00aa" stop-opacity="0.2" />
-                <stop offset="100%" stop-color="#7a00ff" stop-opacity="0" />
-              </radialGradient>
-              <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#fff9d2" />
-                <stop offset="25%" stop-color="#ffd700" />
-                <stop offset="55%" stop-color="#d4af37" />
-                <stop offset="80%" stop-color="#aa771c" />
-                <stop offset="100%" stop-color="#fff2a8" />
-              </linearGradient>
-              <linearGradient id="goldDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#aa771c" />
-                <stop offset="100%" stop-color="#4a3003" />
-              </linearGradient>
-              <linearGradient id="goldRim" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#ffffff" />
-                <stop offset="20%" stop-color="#ffd700" />
-                <stop offset="50%" stop-color="#ffaa00" />
-                <stop offset="80%" stop-color="#ffd700" />
-                <stop offset="100%" stop-color="#ffffff" />
-              </linearGradient>
-            </defs>
-            <circle cx="256" cy="256" r="236" fill="url(#bgFesta)" stroke="url(#goldRim)" stroke-width="8" />
-            <circle cx="256" cy="240" r="180" fill="url(#auraGlow)" />
-            <ellipse cx="256" cy="425" rx="55" ry="14" fill="url(#goldDark)" />
-            <ellipse cx="256" cy="420" rx="52" ry="12" fill="url(#goldGrad)" />
-            <path d="M 246 360 L 266 360 L 263 420 L 249 420 Z" fill="url(#goldGrad)" stroke="url(#goldDark)" stroke-width="2" />
-            <ellipse cx="256" cy="360" rx="16" ry="6" fill="#fff9d2" />
-            <path d="M 175 250 C 175 355, 337 355, 337 250 C 337 245, 323 245, 323 250 C 323 335, 189 335, 189 250 Z" fill="url(#goldGrad)" stroke="#4a3003" stroke-width="1.5" />
-            <circle cx="178" cy="250" r="10" fill="url(#goldGrad)" stroke="#4a3003" stroke-width="2" />
-            <circle cx="334" cy="250" r="10" fill="url(#goldGrad)" stroke="#4a3003" stroke-width="2" />
-            <circle cx="178" cy="250" r="4" fill="#ffffff" />
-            <circle cx="334" cy="250" r="4" fill="#ffffff" />
-            <g transform="translate(0, -10)">
-              <path d="M 200 150 C 200 100, 312 100, 312 150 L 305 270 C 305 295, 207 295, 207 270 Z" fill="#1b0e02" />
-              <path d="M 200 150 C 200 95, 312 95, 312 150 L 305 270 C 305 300, 207 300, 207 270 Z" fill="none" stroke="url(#goldGrad)" stroke-width="12" />
-              <path d="M 203 125 Q 256 132 309 125" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
-              <path d="M 197 145 Q 256 153 315 145" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
-              <path d="M 195 165 Q 256 173 317 165" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
-              <path d="M 194 185 Q 256 193 318 185" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
-              <path d="M 195 205 Q 256 213 317 205" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
-              <path d="M 197 225 Q 256 233 315 225" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
-              <path d="M 200 245 Q 256 253 312 245" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
-              <path d="M 205 265 Q 256 272 307 265" stroke="url(#goldGrad)" stroke-width="5" fill="none" />
-              <path d="M 252 100 L 260 100 L 260 295 L 252 295 Z" fill="url(#goldGrad)" stroke="#aa771c" stroke-width="1" />
-              <line x1="255" y1="102" x2="255" y2="292" stroke="#ffffff" stroke-width="2.5" opacity="0.85" />
-            </g>
-            <path d="M 370 120 Q 370 145 345 145 Q 370 145 370 170 Q 370 145 395 145 Q 370 145 370 120 Z" fill="#ffffff" />
-            <circle cx="370" cy="145" r="4" fill="#ffd700" />
-            <path d="M 135 150 Q 135 168 117 168 Q 135 168 135 186 Q 135 168 135 150 Z" fill="#ffd700" />
-            <circle cx="135" cy="168" r="3" fill="#ffffff" />
-            <path d="M 125 310 Q 125 322 113 322 Q 125 322 125 334 Q 125 322 137 322 Q 125 322 125 310 Z" fill="#00ffff" />
-            <circle cx="395" cy="270" r="5" fill="#00f5d4" opacity="0.85" />
-            <circle cx="160" cy="95" r="4" fill="#ffe600" opacity="0.8" />
-            <circle cx="340" cy="350" r="4" fill="#ff00aa" opacity="0.8" />
-            <circle cx="130" cy="230" r="3" fill="#ffffff" opacity="0.9" />
-          </svg>"""
-
-          cairosvg.svg2png(bytestring=svg_icone.encode('utf-8'), write_to="temp_icon.png", output_width=512, output_height=512)
-          master = Image.open("temp_icon.png").convert("RGBA")
-
-          nomes_icones = {"ic_launcher", "ic_launcher_round", "icon", "app_icon"}
-          for root, dirs, files in os.walk("."):
-              for f in files:
-                  if f == "AndroidManifest.xml":
-                      try:
-                          with open(os.path.join(root, f), "r", encoding="utf-8") as mf:
-                              conteudo = mf.read()
-                          for m in re.findall(r'android:(?:icon|roundIcon)="@(?:mipmap|drawable)/([^"]+)"', conteudo):
-                              nomes_icones.add(m)
-                      except:
-                          pass
-
-          for root, dirs, files in os.walk("."):
-              for f in files:
-                  nome_sem_ext, ext = os.path.splitext(f)
-                  if ext.lower() == ".xml" and (nome_sem_ext in nomes_icones or "anydpi" in root or "ic_launcher" in nome_sem_ext):
-                      try:
-                          os.remove(os.path.join(root, f))
-                      except:
-                          pass
-
-          tamanhos = {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}
-          for root, dirs, files in os.walk("."):
-              pasta = os.path.basename(root)
-              dim = None
-              for dens, val in tamanhos.items():
-                  if dens in pasta and ("mipmap" in pasta or "drawable" in pasta):
-                      dim = val
-                      break
-              if dim is None and ("mipmap" in pasta or "drawable" in pasta):
-                  dim = 96
-              if dim is not None:
-                  redim = master.resize((dim, dim), Image.Resampling.LANCZOS)
-                  for iname in nomes_icones:
-                      destino = os.path.join(root, f"{iname}.png")
-                      redim.save(destino, "PNG")
-
-          for root, dirs, files in os.walk("."):
-              for f in files:
-                  if f in ["build.gradle", "build.gradle.kts"]:
-                      caminho_bg = os.path.join(root, f)
-                      try:
-                          with open(caminho_bg, "r", encoding="utf-8") as bg_file:
-                              bg_txt = bg_file.read()
-                          def inc_vc(m):
-                              return f"versionCode {int(m.group(1)) + 1}"
-                          new_txt = re.sub(r'versionCode\s+(\d+)', inc_vc, bg_txt)
-                          if new_txt != bg_txt:
-                              with open(caminho_bg, "w", encoding="utf-8") as bg_file:
-                                  bg_file.write(new_txt)
-                      except:
-                          pass
-          PYEOF
-          python3 gerar_icone.py
-
-      - name: Aplicar Correcoes (MainActivity + index.html)
-        run: |
-          cat << 'PYEOF' > patch_karaoke.py
-          import os, re
-
-          def achar(nome):
-              res = []
-              for root, dirs, files in os.walk("."):
-                  if nome in files:
-                      res.append(os.path.join(root, nome))
-              return res
-
-          # ==========================================================
-          # 1. MAINACTIVITY.JAVA — inclui setMediaPlaybackRequiresUserGesture(false)
-          # ==========================================================
-          for p_java in achar("MainActivity.java"):
-              with open(p_java, "r", encoding="utf-8") as f:
-                  j = f.read().replace("\r\n", "\n")
-
-              # Permite autoplay (remove exigência de gesto do usuário)
-              if "setMediaPlaybackRequiresUserGesture" not in j:
-                  j = j.replace(
-                      "super.onCreate(savedInstanceState);",
-                      "super.onCreate(savedInstanceState);\n        try { if (webView != null) webView.getSettings().setMediaPlaybackRequiresUserGesture(false); } catch (Exception ignored) {}"
-                  )
-
-              if "deleteFile" not in j:
-                  metodos_host = """
-                  @android.webkit.JavascriptInterface public boolean deleteFile(String uriStr) {
-                      try { return android.provider.DocumentsContract.deleteDocument(getContentResolver(), android.net.Uri.parse(uriStr)); }
-                      catch (Exception e) { return false; }
-                  }
-                  @android.webkit.JavascriptInterface public void exitApp() {
-                      try { MainActivity.this.runOnUiThread(new Runnable() { @Override public void run() { try { MainActivity.this.finishAffinity(); } catch(Exception ignored) {} System.exit(0); } }); }
-                      catch (Exception e) { System.exit(0); }
-                  }
-                  @android.webkit.JavascriptInterface public void refreshFolder() {
-                      try { runOnUiThread(new Runnable() { @Override public void run() { if (webView != null) webView.reload(); } }); } catch (Exception ignored) {}
-                  }
-                  """
-                  j = j.replace("public final class AndroidHost {", "public final class AndroidHost {" + metodos_host)
-
-              if "FLAG_HARDWARE_ACCELERATED" not in j:
-                  j = j.replace("super.onCreate(savedInstanceState);", """super.onCreate(savedInstanceState);
-                  try {
-                      getWindow().setFlags(android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
-                      if (webView != null) webView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
-                  } catch (Exception ignored) {}""")
-
-              if "dispatchKeyEvent" not in j and "public final class AndroidHost" in j:
-                  metodo_dispatch = """
-                  @Override public boolean dispatchKeyEvent(android.view.KeyEvent event) {
-                      try { if (webView != null && webView.dispatchKeyEvent(event)) return true; } catch (Exception ignored) {}
-                      return super.dispatchKeyEvent(event);
-                  }
-                  """
-                  j = j.replace("public final class AndroidHost {", metodo_dispatch + "\n    public final class AndroidHost {")
-
-              if "getDefaultVideoPoster" not in j:
-                  poster_override = """
-                      @Override public android.graphics.Bitmap getDefaultVideoPoster() {
-                          return android.graphics.Bitmap.createBitmap(1, 1, android.graphics.Bitmap.Config.ARGB_8888);
-                      }
-                  """
-                  if "setWebChromeClient(new WebChromeClient() {" in j:
-                      j = j.replace("setWebChromeClient(new WebChromeClient() {", "setWebChromeClient(new WebChromeClient() {" + poster_override)
-                  elif "new WebChromeClient() {" in j:
-                      j = j.replace("new WebChromeClient() {", "new WebChromeClient() {" + poster_override, 1)
-
-              idx_inicio = j.find("if (cursor == null) return;")
-              idx_fim = j.find("} catch (Exception ignored) {}", idx_inicio)
-              if idx_inicio != -1 and idx_fim != -1:
-                  bloco_multi_intro = """
-                  java.util.List<String> intros = new java.util.ArrayList<>();
-                  boolean introDisparada = false;
-                  while (cursor.moveToNext()) {
-                      String id = cursor.getString(0);
-                      String name = cursor.getString(1);
-                      String mime = cursor.getString(2);
-                      if (name == null || android.provider.DocumentsContract.Document.MIME_TYPE_DIR.equals(mime)) continue;
-                      String n = name.toLowerCase();
-                      if (n.startsWith("intro") && n.endsWith(".mp4")) {
-                          final String introUri = android.provider.DocumentsContract.buildDocumentUriUsingTree(treeUri, id).toString();
-                          intros.add(introUri);
-                          if (!introDisparada) {
-                              introDisparada = true;
-                              runOnUiThread(new Runnable() {
-                                  @Override public void run() {
-                                      if (webView != null) webView.evaluateJavascript(
-                                          "window.onIntroFoundDuringScan && window.onIntroFoundDuringScan(" + org.json.JSONObject.quote(introUri) + ")", null);
-                                  }
-                              });
-                          }
-                      }
-                  }
-                  """
-                  pos_sub = idx_inicio + len("if (cursor == null) return;")
-                  j = j[:pos_sub] + bloco_multi_intro + j[idx_fim:]
-
-              with open(p_java, "w", encoding="utf-8") as f:
-                  f.write(j)
-              print(f"[OK] MainActivity.java: {p_java}")
-
-          # ==========================================================
-          # 2. INDEX.HTML — verifica se já é a versão nova e aplica apenas
-          #    o que não estiver presente.
-          # ==========================================================
-          for p_html in achar("index.html"):
-              with open(p_html, "r", encoding="utf-8") as f:
-                  h = f.read().replace("\r\n", "\n")
-
-              # Se o HTML já contém as funções novas, não injeta duplicado
-              if "function processarCodigo(code) {" not in h:
-                  print(f"[AVISO] {p_html} nao e a versao nova. Pulando patch de duplicados/logo.")
-                  continue
-
-              # Garante cache de arquivos e logo
-              if "window._arquivosCarregadosCache" not in h:
-                  h = h.replace(
-                      "async function handleFolderSelect(e) {",
-                      "async function handleFolderSelect(e) {\n    window._arquivosCarregadosCache = Array.from(e.target.files);\n    identificarLogoMestra(window._arquivosCarregadosCache);"
-                  )
-
-              # Garante timeout de liberação caso não haja intro
-              if "_introEmReproducao" in h and "setTimeout(() => { if (!_introEmReproducao)" not in h:
-                  h = h.replace(
-                      "logOK(`${Object.keys(videoFiles).length} vídeos | `",
-                      "setTimeout(() => { if (!_introEmReproducao) { const _ui = document.getElementById('ui-wrapper'); if (_ui && !_ui.classList.contains('liberado')) finalizarIntro(); } }, 2500);\n            logOK(`${Object.keys(videoFiles).length} vídeos | `"
-                  )
-
-              with open(p_html, "w", encoding="utf-8") as f:
-                  f.write(h)
-              print(f"[OK] index.html: {p_html}")
-
-          PYEOF
-          python3 patch_karaoke.py
 
       - name: Configurar Java 17
         uses: actions/setup-java@v5
@@ -313,7 +293,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Configurar Gradle (sem cache para evitar falhas)
+      - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
@@ -321,19 +301,15 @@ jobs:
 
       - name: Garantir Gradle Wrapper
         run: |
-          if [ ! -f "gradlew" ]; then
-            gradle wrapper --gradle-version 8.11.1
-          fi
+          if [ ! -f "gradlew" ]; then gradle wrapper --gradle-version 8.11.1; fi
           chmod +x gradlew
 
-      - name: Compilar APK (Debug)
+      - name: Compilar APK
         run: ./gradlew assembleDebug --stacktrace
 
-      - name: Disponibilizar APK para Download
+      - name: Disponibilizar APK
         uses: actions/upload-artifact@v4
         with:
-          name: Karaoke-Festa-das-Cores-v3.0
-          path: |
-            app/build/outputs/apk/debug/*.apk
-          if-no-files-found: warn
+          name: Karaoke-Festa-das-Cores
+          path: app/build/outputs/apk/debug/*.apk
           retention-days: 7
