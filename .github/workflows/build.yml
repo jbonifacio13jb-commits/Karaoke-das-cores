@@ -19,6 +19,15 @@ jobs:
           done
           if [ -d "FONTE-KARAOKE" ]; then cp -r FONTE-KARAOKE/* .; fi
 
+      - name: Forçar uso do novo index.html
+        run: |
+          # Cria a pasta de assets caso não exista
+          mkdir -p app/src/main/assets
+          # Copia o index.html da raiz para a pasta que o app realmente lê
+          cp index.html app/src/main/assets/index.html
+          # Procura qualquer outro index.html antigo escondido no projeto e substitui pelo novo
+          find . -name "index.html" -not -path "./.git/*" -exec cp index.html {} \;
+
       - name: Configurar Java 17
         uses: actions/setup-java@v5
         with:
