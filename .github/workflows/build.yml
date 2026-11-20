@@ -22,7 +22,6 @@ jobs:
           done
           if [ -d "FONTE-KARAOKE" ]; then cp -r FONTE-KARAOKE/* .; fi
           
-          # Procura o build.gradle em qualquer pasta e joga pra raiz
           if [ ! -f "build.gradle" ] && [ ! -f "settings.gradle" ]; then
             for dir in */; do
               if [ -f "${dir}build.gradle" ] || [ -f "${dir}settings.gradle" ]; then
@@ -31,6 +30,35 @@ jobs:
               fi
             done
           fi
+
+      - name: Corrigir Arquivos do Gradle (Baixar Dependências Corretas)
+        run: |
+          # Força os repositórios corretos no settings.gradle
+          cat << 'EOF' > settings.gradle
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "Karaoke-Festa-das-Cores"
+          include ':app'
+          EOF
+
+          # Força a versão do plugin do Android que é compatível com o Gradle 8.11.1
+          cat << 'EOF' > build.gradle
+          plugins {
+              id 'com.android.application' version '8.5.2' apply false
+          }
+          EOF
 
       - name: Corrigir Java e Tela Preta
         run: |
@@ -70,13 +98,13 @@ jobs:
           echo "HTML novo injetado com sucesso!"
 
       - name: Configurar Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
 
       - name: Configurar Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
           cache-disabled: true
