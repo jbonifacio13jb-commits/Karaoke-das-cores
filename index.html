@@ -13,7 +13,6 @@
             --font-body: 'Rajdhani', 'Arial', sans-serif;
             --neon: #00ffff; --magenta: #ff00ff; --vivid-yellow: #ffdd00; --emerald: #00ff88;
             --dark-bg: #050508; --panel-bg: #0d0d14; --icone-size: 44px;
-            --stage-radius: 14px;
         }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; user-select: none; margin: 0; padding: 0; }
         body { background: var(--dark-bg); color: #e0e0e0; font-family: var(--font-body); height: 100vh; width: 100vw; overflow: hidden; }
@@ -44,7 +43,6 @@
             background-size: contain; background-position: center center; background-repeat: no-repeat;
             z-index: 2; opacity: 0; transition: opacity 0.4s ease-in-out;
         }
-        /* profundidade na capa do cantor durante a contagem */
         #bg-singer-layer::after {
             content: ''; position: absolute; inset: 0;
             background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, transparent 30%, transparent 60%, rgba(0,0,0,0.85) 100%);
@@ -60,13 +58,19 @@
         #bg-singer-layer-rock { position: absolute; inset: 0; background-size: contain; background-position: center; background-repeat: no-repeat; z-index: 1005; opacity: 0; transition: opacity 0.3s; }
         #bg-singer-layer-rock.ativo { opacity: 1 !important; }
 
-        /* ============ PLAYER DE VÍDEO (corrigido) ============ */
+        /* ============ PLAYER DE VÍDEO ============ */
         #video-player {
             position: absolute; inset: 0;
             width: 100%; height: 100%;
             object-fit: contain; background: #000;
             z-index: 100; display: none;
         }
+        video::-webkit-media-controls,
+        video::-webkit-media-controls-start-playback-button,
+        video::-webkit-media-controls-play-button,
+        video::-webkit-media-controls-overlay-play-button,
+        video::-webkit-media-controls-panel,
+        video::-webkit-media-controls-enclosure { display: none !important; -webkit-appearance: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
 
         /* ============ TIMER / CONTAGEM ============ */
         #timer-screen {
@@ -94,7 +98,7 @@
             line-height: 1.35;
         }
 
-        /* ============ BARRA INFERIOR DO PALCO (padronizada) ============ */
+        /* ============ BARRA INFERIOR DO PALCO ============ */
         #stage-bottom-bar {
             position: absolute; bottom: 10px; left: 50%;
             transform: translateX(-50%);
@@ -249,7 +253,41 @@
         #modal-cantor-box { background: var(--panel-bg); border: 2px solid var(--vivid-yellow); border-radius: 20px; padding: 25px; width: 100%; max-width: 480px; color: #fff; }
         #modal-cantor-input { width: 100%; padding: 16px; border-radius: 14px; border: 2px solid #333; background: #0a0a0f; color: #fff; font-size: 18px; margin-top: 10px; }
 
-        .btn-sair-topo-fixo { position: fixed !important; top: 10px !important; right: 14px !important; width: 38px !important; height: 38px !important; border-radius: 12px !important; background: rgba(10,6,20,0.75) !important; border: 1.5px solid rgba(212,128,255,0.6) !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; color: #d480ff !important; z-index: 99999 !important; }
+        .btn-sair-transparente {
+            width: 38px; height: 38px; border-radius: 12px;
+            background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.45);
+            backdrop-filter: blur(8px); display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer; color: #fff; box-shadow: 0 0 12px rgba(212,128,255,0.35);
+            transition: all 0.2s ease; box-sizing: border-box; padding: 0;
+        }
+        .btn-sair-transparente:hover, .btn-sair-transparente:focus { background: rgba(176,38,255,0.35); border-color: #fff; transform: scale(1.08); outline: none; }
+
+        #modal-sair-overlay { position: fixed; inset: 0; z-index: 40000; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); padding: 20px; }
+        #modal-sair-overlay.active { display: flex !important; }
+        #modal-sair-box { background: linear-gradient(160deg,#1f1435,#0c0817); border: 2px solid #d480ff; border-radius: 20px; padding: 24px; width: min(90vw,420px); display: flex; flex-direction: column; gap: 14px; text-align: center; box-shadow: 0 0 35px rgba(176,38,255,0.45); color: #fff; }
+        #modal-sair-titulo { font: 900 20px var(--font-title); color: #d480ff; letter-spacing: 2px; }
+        .modal-sair-acoes { display: flex; gap: 10px; margin-top: 10px; }
+        .modal-sair-acoes button { flex: 1; padding: 12px; border: none; border-radius: 12px; font: 800 14px var(--font-title); cursor: pointer; }
+        #btn-cancelar-sair { background: #333; color: #fff; }
+        #btn-confirmar-sair { background: linear-gradient(135deg,#b026ff,#7a00e6); color: #fff; box-shadow: 0 0 20px rgba(176,38,255,0.6); }
+
+        #logo-tela-overlay { position: absolute; inset: 0; z-index: 20000; background: #000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
+        #logo-tela-overlay.ativo { display: flex !important; opacity: 1 !important; }
+        #logo-tela-img { max-width: 75%; max-height: 75%; object-fit: contain; filter: drop-shadow(0 0 35px rgba(0,255,255,0.45)); animation: zoomLogoAparecer 1.8s ease-out forwards; }
+        @keyframes zoomLogoAparecer { 0% { transform: scale(0.92); opacity: 0.2; } 20% { opacity: 1; } 100% { transform: scale(1.03); opacity: 1; } }
+
+        #modal-duplicados-overlay { position: fixed; inset: 0; z-index: 35000; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); padding: 20px; }
+        #modal-duplicados-overlay.active { display: flex !important; }
+        #modal-duplicados-box { background: linear-gradient(160deg,#181226,#090812); border: 2px solid var(--vivid-yellow); border-radius: 20px; padding: 24px; width: min(92vw,650px); max-height: 85vh; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 0 40px rgba(255,221,0,0.3); color: #fff; }
+        #modal-duplicados-titulo { font: 900 20px var(--font-title); color: var(--vivid-yellow); text-align: center; letter-spacing: 2px; }
+        #modal-duplicados-lista { flex: 1; overflow-y: auto; max-height: 45vh; display: flex; flex-direction: column; gap: 8px; padding-right: 6px; }
+        .item-dup { background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 10px; border-left: 4px solid #ff4444; font-size: 13px; }
+        .item-dup b { color: var(--neon); display: block; margin-bottom: 2px; }
+        .item-dup small { color: #aaa; word-break: break-all; }
+        .modal-dup-acoes { display: flex; gap: 10px; margin-top: 6px; }
+        .modal-dup-acoes button { flex: 1; padding: 14px; border: none; border-radius: 12px; font: 800 14px var(--font-title); cursor: pointer; }
+        #btn-fechar-dup { background: #333; color: #fff; }
+        #btn-remover-dup { background: #ff2244; color: #fff; box-shadow: 0 0 20px rgba(255,34,68,0.5); }
 
         #catalogo-box { flex: 1; display: flex; flex-direction: column; gap: 18px; background: #0f0d2a; border-radius: 24px; padding: 26px; max-width: 800px; width: 100%; max-height: 85vh; border: 1px solid rgba(0,255,255,0.2); }
         #cat-lista { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
@@ -265,12 +303,14 @@
         #idle-hero .hero-title { font-family: var(--font-title); font-size: clamp(24px, 5vw, 48px); font-weight: 900; color: #fff; text-shadow: 0 0 20px var(--magenta), 0 0 40px rgba(255,0,255,0.4); }
         #idle-hero .hero-sub { font-family: var(--font-title); font-size: 16px; color: var(--vivid-yellow); margin-top: 10px; letter-spacing: 1px; }
         #idle-hero .hero-count { font-family: var(--font-body); font-size: 14px; color: #aaa; margin-top: 5px; }
+
+        button:focus-visible { outline: 3px solid #fff !important; box-shadow: 0 0 25px #fff, 0 0 35px rgba(255,255,255,0.8) !important; }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
     <div id="intro-screen">
-        <video id="intro-video" playsinline autoplay preload="auto"><source src="intro.mp4" type="video/mp4"></video>
+        <video id="intro-video" playsinline webkit-playsinline autoplay preload="auto"><source src="intro.mp4" type="video/mp4"></video>
         <div id="intro-curtain" aria-hidden="true"></div>
     </div>
 
@@ -306,7 +346,7 @@
         </div>
     </div>
 
-    <div id="ui-wrapper" class="oculto-inicio">
+    <div id="ui-wrapper" class="oculto-inicio" style="display:none;opacity:0;visibility:hidden;">
         <div class="stage" id="stage-area">
             <div class="stage-background" id="main-bg"></div>
             <div id="bg-singer-layer"></div>
@@ -314,7 +354,7 @@
             <div id="tornado-layer">
                 <div id="bg-singer-layer-rock"></div>
             </div>
-            <video id="video-player" playsinline preload="auto"></video>
+            <video id="video-player" playsinline webkit-playsinline preload="auto"></video>
             <audio id="audio-jb" loop></audio>
 
             <div id="idle-hero">
@@ -386,6 +426,31 @@
         </div>
     </div>
 
+    <div id="logo-tela-overlay"><img id="logo-tela-img" alt="Logo"></div>
+
+    <div id="modal-duplicados-overlay">
+        <div id="modal-duplicados-box">
+            <div id="modal-duplicados-titulo">VERIFICADOR DE DUPLICADOS</div>
+            <p id="modal-duplicados-sub" style="text-align:center; font-size:14px; color:#bbb;"></p>
+            <div id="modal-duplicados-lista"></div>
+            <div class="modal-dup-acoes">
+                <button type="button" id="btn-fechar-dup" onclick="fecharModalDuplicados()">CANCELAR</button>
+                <button type="button" id="btn-remover-dup" onclick="confirmarRemoverDuplicados()">ELIMINAR DUPLICADOS</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-sair-overlay">
+        <div id="modal-sair-box">
+            <div id="modal-sair-titulo">SAIR DO KARAOKE</div>
+            <p style="font-size:14px; color:#ddd;">Tem certeza de que deseja fechar o aplicativo?</p>
+            <div class="modal-sair-acoes">
+                <button type="button" id="btn-cancelar-sair" onclick="fecharModalSair()">CONTINUAR</button>
+                <button type="button" id="btn-confirmar-sair" onclick="confirmarSairApp()">SIM, SAIR</button>
+            </div>
+        </div>
+    </div>
+
     <div id="aviso-rapido"></div>
     <input type="file" id="f-folder" webkitdirectory directory multiple style="display:none">
 
@@ -394,50 +459,26 @@
         let videoFiles = {}, catalog = [], queue = [];
         let modalTempCode = null, modalTempNome = null, modalTempFile = null;
 
-        /* Índices de imagens */
-        let imagensIndex = {};      // key -> File (todas as imagens)
-        let capasCantor = {};       // key -> File (da pasta CAPAS)
-        let bgsPadrao = {};         // key -> File (da pasta BGS)
+        let imagensIndex = {};
+        let capasCantor = {};
+        let bgsPadrao = {};
 
         let singerBgInterval = null, isVideosLoaded = false;
-        let marqueeModo = "padrao", codigoTecladoNumerico = '';
+        let codigoTecladoNumerico = '';
         let _termoBuscaCatalogo = '';
+        let _logoUrlObrigatorio = null;
+        let _duplicadosEncontrados = [];
+        let _introEmReproducao = false;
+        window._arquivosCarregadosCache = [];
 
         function logOK(m) { console.log('%c[OK] ' + m, 'color: #00ff88; font-weight: bold'); }
         function logAviso(m) { console.log('%c[AVISO] ' + m, 'color: #ffaa00; font-weight: bold'); }
         function logErro(m) { console.log('%c[ERRO] ' + m, 'color: #ff3333; font-weight: bold'); }
 
-        /* ===================== TECLADO ===================== */
-        function abrirTeclado() {
-            codigoTecladoNumerico = '';
-            atualizarTelaTecladoNumerico();
-            document.getElementById('keypad-feedback').textContent = '';
-            document.getElementById('numeric-keypad-overlay').classList.add('active');
-        }
-        function atualizarTelaTecladoNumerico() {
-            document.getElementById('keypad-code').textContent = codigoTecladoNumerico || '—';
-        }
-        function adicionarDigitoTeclado(d) {
-            if (codigoTecladoNumerico.length < 10) { codigoTecladoNumerico += d; atualizarTelaTecladoNumerico(); }
-        }
-        function apagarDigitoTeclado() { codigoTecladoNumerico = codigoTecladoNumerico.slice(0, -1); atualizarTelaTecladoNumerico(); }
-        function limparCodigoTeclado() { codigoTecladoNumerico = ''; atualizarTelaTecladoNumerico(); }
-        function fecharTecladoNumerico() { document.getElementById('numeric-keypad-overlay').classList.remove('active'); }
-        function confirmarCodigoTeclado() {
-            const v = codigoTecladoNumerico.trim();
-            if (v && videoFiles[v.padStart(4, '0')]) {
-                fecharTecladoNumerico();
-                processarCodigo(v);
-            } else {
-                document.getElementById('keypad-feedback').textContent = 'Código não encontrado.';
-            }
-        }
-
-        /* ===================== INICIALIZAÇÃO ===================== */
-        async function forcarPaisagem() {
+        function forcarPaisagem() {
             try {
                 if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-                    await document.documentElement.requestFullscreen();
+                    document.documentElement.requestFullscreen();
                 }
             } catch (e) {}
             document.body.classList.add('fullscreen-mode');
@@ -468,6 +509,9 @@
             const usaNativo = !!(window.AndroidHost && AndroidHost.chooseFolder);
             if (usaNativo) selectFolder();
             else mostrarOverlayOK();
+
+            instalarBotaoSair();
+            setTimeout(instalarBotaoSair, 800);
         }
 
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initKaraoke);
@@ -499,9 +543,11 @@
             const ui = document.getElementById('ui-wrapper');
             ui.classList.remove('oculto-inicio');
             ui.classList.add('liberado');
+            ui.style.display = 'flex';
+            ui.style.opacity = '1';
+            ui.style.visibility = 'visible';
         }
 
-        /* ===================== PROGRESSO ===================== */
         function updateStageProgressBar() {
             if (!player.duration) return;
             const cur = player.currentTime, dur = player.duration, rem = Math.max(0, dur - cur);
@@ -510,38 +556,26 @@
                 `-${Math.floor(rem/60).toString().padStart(2,'0')}:${Math.floor(rem%60).toString().padStart(2,'0')}`;
         }
 
-        /* ===================== CAPA DO CANTOR ===================== */
         function mostrarCapaCantor(url) {
-            if (!url) {
-                bgSinger.style.opacity = '0';
-                bgSinger.style.backgroundImage = '';
-                return;
-            }
+            if (!url) { bgSinger.style.opacity = '0'; bgSinger.style.backgroundImage = ''; return; }
             bgSinger.style.backgroundImage = `url("${url}")`;
             bgSinger.style.opacity = '1';
         }
         function esconderCapaCantor() {
-            bgSinger.style.opacity = '0';
-            bgSinger.style.backgroundImage = '';
-            bgSinger2.style.opacity = '0';
-            bgSinger2.style.backgroundImage = '';
+            bgSinger.style.opacity = '0'; bgSinger.style.backgroundImage = '';
+            bgSinger2.style.opacity = '0'; bgSinger2.style.backgroundImage = '';
         }
 
-        /* ===================== PLAYLIST ===================== */
         async function startPlaylist() {
             if (!queue.length || player.style.display === 'block') return;
             await forcarPaisagem();
-
             const current = queue[0];
 
-            // 🔎 Busca capa do cantor (pasta capas) ou fallback bg principal (pasta bgs)
             const capaFile = buscarCapaCantor(current.singer) || buscarBgPadrao();
             const capaUrl = capaFile ? (capaFile.contentUri || URL.createObjectURL(capaFile)) : '';
             mostrarCapaCantor(capaUrl);
 
-            // Esconde tela inicial (DIGITE O CÓDIGO)
             document.getElementById('idle-hero').style.display = 'none';
-
             document.body.classList.add('countdown-ativo');
             const songDisplayEl = document.getElementById('song-display');
             songDisplayEl.innerHTML =
@@ -554,9 +588,11 @@
                 await new Promise(r => setTimeout(r, 1000));
             }
 
-            // Esconde capa e inicia vídeo
             esconderCapaCantor();
             timerScreen.classList.remove('active');
+            if (_logoUrlObrigatorio) {
+                await new Promise(res => exibirLogoPosContagem(1800, res));
+            }
             document.body.classList.remove('countdown-ativo');
 
             player.src = current.file.contentUri || URL.createObjectURL(current.file);
@@ -575,10 +611,12 @@
             document.getElementById('stage-time-remaining').innerText = '-00:00';
         }
 
-        /* ===================== SELEÇÃO DE PASTA ===================== */
         async function handleFolderSelect(e) {
             const files = Array.from(e.target.files);
             if (!files.length) return;
+
+            window._arquivosCarregadosCache = files;
+            identificarLogoMestra(files);
 
             videoFiles = {}; catalog = [];
             imagensIndex = {}; capasCantor = {}; bgsPadrao = {};
@@ -588,7 +626,6 @@
                 const pathUpper = (f.webkitRelativePath || f.name).toUpperCase();
                 const parts = pathUpper.split(/[\/\\]/);
 
-                // ---------- VÍDEOS ----------
                 if (nameUpper.endsWith('.MP4') && !nameUpper.includes('INTRO')) {
                     const m = nameUpper.match(/(\d+)/);
                     const code = m ? m[1].padStart(4, '0')
@@ -598,7 +635,6 @@
                     continue;
                 }
 
-                // ---------- IMAGENS (capas e bgs) ----------
                 const isImg = /\.(PNG|JPE?G)$/i.test(nameUpper);
                 if (!isImg) continue;
 
@@ -606,27 +642,27 @@
                 const key = chaveDeBuscaCapa(baseName);
                 if (!key) continue;
 
-                // índice geral
                 imagensIndex[key] = f;
-
-                // classifica por pasta
-                const inCapas = parts.includes('CAPAS') || parts.includes('CAPA');
-                const inBgs   = parts.includes('BGS') || parts.includes('BG');
-
-                if (inCapas) capasCantor[key] = f;
-                else if (inBgs) bgsPadrao[key] = f;
+                if (parts.includes('CAPAS') || parts.includes('CAPA')) capasCantor[key] = f;
+                else if (parts.includes('BGS') || parts.includes('BG')) bgsPadrao[key] = f;
             }
 
             isVideosLoaded = Object.keys(videoFiles).length > 0;
             document.getElementById('btn-play-bar').disabled = !isVideosLoaded;
             document.getElementById('hero-count').textContent = Object.keys(videoFiles).length;
 
+            setTimeout(() => {
+                if (!_introEmReproducao) {
+                    const _ui = document.getElementById('ui-wrapper');
+                    if (_ui && !_ui.classList.contains('liberado')) finalizarIntro();
+                }
+            }, 2500);
+
             logOK(`${Object.keys(videoFiles).length} vídeos | ` +
                   `${Object.keys(capasCantor).length} capas | ` +
                   `${Object.keys(bgsPadrao).length} backgrounds`);
         }
 
-        /* ===================== BUSCA DE CAPA / BG ===================== */
         function chaveDeBuscaCapa(nome) {
             return String(nome || '')
                 .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -636,43 +672,32 @@
         function buscarCapaCantor(nomeCantor) {
             const key = chaveDeBuscaCapa(nomeCantor);
             if (!key) return null;
-
-            // 1) match exato na pasta CAPAS
             if (capasCantor[key]) return capasCantor[key];
-
-            // 2) match parcial (ex.: "alcione_1", "alcione-ao-vivo")
             const regex = new RegExp('^' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:[\\s_\\-]|$)');
             const foundInCapas = Object.keys(capasCantor).find(k => regex.test(k));
             if (foundInCapas) return capasCantor[foundInCapas];
-
-            // 3) match exato no índice geral (caso o usuário tenha salvo na raiz)
             if (imagensIndex[key]) return imagensIndex[key];
-
-            // 4) match parcial no índice geral
             const foundGeral = Object.keys(imagensIndex).find(k => regex.test(k));
             return foundGeral ? imagensIndex[foundGeral] : null;
         }
 
         function buscarBgPadrao() {
             const variacoes = [
-                'BG PRINCIPAL', 'BGPRINCIPAL', 'BG_PRINCIPAL',
-                'BG-PRINCIPAL', 'BG PRINCIPAL 1', 'BGP'
+                'BG PRINCIPAL', 'BGPRINCIPAL', 'BG_PRINCIPAL', 'BG-PRINCIPAL',
+                'BG PRINCIPAL 1', 'BGP', 'BGOFICIAL', 'BG OFICIAL'
             ];
-            for (const v of variacoes) {
-                if (bgsPadrao[v]) return bgsPadrao[v];
-            }
-            // qualquer imagem começando com "BG" na pasta bgs
+            for (const v of variacoes) if (bgsPadrao[v]) return bgsPadrao[v];
             const key = Object.keys(bgsPadrao).find(k => k.startsWith('BG'));
             if (key) return bgsPadrao[key];
-            // fallback geral
-            for (const v of variacoes) {
-                if (imagensIndex[v]) return imagensIndex[v];
-            }
+            for (const v of variacoes) if (imagensIndex[v]) return imagensIndex[v];
             return null;
         }
 
-        /* ===================== CÓDIGO / MODAL ===================== */
         function processarCodigo(code) {
+            if (String(code).trim() === '0000') {
+                checarDuplicadosCodigo0000(window._arquivosCarregadosCache || []);
+                return;
+            }
             const padCode = String(code).padStart(4, '0');
             if (!videoFiles[padCode]) return;
             modalTempCode = padCode;
@@ -693,7 +718,6 @@
 
         function fecharModalCantor() { document.getElementById('modal-cantor-overlay').classList.remove('active'); }
 
-        /* ===================== FILA ===================== */
         function renderQueue() {
             const isPlaying = player.style.display === 'block';
             if (!queue.length) {
@@ -715,7 +739,6 @@
             document.getElementById('queue-count-badge').innerText =
                 isPlaying ? Math.max(0, queue.length - 1) : queue.length;
 
-            // Tela inicial (DIGITE O CÓDIGO) apenas quando ocioso
             const shouldShowIdle = !queue.length && !isPlaying &&
                                    !document.body.classList.contains('countdown-ativo');
             document.getElementById('idle-hero').style.display = shouldShowIdle ? 'flex' : 'none';
@@ -734,7 +757,6 @@
             return String(t || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         }
 
-        /* ===================== CATÁLOGO ===================== */
         function abrirCatalogo() {
             document.getElementById('catalogo-overlay').classList.add('active');
             renderCatalogo();
@@ -759,6 +781,158 @@
             document.getElementById('cat-total').textContent = itens.length + ' músicas';
         }
         function selectFolder() { fileInput.click(); }
+
+        /* ============== TECLADO ============== */
+        function abrirTeclado() {
+            codigoTecladoNumerico = '';
+            atualizarTelaTecladoNumerico();
+            document.getElementById('keypad-feedback').textContent = '';
+            document.getElementById('numeric-keypad-overlay').classList.add('active');
+        }
+        function atualizarTelaTecladoNumerico() {
+            document.getElementById('keypad-code').textContent = codigoTecladoNumerico || '—';
+        }
+        function adicionarDigitoTeclado(d) {
+            if (codigoTecladoNumerico.length < 10) { codigoTecladoNumerico += d; atualizarTelaTecladoNumerico(); }
+        }
+        function apagarDigitoTeclado() { codigoTecladoNumerico = codigoTecladoNumerico.slice(0, -1); atualizarTelaTecladoNumerico(); }
+        function limparCodigoTeclado() { codigoTecladoNumerico = ''; atualizarTelaTecladoNumerico(); }
+        function fecharTecladoNumerico() { document.getElementById('numeric-keypad-overlay').classList.remove('active'); }
+        function confirmarCodigoTeclado() {
+            const v = codigoTecladoNumerico.trim();
+            if (v && videoFiles[v.padStart(4, '0')]) {
+                fecharTecladoNumerico();
+                processarCodigo(v);
+            } else {
+                document.getElementById('keypad-feedback').textContent = 'Código não encontrado.';
+            }
+        }
+
+        /* ============== LOGO / SAIR / DUPLICADOS ============== */
+        function identificarLogoMestra(files) {
+            _logoUrlObrigatorio = null;
+            for (let f of (files || [])) {
+                const nome = (f.name || '').toLowerCase();
+                const path = f.webkitRelativePath || f.name;
+                const partes = path.split('/').filter(Boolean);
+                if (nome === 'logo.png' && partes.length <= 2) {
+                    _logoUrlObrigatorio = f.contentUri || URL.createObjectURL(f);
+                    return;
+                }
+            }
+            for (let f of (files || [])) {
+                if ((f.name || '').toLowerCase() === 'logo.png') {
+                    _logoUrlObrigatorio = f.contentUri || URL.createObjectURL(f);
+                    return;
+                }
+            }
+        }
+
+        function exibirLogoPosContagem(duracaoMs, callback) {
+            const overlay = document.getElementById('logo-tela-overlay');
+            const img = document.getElementById('logo-tela-img');
+            if (!overlay || !_logoUrlObrigatorio) { if (callback) callback(); return; }
+            img.src = _logoUrlObrigatorio;
+            overlay.classList.add('ativo');
+            setTimeout(() => {
+                overlay.style.opacity = '0';
+                setTimeout(() => { overlay.classList.remove('ativo'); overlay.style.opacity = '1'; if (callback) callback(); }, 250);
+            }, duracaoMs);
+        }
+
+        function pedirConfirmacaoSair() { document.getElementById('modal-sair-overlay').classList.add('active'); }
+        function fecharModalSair() { document.getElementById('modal-sair-overlay').classList.remove('active'); }
+        function confirmarSairApp() {
+            fecharModalSair();
+            if (window.AndroidHost && AndroidHost.exitApp) AndroidHost.exitApp();
+            else window.close();
+        }
+
+        function instalarBotaoSair() {
+            if (document.getElementById('btn-sair-topo-oficial')) return;
+            const header = document.querySelector('.queue-header');
+            if (!header) return;
+            const btn = document.createElement('button');
+            btn.id = 'btn-sair-topo-oficial';
+            btn.className = 'btn-sair-transparente';
+            btn.title = 'Sair do Karaoke';
+            btn.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" stroke="#ffffff" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>';
+            btn.onclick = pedirConfirmacaoSair;
+            header.style.display = 'flex';
+            header.style.alignItems = 'center';
+            header.appendChild(btn);
+        }
+
+        window.onIntroFoundDuringScan = function(uri) {
+            _introEmReproducao = true;
+            const vid = document.getElementById('intro-video');
+            const screen = document.getElementById('intro-screen');
+            if (!vid || !uri) { _introEmReproducao = false; finalizarIntro(); return; }
+            vid.src = uri;
+            vid.loop = false;
+            if (screen) { screen.classList.add('active'); screen.style.display = 'flex'; }
+            const liberar = () => { _introEmReproducao = false; finalizarIntro(); };
+            vid.ontimeupdate = function() { if (vid.currentTime >= 30) { vid.ontimeupdate = null; vid.pause(); liberar(); } };
+            vid.onended = function() { vid.ontimeupdate = null; liberar(); };
+            vid.play().catch(() => liberar());
+        };
+
+        function checarDuplicadosCodigo0000(arquivos) {
+            _duplicadosEncontrados = [];
+            const mapa = new Map();
+            for (let f of (arquivos || [])) {
+                const nome = f.name || '';
+                if (!/[.]mp4$/i.test(nome) || nome.toLowerCase().startsWith('intro')) continue;
+                const chave = chaveDeBuscaCapa(nome.replace(/[.]mp4$/i, '').replace(/^[0-9]+[ -.:)]*/i, ''));
+                if (!chave) continue;
+                if (mapa.has(chave)) _duplicadosEncontrados.push({ original: mapa.get(chave), duplicado: f });
+                else mapa.set(chave, f);
+            }
+            const sub = document.getElementById('modal-duplicados-sub');
+            const lista = document.getElementById('modal-duplicados-lista');
+            const btn = document.getElementById('btn-remover-dup');
+            if (!_duplicadosEncontrados.length) {
+                sub.innerHTML = '<span style="color:#00ff88;font-weight:bold;">Nenhum duplicado encontrado.</span>';
+                lista.innerHTML = ''; btn.style.display = 'none';
+                document.getElementById('modal-duplicados-overlay').classList.add('active');
+                return;
+            }
+            sub.innerHTML = 'Encontrados <b style="color:#ff4444;">' + _duplicadosEncontrados.length + '</b> duplicado(s).';
+            btn.style.display = 'block';
+            lista.innerHTML = _duplicadosEncontrados.map(d => `
+                <div class="item-dup">
+                    <b>${escHtml(d.duplicado.name)}</b>
+                    <small>Mantendo: ${escHtml(d.original.name)}</small>
+                </div>`).join('');
+            document.getElementById('modal-duplicados-overlay').classList.add('active');
+        }
+        function fecharModalDuplicados() { document.getElementById('modal-duplicados-overlay').classList.remove('active'); }
+        async function confirmarRemoverDuplicados() {
+            document.getElementById('modal-duplicados-sub').innerHTML = '<span style="color:#ffdd00;">Excluindo...</span>';
+            let n = 0;
+            for (let d of _duplicadosEncontrados) {
+                if (d.duplicado.contentUri && window.AndroidHost && AndroidHost.deleteFile) {
+                    try { if (AndroidHost.deleteFile(d.duplicado.contentUri)) n++; } catch(e) {}
+                }
+            }
+            fecharModalDuplicados();
+            setTimeout(() => { if (window.AndroidHost && AndroidHost.refreshFolder) AndroidHost.refreshFolder(); else location.reload(); }, 600);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (/^[0-9]$/.test(e.key) && typeof adicionarDigitoTeclado === 'function' &&
+                document.getElementById('numeric-keypad-overlay') &&
+                document.getElementById('numeric-keypad-overlay').classList.contains('active')) {
+                adicionarDigitoTeclado(e.key);
+            }
+            if (e.key === 'Escape' || e.key === 'GoBack' || e.keyCode === 27 || e.keyCode === 4) {
+                const dup = document.getElementById('modal-duplicados-overlay');
+                const sair = document.getElementById('modal-sair-overlay');
+                if (dup && dup.classList.contains('active')) fecharModalDuplicados();
+                else if (sair && sair.classList.contains('active')) fecharModalSair();
+                else pedirConfirmacaoSair();
+            }
+        });
     </script>
 </body>
 </html>
