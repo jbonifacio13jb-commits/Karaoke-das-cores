@@ -20,12 +20,10 @@ jobs:
             [ -e "$f" ] || continue
             unzip -o "$f"
           done
-
           if [ -d "FONTE-KARAOKE" ]; then
             cp -r FONTE-KARAOKE/* .
           fi
-
-          if [ ! -f "build.gradle" ] && [ ! -f "settings.gradle" ] && [ ! -f "build.gradle.kts" ]; then
+          if [ ! -f "build.gradle" ] && [ ! -f "settings.gradle" ]; then
             for dir in */; do
               if [ -f "${dir}build.gradle" ] || [ -f "${dir}settings.gradle" ]; then
                 cp -r "${dir}"* .
@@ -33,13 +31,12 @@ jobs:
               fi
             done
           fi
-          ls -la
 
       - name: Aplicar Ícone Oficial
         run: |
           sudo apt-get update -y
           sudo apt-get install -y python3-cairosvg python3-pil
-          cat << 'EOF' > gerar_icone.py
+          cat << 'PYEOF' > gerar_icone.py
           import os, re, cairosvg
           from PIL import Image
           svg_icone = """<svg viewBox="0 0 512 512" width="512" height="512" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bgFesta" x1="15%" y1="10%" x2="85%" y2="90%"><stop offset="0%" stop-color="#ff007f" /><stop offset="45%" stop-color="#b026ff" /><stop offset="100%" stop-color="#3d0075" /></linearGradient><radialGradient id="auraGlow" cx="50%" cy="45%" r="50%"><stop offset="0%" stop-color="#ffe600" stop-opacity="0.35" /><stop offset="50%" stop-color="#ff00aa" stop-opacity="0.2" /><stop offset="100%" stop-color="#7a00ff" stop-opacity="0" /></radialGradient><linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fff9d2" /><stop offset="25%" stop-color="#ffd700" /><stop offset="55%" stop-color="#d4af37" /><stop offset="80%" stop-color="#aa771c" /><stop offset="100%" stop-color="#fff2a8" /></linearGradient><linearGradient id="goldDark" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#aa771c" /><stop offset="100%" stop-color="#4a3003" /></linearGradient><linearGradient id="goldRim" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff" /><stop offset="20%" stop-color="#ffd700" /><stop offset="50%" stop-color="#ffaa00" /><stop offset="80%" stop-color="#ffd700" /><stop offset="100%" stop-color="#ffffff" /></linearGradient></defs><circle cx="256" cy="256" r="236" fill="url(#bgFesta)" stroke="url(#goldRim)" stroke-width="8" /><circle cx="256" cy="240" r="180" fill="url(#auraGlow)" /><ellipse cx="256" cy="425" rx="55" ry="14" fill="url(#goldDark)" /><ellipse cx="256" cy="420" rx="52" ry="12" fill="url(#goldGrad)" /><path d="M 246 360 L 266 360 L 263 420 L 249 420 Z" fill="url(#goldGrad)" stroke="url(#goldDark)" stroke-width="2" /><ellipse cx="256" cy="360" rx="16" ry="6" fill="#fff9d2" /><path d="M 175 250 C 175 355, 337 355, 337 250 C 337 245, 323 245, 323 250 C 323 335, 189 335, 189 250 Z" fill="url(#goldGrad)" stroke="#4a3003" stroke-width="1.5" /><circle cx="178" cy="250" r="10" fill="url(#goldGrad)" stroke="#4a3003" stroke-width="2" /><circle cx="334" cy="250" r="10" fill="url(#goldGrad)" stroke="#4a3003" stroke-width="2" /><circle cx="178" cy="250" r="4" fill="#ffffff" /><circle cx="334" cy="250" r="4" fill="#ffffff" /><g transform="translate(0, -10)"><path d="M 200 150 C 200 100, 312 100, 312 150 L 305 270 C 305 295, 207 295, 207 270 Z" fill="#1b0e02" /><path d="M 200 150 C 200 95, 312 95, 312 150 L 305 270 C 305 300, 207 300, 207 270 Z" fill="none" stroke="url(#goldGrad)" stroke-width="12" /><path d="M 203 125 Q 256 132 309 125" stroke="url(#goldGrad)" stroke-width="5" fill="none" /><path d="M 197 145 Q 256 153 315 145" stroke="url(#goldGrad)" stroke-width="5" fill="none" /><path d="M 195 165 Q 256 173 317 165" stroke="url(#goldGrad)" stroke-width="5" fill="none" /><path d="M 194 185 Q 256 193 318 185" stroke="url(#goldGrad)" stroke-width="5" fill="none" /><path d="M 195 205 Q 256 213 317 205" stroke="url(#goldGrad)" stroke-width="5" fill="none" /><path d="M 197 225 Q 256 233 315 225" stroke="url(#goldGrad)" stroke-width="5" fill="none" /><path d="M 200 245 Q 256 253 312 245" stroke="url(#goldGrad)" stroke-width="5" fill="none" /><path d="M 205 265 Q 256 272 307 265" stroke="url(#goldGrad)" stroke-width="5" fill="none" /><path d="M 252 100 L 260 100 L 260 295 L 252 295 Z" fill="url(#goldGrad)" stroke="#aa771c" stroke-width="1" /><line x1="255" y1="102" x2="255" y2="292" stroke="#ffffff" stroke-width="2.5" opacity="0.85" /></g><path d="M 370 120 Q 370 145 345 145 Q 370 145 370 170 Q 370 145 395 145 Q 370 145 370 120 Z" fill="#ffffff" /><circle cx="370" cy="145" r="4" fill="#ffd700" /><path d="M 135 150 Q 135 168 117 168 Q 135 168 135 186 Q 135 168 135 150 Z" fill="#ffd700" /><circle cx="135" cy="168" r="3" fill="#ffffff" /><path d="M 125 310 Q 125 322 113 322 Q 125 322 125 334 Q 125 322 137 322 Q 125 322 125 310 Z" fill="#00ffff" /><circle cx="395" cy="270" r="5" fill="#00f5d4" opacity="0.85" /><circle cx="160" cy="95" r="4" fill="#ffe600" opacity="0.8" /><circle cx="340" cy="350" r="4" fill="#ff00aa" opacity="0.8" /><circle cx="130" cy="230" r="3" fill="#ffffff" opacity="0.9" /></svg>"""
@@ -81,12 +78,12 @@ jobs:
                           if new_txt != bg_txt:
                               with open(caminho_bg, "w", encoding="utf-8") as bg_file: bg_file.write(new_txt)
                       except: pass
-          EOF
+          PYEOF
           python3 gerar_icone.py
 
-      - name: Corrigir MainActivity.java (Aceleração de Hardware para o Vídeo da Intro)
+      - name: Corrigir MainActivity.java (Video da Intro com Imagem e Sem Tela Preta)
         run: |
-          cat << 'EOF' > patch_java.py
+          cat << 'PYEOF' > patch_java.py
           import os
           def achar(nome):
               res = []
@@ -98,14 +95,14 @@ jobs:
               with open(p_java, "r", encoding="utf-8") as f:
                   j = f.read().replace("\r\n", "\n")
 
-              # 1. Libera Autoplay no WebView
+              # Libera Autoplay (para o som e imagem rodarem sem clique)
               if "setMediaPlaybackRequiresUserGesture" not in j:
                   j = j.replace(
                       "super.onCreate(savedInstanceState);",
                       "super.onCreate(savedInstanceState);\n        try { if (webView != null) webView.getSettings().setMediaPlaybackRequiresUserGesture(false); } catch (Exception ignored) {}"
                   )
 
-              # 2. Aceleração de Hardware FORÇADA (Resolve o problema do vídeo com som e tela preta)
+              # Aceleração de Hardware (Resolve o bug de tela preta com som)
               if "FLAG_HARDWARE_ACCELERATED" not in j:
                   accel_code = """
                   try {
@@ -118,7 +115,7 @@ jobs:
                   """
                   j = j.replace("super.onCreate(savedInstanceState);", "super.onCreate(savedInstanceState);\n" + accel_code)
 
-              # 3. Remove o poster padrão (que causa tela cinza/branca)
+              # Remove o poster padrão cinza
               if "getDefaultVideoPoster" not in j:
                   poster_code = """
                       @Override public android.graphics.Bitmap getDefaultVideoPoster() {
@@ -128,7 +125,7 @@ jobs:
                   if "setWebChromeClient(new WebChromeClient() {" in j:
                       j = j.replace("setWebChromeClient(new WebChromeClient() {", "setWebChromeClient(new WebChromeClient() {" + poster_code)
 
-              # 4. Funções de deletar, sair e recarregar
+              # Funções de deletar e sair
               if "deleteFile" not in j:
                   metodos = """
                   @android.webkit.JavascriptInterface public boolean deleteFile(String uriStr) {
@@ -145,17 +142,17 @@ jobs:
 
               with open(p_java, "w", encoding="utf-8") as f:
                   f.write(j)
-              print(f"[OK] MainActivity.java corrigido para Video e Hardware: {p_java}")
-          EOF
+              print(f"[OK] Java corrigido para Video e Hardware: {p_java}")
+          PYEOF
           python3 patch_java.py
 
-      - name: Injetar o novo Index.html com Capas
+      - name: Injetar o Novo Index.html (Com Capas e BGs)
         run: |
-          # Cria a pasta assets do Android
+          # Cria a pasta assets do Android se não existir
           mkdir -p app/src/main/assets
           # Copia o index.html da raiz para a pasta que o APK realmente lê
           cp index.html app/src/main/assets/index.html
-          # Substitui qualquer cópia velha escondida no projeto
+          # Substitui qualquer cópia velha escondida no projeto pelo novo
           find . -name "index.html" -not -path "./.git/*" -exec cp index.html {} \;
           echo "[OK] O novo index.html foi forçado na pasta assets."
 
@@ -182,6 +179,6 @@ jobs:
       - name: Disponibilizar APK para Download
         uses: actions/upload-artifact@v4
         with:
-          name: Karaoke-Festa-das-Cores-v3.0
+          name: Karaoke-Festa-das-Cores
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 7
