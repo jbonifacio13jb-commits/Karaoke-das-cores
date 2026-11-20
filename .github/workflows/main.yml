@@ -183,11 +183,18 @@ jobs:
               return res
 
           # ==========================================================
-          # 1. MAINACTIVITY.JAVA
+          # 1. MAINACTIVITY.JAVA — inclui setMediaPlaybackRequiresUserGesture(false)
           # ==========================================================
           for p_java in achar("MainActivity.java"):
               with open(p_java, "r", encoding="utf-8") as f:
                   j = f.read().replace("\r\n", "\n")
+
+              # Permite autoplay (remove exigência de gesto do usuário)
+              if "setMediaPlaybackRequiresUserGesture" not in j:
+                  j = j.replace(
+                      "super.onCreate(savedInstanceState);",
+                      "super.onCreate(savedInstanceState);\n        try { if (webView != null) webView.getSettings().setMediaPlaybackRequiresUserGesture(false); } catch (Exception ignored) {}"
+                  )
 
               if "deleteFile" not in j:
                   metodos_host = """
@@ -267,297 +274,50 @@ jobs:
               print(f"[OK] MainActivity.java: {p_java}")
 
           # ==========================================================
-          # 2. INDEX.HTML (novo layout)
+          # 2. INDEX.HTML — verifica se já é a versão nova e aplica apenas
+          #    o que não estiver presente.
           # ==========================================================
           for p_html in achar("index.html"):
               with open(p_html, "r", encoding="utf-8") as f:
                   h = f.read().replace("\r\n", "\n")
 
+              # Se o HTML já contém as funções novas, não injeta duplicado
               if "function processarCodigo(code) {" not in h:
-                  print(f"[AVISO] {p_html} nao e a versao nova (processarCodigo(code)). Pulando.")
+                  print(f"[AVISO] {p_html} nao e a versao nova. Pulando patch de duplicados/logo.")
                   continue
 
-              # ---------- CSS ----------
-              css = """
-              #ui-wrapper.oculto-inicio, #ui-wrapper:not(.liberado) {
-                  display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
-              }
-              #ui-wrapper.liberado {
-                  display: flex !important; opacity: 1 !important; visibility: visible !important; pointer-events: auto !important;
-              }
-              video::-webkit-media-controls,
-              video::-webkit-media-controls-start-playback-button,
-              video::-webkit-media-controls-play-button,
-              video::-webkit-media-controls-overlay-play-button,
-              video::-webkit-media-controls-panel,
-              video::-webkit-media-controls-enclosure { display: none !important; -webkit-appearance: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+              # Garante cache de arquivos e logo
+              if "window._arquivosCarregadosCache" not in h:
+                  h = h.replace(
+                      "async function handleFolderSelect(e) {",
+                      "async function handleFolderSelect(e) {\n    window._arquivosCarregadosCache = Array.from(e.target.files);\n    identificarLogoMestra(window._arquivosCarregadosCache);"
+                  )
 
-              .btn-sair-transparente {
-                  width: 38px; height: 38px; border-radius: 12px;
-                  background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.45);
-                  backdrop-filter: blur(8px); display: inline-flex; align-items: center; justify-content: center;
-                  cursor: pointer; color: #fff; box-shadow: 0 0 12px rgba(212,128,255,0.35);
-                  transition: all 0.2s ease; box-sizing: border-box; padding: 0;
-              }
-              .btn-sair-transparente:hover, .btn-sair-transparente:focus { background: rgba(176,38,255,0.35); border-color: #fff; transform: scale(1.08); outline: none; }
-
-              button:focus-visible { outline: 3px solid #fff !important; box-shadow: 0 0 25px #fff, 0 0 35px rgba(255,255,255,0.8) !important; }
-
-              #modal-sair-overlay { position: fixed; inset: 0; z-index: 40000; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); padding: 20px; }
-              #modal-sair-overlay.active { display: flex !important; }
-              #modal-sair-box { background: linear-gradient(160deg,#1f1435,#0c0817); border: 2px solid #d480ff; border-radius: 20px; padding: 24px; width: min(90vw,420px); display: flex; flex-direction: column; gap: 14px; text-align: center; box-shadow: 0 0 35px rgba(176,38,255,0.45); color: #fff; }
-              #modal-sair-titulo { font: 900 20px var(--font-title); color: #d480ff; letter-spacing: 2px; }
-              .modal-sair-acoes { display: flex; gap: 10px; margin-top: 10px; }
-              .modal-sair-acoes button { flex: 1; padding: 12px; border: none; border-radius: 12px; font: 800 14px var(--font-title); cursor: pointer; }
-              #btn-cancelar-sair { background: #333; color: #fff; }
-              #btn-confirmar-sair { background: linear-gradient(135deg,#b026ff,#7a00e6); color: #fff; box-shadow: 0 0 20px rgba(176,38,255,0.6); }
-
-              #logo-tela-overlay { position: absolute; inset: 0; z-index: 20000; background: #000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
-              #logo-tela-overlay.ativo { display: flex !important; opacity: 1 !important; }
-              #logo-tela-img { max-width: 75%; max-height: 75%; object-fit: contain; filter: drop-shadow(0 0 35px rgba(0,255,255,0.45)); animation: zoomLogoAparecer 1.8s ease-out forwards; }
-              @keyframes zoomLogoAparecer { 0% { transform: scale(0.92); opacity: 0.2; } 20% { opacity: 1; } 100% { transform: scale(1.03); opacity: 1; } }
-
-              #modal-duplicados-overlay { position: fixed; inset: 0; z-index: 35000; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); padding: 20px; }
-              #modal-duplicados-overlay.active { display: flex !important; }
-              #modal-duplicados-box { background: linear-gradient(160deg,#181226,#090812); border: 2px solid var(--vivid-yellow); border-radius: 20px; padding: 24px; width: min(92vw,650px); max-height: 85vh; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 0 40px rgba(255,221,0,0.3); color: #fff; }
-              #modal-duplicados-titulo { font: 900 20px var(--font-title); color: var(--vivid-yellow); text-align: center; letter-spacing: 2px; }
-              #modal-duplicados-lista { flex: 1; overflow-y: auto; max-height: 45vh; display: flex; flex-direction: column; gap: 8px; padding-right: 6px; }
-              .item-dup { background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 10px; border-left: 4px solid #ff4444; font-size: 13px; }
-              .item-dup b { color: var(--neon); display: block; margin-bottom: 2px; }
-              .item-dup small { color: #aaa; word-break: break-all; }
-              .modal-dup-acoes { display: flex; gap: 10px; margin-top: 6px; }
-              .modal-dup-acoes button { flex: 1; padding: 14px; border: none; border-radius: 12px; font: 800 14px var(--font-title); cursor: pointer; }
-              #btn-fechar-dup { background: #333; color: #fff; }
-              #btn-remover-dup { background: #ff2244; color: #fff; box-shadow: 0 0 20px rgba(255,34,68,0.5); }
-              """
-              h = h.replace("</style>", css + "\n</style>")
-
-              # ---------- anti-play nos videos ----------
-              h = re.sub(r'<video\b([^>]*)>', r'<video\1 playsinline webkit-playsinline preload="auto">', h)
-
-              # ---------- bloqueio inicial (mesmo que ja exista class, garante inline style) ----------
-              h = h.replace(
-                  '<div id="ui-wrapper" class="oculto-inicio">',
-                  '<div id="ui-wrapper" class="oculto-inicio" style="display:none;opacity:0;visibility:hidden;">'
-              )
-
-              # ---------- modais HTML ----------
-              html_modais = """
-              <div id="logo-tela-overlay"><img id="logo-tela-img" alt="Logo"></div>
-
-              <div id="modal-duplicados-overlay">
-                  <div id="modal-duplicados-box">
-                      <div id="modal-duplicados-titulo">VERIFICADOR DE DUPLICADOS</div>
-                      <p id="modal-duplicados-sub" style="text-align:center; font-size:14px; color:#bbb;"></p>
-                      <div id="modal-duplicados-lista"></div>
-                      <div class="modal-dup-acoes">
-                          <button type="button" id="btn-fechar-dup" onclick="fecharModalDuplicados()">CANCELAR</button>
-                          <button type="button" id="btn-remover-dup" onclick="confirmarRemoverDuplicados()">ELIMINAR DUPLICADOS</button>
-                      </div>
-                  </div>
-              </div>
-
-              <div id="modal-sair-overlay">
-                  <div id="modal-sair-box">
-                      <div id="modal-sair-titulo">SAIR DO KARAOKE</div>
-                      <p style="font-size:14px; color:#ddd;">Tem certeza de que deseja fechar o aplicativo?</p>
-                      <div class="modal-sair-acoes">
-                          <button type="button" id="btn-cancelar-sair" onclick="fecharModalSair()">CONTINUAR</button>
-                          <button type="button" id="btn-confirmar-sair" onclick="confirmarSairApp()">SIM, SAIR</button>
-                      </div>
-                  </div>
-              </div>
-              """
-              h = h.replace("</body>", html_modais + "\n</body>")
-
-              # ---------- JS novo (injetado antes de processarCodigo) ----------
-              js_novo = """
-              // ============== CACHE + LOGO + SAIR + DUPLICADOS ==============
-              window._arquivosCarregadosCache = [];
-              let _logoUrlObrigatorio = null;
-              let _duplicadosEncontrados = [];
-              let _introEmReproducao = false;
-
-              function identificarLogoMestra(files) {
-                  _logoUrlObrigatorio = null;
-                  for (let f of (files || [])) {
-                      const nome = (f.name || '').toLowerCase();
-                      const path = f.webkitRelativePath || f.name;
-                      const partes = path.split('/').filter(Boolean);
-                      if (nome === 'logo.png' && partes.length <= 2) {
-                          _logoUrlObrigatorio = f.contentUri || URL.createObjectURL(f);
-                          return;
-                      }
-                  }
-                  for (let f of (files || [])) {
-                      if ((f.name || '').toLowerCase() === 'logo.png') {
-                          _logoUrlObrigatorio = f.contentUri || URL.createObjectURL(f);
-                          return;
-                      }
-                  }
-              }
-
-              function exibirLogoPosContagem(duracaoMs, callback) {
-                  const overlay = document.getElementById('logo-tela-overlay');
-                  const img = document.getElementById('logo-tela-img');
-                  if (!overlay || !_logoUrlObrigatorio) { if (callback) callback(); return; }
-                  img.src = _logoUrlObrigatorio;
-                  overlay.classList.add('ativo');
-                  setTimeout(() => {
-                      overlay.style.opacity = '0';
-                      setTimeout(() => { overlay.classList.remove('ativo'); overlay.style.opacity = '1'; if (callback) callback(); }, 250);
-                  }, duracaoMs);
-              }
-
-              function pedirConfirmacaoSair() { document.getElementById('modal-sair-overlay').classList.add('active'); }
-              function fecharModalSair() { document.getElementById('modal-sair-overlay').classList.remove('active'); }
-              function confirmarSairApp() {
-                  fecharModalSair();
-                  if (window.AndroidHost && AndroidHost.exitApp) AndroidHost.exitApp();
-                  else window.close();
-              }
-
-              function instalarBotaoSair() {
-                  if (document.getElementById('btn-sair-topo-oficial')) return;
-                  const header = document.querySelector('.queue-header');
-                  if (!header) return;
-                  const btn = document.createElement('button');
-                  btn.id = 'btn-sair-topo-oficial';
-                  btn.className = 'btn-sair-transparente';
-                  btn.title = 'Sair do Karaoke';
-                  btn.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" stroke="#ffffff" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>';
-                  btn.onclick = pedirConfirmacaoSair;
-                  header.style.display = 'flex';
-                  header.style.alignItems = 'center';
-                  header.appendChild(btn);
-              }
-
-              window.onIntroFoundDuringScan = function(uri) {
-                  _introEmReproducao = true;
-                  const vid = document.getElementById('intro-video');
-                  const screen = document.getElementById('intro-screen');
-                  if (!vid || !uri) { _introEmReproducao = false; finalizarIntro(); return; }
-                  vid.src = uri;
-                  vid.loop = false;
-                  if (screen) { screen.classList.add('active'); screen.style.display = 'flex'; }
-                  const liberar = () => { _introEmReproducao = false; finalizarIntro(); };
-                  vid.ontimeupdate = function() { if (vid.currentTime >= 30) { vid.ontimeupdate = null; vid.pause(); liberar(); } };
-                  vid.onended = function() { vid.ontimeupdate = null; liberar(); };
-                  vid.play().catch(() => liberar());
-              };
-
-              function checarDuplicadosCodigo0000(arquivos) {
-                  _duplicadosEncontrados = [];
-                  const mapa = new Map();
-                  for (let f of (arquivos || [])) {
-                      const nome = f.name || '';
-                      if (!/[.]mp4$/i.test(nome) || nome.toLowerCase().startsWith('intro')) continue;
-                      const chave = chaveDeBuscaCapa(nome.replace(/[.]mp4$/i, '').replace(/^[0-9]+[ -.:)]*/i, ''));
-                      if (!chave) continue;
-                      if (mapa.has(chave)) _duplicadosEncontrados.push({ original: mapa.get(chave), duplicado: f });
-                      else mapa.set(chave, f);
-                  }
-                  const sub = document.getElementById('modal-duplicados-sub');
-                  const lista = document.getElementById('modal-duplicados-lista');
-                  const btn = document.getElementById('btn-remover-dup');
-                  if (!_duplicadosEncontrados.length) {
-                      sub.innerHTML = '<span style="color:#00ff88;font-weight:bold;">Nenhum duplicado encontrado.</span>';
-                      lista.innerHTML = ''; btn.style.display = 'none';
-                      document.getElementById('modal-duplicados-overlay').classList.add('active');
-                      return;
-                  }
-                  sub.innerHTML = 'Encontrados <b style="color:#ff4444;">' + _duplicadosEncontrados.length + '</b> duplicado(s).';
-                  btn.style.display = 'block';
-                  lista.innerHTML = _duplicadosEncontrados.map(d => `
-                      <div class="item-dup">
-                          <b>${escHtml(d.duplicado.name)}</b>
-                          <small>Mantendo: ${escHtml(d.original.name)}</small>
-                      </div>`).join('');
-                  document.getElementById('modal-duplicados-overlay').classList.add('active');
-              }
-              function fecharModalDuplicados() { document.getElementById('modal-duplicados-overlay').classList.remove('active'); }
-              async function confirmarRemoverDuplicados() {
-                  document.getElementById('modal-duplicados-sub').innerHTML = '<span style="color:#ffdd00;">Excluindo...</span>';
-                  let n = 0;
-                  for (let d of _duplicadosEncontrados) {
-                      if (d.duplicado.contentUri && window.AndroidHost && AndroidHost.deleteFile) {
-                          try { if (AndroidHost.deleteFile(d.duplicado.contentUri)) n++; } catch(e) {}
-                      }
-                  }
-                  fecharModalDuplicados();
-                  setTimeout(() => { if (window.AndroidHost && AndroidHost.refreshFolder) AndroidHost.refreshFolder(); else location.reload(); }, 600);
-              }
-
-              window.addEventListener('keydown', (e) => {
-                  if (/^[0-9]$/.test(e.key) && typeof adicionarDigitoTeclado === 'function' &&
-                      document.getElementById('numeric-keypad-overlay') &&
-                      document.getElementById('numeric-keypad-overlay').classList.contains('active')) {
-                      adicionarDigitoTeclado(e.key);
-                  }
-                  if (e.key === 'Escape' || e.key === 'GoBack' || e.keyCode === 27 || e.keyCode === 4) {
-                      const dup = document.getElementById('modal-duplicados-overlay');
-                      const sair = document.getElementById('modal-sair-overlay');
-                      if (dup && dup.classList.contains('active')) fecharModalDuplicados();
-                      else if (sair && sair.classList.contains('active')) fecharModalSair();
-                      else pedirConfirmacaoSair();
-                  }
-              });
-
-              window.addEventListener('load', () => { instalarBotaoSair(); setTimeout(instalarBotaoSair, 800); });
-              """
-              h = h.replace("function processarCodigo(code) {", js_novo + "\nfunction processarCodigo(code) {", 1)
-
-              # ---------- cache + logo no handleFolderSelect ----------
-              h = h.replace(
-                  "async function handleFolderSelect(e) {",
-                  "async function handleFolderSelect(e) {\n    window._arquivosCarregadosCache = Array.from(e.target.files);\n    identificarLogoMestra(window._arquivosCarregadosCache);"
-              )
-
-              # ---------- timer de fallback (se nao houver intro, libera UI) ----------
-              h = h.replace(
-                  "logOK(`${Object.keys(videoFiles).length} vídeos | `",
-                  "setTimeout(() => { if (!_introEmReproducao) { const _ui = document.getElementById('ui-wrapper'); if (_ui && !_ui.classList.contains('liberado')) finalizarIntro(); } }, 2500);\n            logOK(`${Object.keys(videoFiles).length} vídeos | `"
-              )
-
-              # ---------- intercepta codigo 0000 ----------
-              h = h.replace(
-                  "function processarCodigo(code) {\n            const padCode",
-                  "function processarCodigo(code) {\n            if (String(code).trim() === '0000') { checarDuplicadosCodigo0000(window._arquivosCarregadosCache || []); return; }\n            const padCode"
-              )
-
-              # ---------- splash do logo apos a contagem ----------
-              h = h.replace(
-                  """esconderCapaCantor();
-            timerScreen.classList.remove('active');
-            document.body.classList.remove('countdown-ativo');
-
-            player.src = current.file.contentUri || URL.createObjectURL(current.file);""",
-                  """esconderCapaCantor();
-            timerScreen.classList.remove('active');
-            if (_logoUrlObrigatorio) {
-                await new Promise(res => exibirLogoPosContagem(1800, res));
-            }
-            document.body.classList.remove('countdown-ativo');
-
-            player.src = current.file.contentUri || URL.createObjectURL(current.file);"""
-              )
+              # Garante timeout de liberação caso não haja intro
+              if "_introEmReproducao" in h and "setTimeout(() => { if (!_introEmReproducao)" not in h:
+                  h = h.replace(
+                      "logOK(`${Object.keys(videoFiles).length} vídeos | `",
+                      "setTimeout(() => { if (!_introEmReproducao) { const _ui = document.getElementById('ui-wrapper'); if (_ui && !_ui.classList.contains('liberado')) finalizarIntro(); } }, 2500);\n            logOK(`${Object.keys(videoFiles).length} vídeos | `"
+                  )
 
               with open(p_html, "w", encoding="utf-8") as f:
                   f.write(h)
-              print(f"[OK] index.html atualizado: {p_html}")
+              print(f"[OK] index.html: {p_html}")
+
           PYEOF
           python3 patch_karaoke.py
 
       - name: Configurar Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Configurar Gradle
-        uses: gradle/actions/setup-gradle@v3
+      - name: Configurar Gradle (sem cache para evitar falhas)
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
+          cache-disabled: true
 
       - name: Garantir Gradle Wrapper
         run: |
@@ -572,7 +332,7 @@ jobs:
       - name: Disponibilizar APK para Download
         uses: actions/upload-artifact@v4
         with:
-          name: Karaoke-Festa-das-Cores-v2.1
+          name: Karaoke-Festa-das-Cores-v3.0
           path: |
             app/build/outputs/apk/debug/*.apk
           if-no-files-found: warn
