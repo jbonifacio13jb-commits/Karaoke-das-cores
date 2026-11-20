@@ -3,3 +3,7 @@ build/
 local.properties
 *.jks
 *.keystore
+capas/
+bgs/
+*.mp4
+!intro.mp4
