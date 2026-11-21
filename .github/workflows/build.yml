@@ -2,118 +2,88 @@ name: Gerar APK do Karaoke
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: ["main", "master"]
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar repositorio
+      - name: Baixar repositório
         uses: actions/checkout@v4
 
-      - name: Descompactar ZIP
+      - name: Localizar projeto Android
+        shell: bash
         run: |
+          set -euo pipefail
+          sudo apt-get update
           sudo apt-get install -y unzip
-          for f in *.zip; do [ -e "$f" ] || continue; unzip -o "$f"; done
-          if [ -d "FONTE-KARAOKE" ]; then cp -r FONTE-KARAOKE/* .; fi
-          if [ ! -f "build.gradle" ] && [ ! -f "settings.gradle" ]; then
-            for dir in */; do
-              if [ -f "${dir}build.gradle" ] || [ -f "${dir}settings.gradle" ]; then
-                cp -r "${dir}"* .
-                break
-              fi
-            done
+
+          shopt -s nullglob
+          for arquivo in *.zip; do
+            echo "Descompactando: $arquivo"
+            unzip -oq "$arquivo" -d .
+          done
+
+          if [[ ! -f settings.gradle && ! -f settings.gradle.kts ]]; then
+            configuracao=$(find . -mindepth 2 -maxdepth 6 -type f \
+              \( -name settings.gradle -o -name settings.gradle.kts \) \
+              -not -path './.git/*' -print -quit)
+
+            if [[ -z "$configuracao" ]]; then
+              echo "ERRO: settings.gradle não encontrado."
+              exit 1
+            fi
+
+            projeto=$(dirname "$configuracao")
+            cp -a "$projeto"/. .
           fi
 
-      - name: Corrigir Bibliotecas do Gradle
-        run: |
-          cat << 'EOF' > settings.gradle
-          pluginManagement {
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
-          }
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-          }
-          rootProject.name = "Karaoke"
-          include ':app'
-          EOF
+          if [[ ! -f app/build.gradle && ! -f app/build.gradle.kts ]]; then
+            echo "ERRO: módulo app/build.gradle não encontrado."
+            exit 1
+          fi
 
-          cat << 'EOF' > build.gradle
-          plugins {
-              id 'com.android.application' version '8.5.2' apply false
-          }
-          EOF
-
-      - name: Corrigir Java (Habilitar Video e JS)
+      - name: Injetar HTML no APK
+        shell: bash
         run: |
-          cat << 'EOF' > patch.py
-          import os, glob
-          for p in glob.glob('**/MainActivity.java', recursive=True):
-              with open(p, 'r', encoding='utf-8') as f: j = f.read()
-              
-              # Injeta configurações cruciais para o WebView não ficar em tela preta
-              setup = """
-              if (webView != null) {
-                  webView.getSettings().setJavaScriptEnabled(true);
-                  webView.getSettings().setDomStorageEnabled(true);
-                  webView.getSettings().setAllowFileAccess(true);
-                  webView.getSettings().setAllowContentAccess(true);
-                  webView.getSettings().setAllowFileAccessFromFileURLs(true);
-                  webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
-                  webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
-                  webView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
-                  webView.setBackgroundColor(android.graphics.Color.BLACK);
-                  webView.setWebViewClient(new android.webkit.WebViewClient());
-              }
-              """
-              # Insere antes do setContentView
-              if 'setJavaScriptEnabled' not in j:
-                  j = j.replace("setContentView(", setup + "\n setContentView(")
-              
-              # Tenta forçar a aceleração no Android inteiro também
-              if 'FLAG_HARDWARE_ACCELERATED' not in j:
-                  j = j.replace("super.onCreate(savedInstanceState);", "super.onCreate(savedInstanceState);\n try { getWindow().setFlags(android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED); } catch (Exception e) {}")
-              
-              with open(p, 'w', encoding='utf-8') as f: f.write(j)
-          EOF
-          python3 patch.py
-
-      - name: Injetar HTML novo
-        run: |
+          set -euo pipefail
+          test -f index.html
           mkdir -p app/src/main/assets
           cp index.html app/src/main/assets/index.html
-          find . -name "index.html" -not -path "./.git/*" -exec cp index.html {} \;
 
       - name: Configurar Java 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: "17"
 
       - name: Configurar Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.11.1'
+          gradle-version: "8.11.1"
           cache-disabled: true
 
-      - name: Compilar APK
+      - name: Garantir Gradle Wrapper
+        shell: bash
         run: |
-          if [ ! -f "gradlew" ]; then gradle wrapper --gradle-version 8.11.1; fi
+          set -euo pipefail
+          if [[ ! -f gradlew ]]; then
+            gradle wrapper --gradle-version 8.11.1
+          fi
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+
+      - name: Compilar APK
+        run: ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: Disponibilizar APK
         uses: actions/upload-artifact@v4
         with:
           name: Karaoke-APK-Pronto
           path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7
