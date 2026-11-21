@@ -21,20 +21,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          test -f MainActivity.java || {
-            echo "ERRO: MainActivity.java não encontrado na raiz."
-            exit 1
-          }
-
-          test -f AndroidManifest.xml || {
-            echo "ERRO: AndroidManifest.xml não encontrado na raiz."
-            exit 1
-          }
-
-          test -f index.html || {
-            echo "ERRO: index.html não encontrado na raiz."
-            exit 1
-          }
+          test -f MainActivity.java
+          test -f AndroidManifest.xml
+          test -f index.html
 
           mkdir -p app/src/main/java/br/com/ursoplayer/karaoke
           mkdir -p app/src/main/assets
@@ -44,7 +33,6 @@ jobs:
           cp AndroidManifest.xml app/src/main/AndroidManifest.xml
           cp index.html app/src/main/assets/index.html
 
-          # namespace e SDK são configurados pelo Gradle.
           sed -i -E 's/ package="[^"]*"//' app/src/main/AndroidManifest.xml
           sed -i '/<uses-sdk[[:space:]]/d' app/src/main/AndroidManifest.xml
 
@@ -65,8 +53,8 @@ jobs:
                   applicationId 'br.com.ursoplayer.karaoke'
                   minSdk 23
                   targetSdk 28
-                  versionCode 9
-                  versionName '2.0'
+                  versionCode 10
+                  versionName '2.1'
               }
 
               compileOptions {
@@ -75,9 +63,6 @@ jobs:
               }
           }
           EOF
-
-          echo "Módulo Android preparado."
-          find app/src/main -maxdepth 5 -type f -print
 
       - name: Configurar Java 17
         uses: actions/setup-java@v4
