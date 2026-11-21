@@ -10,51 +10,74 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Baixar repositório
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Localizar projeto Android
+      - name: Preparar módulo Android
         shell: bash
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y unzip
 
-          shopt -s nullglob
-          for arquivo in *.zip; do
-            echo "Descompactando: $arquivo"
-            unzip -oq "$arquivo" -d .
-          done
-
-          if [[ ! -f settings.gradle && ! -f settings.gradle.kts ]]; then
-            configuracao=$(find . -mindepth 2 -maxdepth 6 -type f \
-              \( -name settings.gradle -o -name settings.gradle.kts \) \
-              -not -path './.git/*' -print -quit)
-
-            if [[ -z "$configuracao" ]]; then
-              echo "ERRO: settings.gradle não encontrado."
-              exit 1
-            fi
-
-            projeto=$(dirname "$configuracao")
-            cp -a "$projeto"/. .
-          fi
-
-          if [[ ! -f app/build.gradle && ! -f app/build.gradle.kts ]]; then
-            echo "ERRO: módulo app/build.gradle não encontrado."
+          test -f MainActivity.java || {
+            echo "ERRO: MainActivity.java não encontrado na raiz."
             exit 1
+          }
+
+          test -f AndroidManifest.xml || {
+            echo "ERRO: AndroidManifest.xml não encontrado na raiz."
+            exit 1
+          }
+
+          test -f index.html || {
+            echo "ERRO: index.html não encontrado na raiz."
+            exit 1
+          }
+
+          mkdir -p app/src/main/java/br/com/ursoplayer/karaoke
+          mkdir -p app/src/main/assets
+          mkdir -p app/src/main/res/drawable
+
+          cp MainActivity.java app/src/main/java/br/com/ursoplayer/karaoke/MainActivity.java
+          cp AndroidManifest.xml app/src/main/AndroidManifest.xml
+          cp index.html app/src/main/assets/index.html
+
+          # namespace e SDK são configurados pelo Gradle.
+          sed -i -E 's/ package="[^"]*"//' app/src/main/AndroidManifest.xml
+          sed -i '/<uses-sdk[[:space:]]/d' app/src/main/AndroidManifest.xml
+
+          if [[ -f ic_launcher.png ]]; then
+            cp ic_launcher.png app/src/main/res/drawable/ic_launcher.png
           fi
 
-      - name: Injetar HTML no APK
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f index.html
-          mkdir -p app/src/main/assets
-          cp index.html app/src/main/assets/index.html
+          cat > app/build.gradle <<'EOF'
+          plugins {
+              id 'com.android.application'
+          }
+
+          android {
+              namespace 'br.com.ursoplayer.karaoke'
+              compileSdk 35
+
+              defaultConfig {
+                  applicationId 'br.com.ursoplayer.karaoke'
+                  minSdk 23
+                  targetSdk 28
+                  versionCode 9
+                  versionName '2.0'
+              }
+
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+          EOF
+
+          echo "Módulo Android preparado."
+          find app/src/main -maxdepth 5 -type f -print
 
       - name: Configurar Java 17
         uses: actions/setup-java@v4
@@ -68,17 +91,8 @@ jobs:
           gradle-version: "8.11.1"
           cache-disabled: true
 
-      - name: Garantir Gradle Wrapper
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ ! -f gradlew ]]; then
-            gradle wrapper --gradle-version 8.11.1
-          fi
-          chmod +x gradlew
-
       - name: Compilar APK
-        run: ./gradlew assembleDebug --stacktrace --no-daemon
+        run: gradle --no-daemon assembleDebug --stacktrace
 
       - name: Disponibilizar APK
         uses: actions/upload-artifact@v4
