@@ -1,323 +1,1460 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>KARAOKÊ FESTA DAS CORES</title>
-<style>
-:root{--neon:#00ffff;--magenta:#ff00ff;--vivid-yellow:#ffdd00;--emerald:#00ff88;--bg:#050508;--panel:#0d0d14}
-*{box-sizing:border-box;user-select:none;margin:0;padding:0;font-family:Arial,sans-serif}
-body{background:var(--bg);color:#fff;height:100vh;width:100vw;overflow:hidden;display:flex;flex-direction:column}
-#ui-wrapper{display:none;flex-direction:column;height:100vh}
-#ui-wrapper.liberado{display:flex}
-.stage{height:320px;width:100%;position:relative;background:#000;overflow:hidden;border-bottom:3px solid var(--vivid-yellow);flex-shrink:0}
-body.fullscreen-mode .stage{height:100vh!important;width:100vw!important;position:fixed;top:0;left:0;z-index:9999}
-.stage-background{position:absolute;inset:0;background-size:cover;background-position:center;z-index:1;opacity:.7}
-#bg-singer-layer{position:absolute;inset:0;background-size:contain;background-position:center;background-repeat:no-repeat;z-index:2;opacity:0;transition:opacity .4s}
-#video-player{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:100;display:none}
-#timer-screen{position:absolute;inset:0;z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
-#timer-screen.active{display:flex}
-#countdown-num{position:absolute;top:20px;right:20px;color:rgba(255,220,0,.9);font:900 100px Arial;text-shadow:0 0 20px rgba(255,220,0,.5)}
-#song-display{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);width:90%;font-size:18px;text-align:center;color:var(--vivid-yellow);text-shadow:0 2px 6px #000;line-height:1.4}
-#stage-bottom-bar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:95%;display:flex;gap:8px;z-index:99;background:rgba(0,0,0,.7);padding:8px;border-radius:40px;border:1px solid rgba(255,255,255,.2)}
-.btn-bar{background:rgba(255,255,255,.1);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px}
-#stage-progress-container{flex:1;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);padding:0 15px;border-radius:20px}
-#stage-progress-bar-bg{flex:1;height:6px;background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden}
-#stage-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--neon),var(--magenta))}
-#stage-time-remaining{font-size:12px;color:var(--vivid-yellow);font-weight:bold}
-#marquee-container{position:absolute;top:0;left:0;width:100%;background:rgba(0,0,0,.5);padding:8px;z-index:99;overflow:hidden;border-bottom:1px solid rgba(255,221,0,.4)}
-#marquee-text{white-space:nowrap;color:var(--vivid-yellow);animation:mq 20s linear infinite;font-weight:bold;font-size:14px}
-@keyframes mq{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
-.search-bar{background:#0a0a10;padding:12px;display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px;border-top:1px solid #222}
-.search-bar button{height:55px;border-radius:15px;border:none;font-weight:bold;color:#fff;cursor:pointer;text-transform:uppercase}
-#btn-teclado{background:linear-gradient(180deg,#ff44ff,#b300b3)}
-#btn-catalogo{background:linear-gradient(180deg,#29e7ff,#0099cc);color:#04202b}
-#btn-play-bar{background:linear-gradient(180deg,#00ff99,#00aa55);color:#001a0d;font-size:16px}
-#btn-play-bar:disabled{opacity:.4}
-.ui-panel{flex:1;padding:12px;display:flex;flex-direction:column;gap:10px;overflow:hidden;background:var(--panel)}
-.queue-header{display:flex;justify-content:space-between;align-items:center}
-.queue-header h3{color:var(--neon);font-size:14px}
-#queue-count-badge{background:var(--magenta);padding:2px 10px;border-radius:10px;font-weight:bold;font-size:12px}
-.controls-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.btn-parar,.btn-limpar{height:55px;border-radius:15px;border:none;color:#fff;font-weight:bold;cursor:pointer}
-.btn-parar{background:linear-gradient(180deg,#ff9e1b,#c2410c)}
-.btn-limpar{background:linear-gradient(180deg,#ff2e51,#b91c1c)}
-#track-list{flex:1;overflow-y:auto;background:rgba(0,0,0,.6);border-radius:12px;padding:8px;border:1px solid #222}
-.item{background:rgba(255,255,255,.05);padding:12px;border-radius:10px;margin-bottom:8px;border-left:4px solid var(--magenta)}
-.item.now-playing{background:rgba(0,255,136,.15);border-left-color:var(--emerald)}
-.item-title{font-weight:bold;font-size:14px;margin-bottom:4px}
-.item-meta{font-size:12px;display:flex;gap:10px}
-.item-singer{color:var(--vivid-yellow)}
-.item-code{color:var(--neon)}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:20000;display:none;align-items:center;justify-content:center;padding:20px}
-.modal-overlay.active{display:flex}
-.modal-box{background:var(--panel);border:2px solid var(--vivid-yellow);border-radius:20px;padding:20px;width:100%;max-width:400px;text-align:center}
-.modal-box input{width:100%;padding:12px;border-radius:10px;border:1px solid #333;background:#000;color:#fff;margin:10px 0;font-size:16px}
-.modal-box button{padding:12px;border-radius:10px;border:none;font-weight:bold;cursor:pointer;width:100%;margin-top:5px}
-.btn-modal-ok{background:var(--emerald);color:#000}
-.btn-modal-cancel{background:#333;color:#fff}
-#catalogo-box{background:#0f0d2a;border:1px solid var(--neon);border-radius:20px;width:100%;max-width:600px;max-height:80vh;display:flex;flex-direction:column;padding:20px;gap:10px}
-#cat-lista{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
-.cat-item{display:flex;gap:15px;padding:12px;background:rgba(255,255,255,.05);border-radius:10px;border:none;color:#fff;cursor:pointer;text-align:left;width:100%}
-#cat-campo-busca{width:100%;padding:12px;border-radius:10px;border:1px solid var(--neon);background:#000;color:#fff}
-#start-screen{position:fixed;inset:0;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px}
-#intro-screen{position:fixed;inset:0;background:#000;z-index:99998;display:none;align-items:center;justify-content:center}
-#intro-screen.active{display:flex}
-#intro-video{width:100%;height:100%;object-fit:cover}
-#logo-tela-overlay{position:absolute;inset:0;background:#000;z-index:20000;display:none;align-items:center;justify-content:center}
-#logo-tela-img{max-width:80%;max-height:80%;object-fit:contain}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#090b12">
+  <title>Karaokê Festa das Cores</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090b12;
+      --panel: #111521;
+      --panel-soft: #171d2b;
+      --line: rgba(255,255,255,.09);
+      --text: #f7f8fc;
+      --muted: #9aa4b6;
+      --cyan: #54e6e5;
+      --pink: #f16ac7;
+      --gold: #ffd166;
+      --green: #64e6a5;
+      --red: #ff6b78;
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background:
+        radial-gradient(ellipse at 18% 0%, rgba(84,230,229,.10), transparent 35%),
+        radial-gradient(ellipse at 100% 20%, rgba(241,106,199,.09), transparent 35%),
+        var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 3px;
+    }
+
+    #app {
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      min-height: 64px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(9,11,18,.82);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      flex: 0 0 40px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--cyan), #9585ff 55%, var(--pink));
+      color: #10131d;
+      font-size: 21px;
+      font-weight: 900;
+      box-shadow: 0 5px 22px rgba(84,230,229,.18);
+    }
+
+    .brand h1 {
+      font-size: 15px;
+      line-height: 1.15;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .brand p {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .top-actions { display: flex; gap: 8px; }
+
+    .icon-button, .secondary-button, .primary-button, .danger-button {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel-soft);
+      cursor: pointer;
+      transition: transform .15s ease, filter .15s ease, border-color .15s ease;
+    }
+
+    .icon-button:hover, .secondary-button:hover,
+    .primary-button:hover, .danger-button:hover {
+      filter: brightness(1.12);
+      transform: translateY(-1px);
+    }
+
+    .icon-button {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+
+    main {
+      min-height: 0;
+      flex: 1;
+      display: grid;
+      grid-template-rows: minmax(210px, 42vh) auto minmax(0, 1fr);
+      gap: 12px;
+      padding: 12px;
+    }
+
+    .stage {
+      position: relative;
+      min-height: 210px;
+      overflow: hidden;
+      isolation: isolate;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #05070c;
+      box-shadow: 0 12px 40px rgba(0,0,0,.24);
+    }
+
+    .stage::after {
+      content: "";
+      position: absolute;
+      inset: 45% 0 0;
+      z-index: 2;
+      pointer-events: none;
+      background: linear-gradient(transparent, rgba(0,0,0,.68));
+    }
+
+    #stage-background {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background-position: center;
+      background-size: cover;
+      opacity: .8;
+      transition: opacity .25s ease, background-image .25s ease;
+    }
+
+    #video-player {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      display: none;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .stage-topline {
+      position: absolute;
+      z-index: 3;
+      top: 14px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .live-badge, .library-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 999px;
+      background: rgba(6,8,14,.62);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
+    }
+
+    .stage-caption {
+      position: absolute;
+      z-index: 3;
+      left: 20px;
+      right: 20px;
+      bottom: 58px;
+      text-align: center;
+      text-shadow: 0 2px 12px #000;
+      pointer-events: none;
+    }
+
+    .stage-caption .eyebrow {
+      color: var(--cyan);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .stage-caption h2 {
+      margin-top: 6px;
+      font-size: clamp(18px, 4vw, 29px);
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+
+    .stage-caption p {
+      margin-top: 6px;
+      color: rgba(255,255,255,.85);
+      font-size: 13px;
+    }
+
+    .stage-controls {
+      position: absolute;
+      z-index: 4;
+      left: 12px;
+      right: 12px;
+      bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 15px;
+      background: rgba(5,7,12,.76);
+      backdrop-filter: blur(8px);
+    }
+
+    .stage-controls button {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      border: 0;
+      border-radius: 11px;
+      background: rgba(255,255,255,.1);
+      cursor: pointer;
+    }
+
+    .progress-track {
+      height: 5px;
+      flex: 1;
+      overflow: hidden;
+      border-radius: 9px;
+      background: rgba(255,255,255,.17);
+    }
+
+    #progress-fill {
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--pink));
+    }
+
+    #time-remaining {
+      min-width: 47px;
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.3fr;
+      gap: 9px;
+    }
+
+    .toolbar button {
+      min-height: 48px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      cursor: pointer;
+    }
+
+    .secondary-button { background: var(--panel); }
+    .primary-button {
+      border: 0;
+      background: linear-gradient(135deg, #70efbd, #45c997);
+      color: #07140f;
+    }
+    .primary-button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+    .queue-panel {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(17,21,33,.88);
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .section-heading h2 {
+      font-size: 13px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    #queue-count {
+      min-width: 27px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(84,230,229,.15);
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .queue-actions { display: flex; gap: 7px; }
+
+    .queue-actions button {
+      min-height: 34px;
+      padding: 0 11px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .danger-button {
+      border-color: rgba(255,107,120,.2);
+      background: rgba(255,107,120,.12);
+      color: #ff9aa3;
+    }
+
+    #track-list {
+      min-height: 0;
+      flex: 1;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding-right: 2px;
+    }
+
+    .empty-state {
+      min-height: 100px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .queue-item {
+      display: grid;
+      grid-template-columns: 42px minmax(0,1fr) auto;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(255,255,255,.035);
+    }
+
+    .queue-item.playing { border-color: rgba(100,230,165,.45); background: rgba(100,230,165,.08); }
+
+    .queue-number {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: rgba(84,230,229,.12);
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .queue-title {
+      overflow: hidden;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .queue-singer {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .queue-status {
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(3,5,10,.82);
+      backdrop-filter: blur(9px);
+    }
+
+    .overlay.active { display: flex; }
+
+    .dialog {
+      width: min(100%, 520px);
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      overflow: hidden;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 21px;
+      background: #111521;
+      box-shadow: 0 22px 70px rgba(0,0,0,.55);
+    }
+
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .dialog-header h2 { font-size: 17px; }
+    .dialog-header p { margin-top: 4px; color: var(--muted); font-size: 12px; }
+
+    .dialog-close {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--panel-soft);
+      cursor: pointer;
+    }
+
+    .field {
+      width: 100%;
+      min-height: 46px;
+      padding: 11px 13px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #090c14;
+      color: var(--text);
+      outline: none;
+    }
+
+    .field::placeholder { color: #788296; }
+
+    #catalog-list {
+      min-height: 80px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    .catalog-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 54px minmax(0,1fr);
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 7px;
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,.035);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .catalog-code {
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .catalog-name {
+      overflow: hidden;
+      font-size: 12px;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #keypad-display {
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #090c14;
+      color: var(--gold);
+      font-size: 25px;
+      font-weight: 900;
+      letter-spacing: .18em;
+      text-align: center;
+    }
+
+    .keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .keypad-grid button {
+      min-height: 52px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel-soft);
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .keypad-grid button:last-child { background: rgba(100,230,165,.16); color: var(--green); }
+
+    .dialog-actions { display: flex; gap: 8px; }
+    .dialog-actions button {
+      min-height: 44px;
+      flex: 1;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    #singer-preview {
+      padding: 10px 12px;
+      border-radius: 11px;
+      background: rgba(84,230,229,.08);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    #toast {
+      position: fixed;
+      z-index: 50;
+      left: 50%;
+      bottom: 20px;
+      width: max-content;
+      max-width: calc(100vw - 32px);
+      padding: 11px 15px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #1b2231;
+      color: var(--text);
+      font-size: 12px;
+      text-align: center;
+      transform: translate(-50%, 20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: .2s ease;
+    }
+
+    #toast.visible { opacity: 1; transform: translate(-50%, 0); }
+
+    #intro-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+
+    #intro-screen.active { display: flex; }
+    #intro-video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+
+    #countdown-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 15;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 20px;
+      background: rgba(4,6,12,.36);
+      text-align: center;
+      pointer-events: none;
+    }
+
+    #countdown-overlay.active { display: flex; }
+    #countdown-song { font-size: 16px; font-weight: 800; text-shadow: 0 2px 12px #000; }
+    #countdown-singer { margin-top: 6px; color: var(--cyan); font-size: 13px; text-shadow: 0 2px 12px #000; }
+    #countdown-number {
+      margin-top: 10px;
+      color: var(--gold);
+      font-size: clamp(80px, 24vw, 150px);
+      font-weight: 900;
+      line-height: 1;
+      text-shadow: 0 0 32px rgba(255,209,102,.45);
+    }
+
+    #logo-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: #05070c;
+    }
+
+    #logo-overlay img { max-width: 78vw; max-height: 78vh; object-fit: contain; }
+
+    #start-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 35;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background:
+        radial-gradient(ellipse at 50% 25%, rgba(84,230,229,.16), transparent 45%),
+        radial-gradient(ellipse at 90% 90%, rgba(241,106,199,.12), transparent 40%),
+        var(--bg);
+      text-align: center;
+    }
+
+    .start-card {
+      width: min(100%, 440px);
+      padding: 30px 24px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(17,21,33,.86);
+      box-shadow: 0 20px 70px rgba(0,0,0,.38);
+    }
+
+    .start-card .brand-mark { width: 58px; height: 58px; margin: 0 auto 18px; font-size: 28px; }
+    .start-card h1 { font-size: 23px; letter-spacing: .04em; }
+    .start-card p { margin: 10px 0 20px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    #start-button { width: 100%; min-height: 50px; border-radius: 14px; font-weight: 900; }
+    #start-hint { display: block; margin-top: 12px; color: var(--muted); font-size: 11px; }
+
+    #folder-input { display: none; }
+
+    @media (min-width: 850px) {
+      main {
+        grid-template-columns: minmax(0, 1.7fr) minmax(300px, .8fr);
+        grid-template-rows: minmax(0, 1fr) auto;
+        padding: 18px;
+        gap: 14px;
+      }
+      .stage { grid-column: 1; grid-row: 1; min-height: 0; }
+      .toolbar { grid-column: 1; grid-row: 2; }
+      .queue-panel { grid-column: 2; grid-row: 1 / span 2; }
+    }
+
+    @media (max-height: 650px) {
+      main { grid-template-rows: minmax(160px, 38vh) auto minmax(0,1fr); gap: 8px; padding: 8px; }
+      .topbar { min-height: 54px; }
+      .queue-panel { padding: 10px; }
+      .stage-caption { bottom: 52px; }
+    }
+
+    @media (max-width: 380px) {
+      .brand h1 { font-size: 12px; }
+      .brand p { font-size: 10px; }
+      .toolbar button { font-size: 10px; }
+      .queue-actions button { padding: 0 8px; }
+    }
+  </style>
 </head>
+
 <body>
-
-<div id="start-screen">
-    <h1 style="color:var(--neon); text-align:center;">KARAOKÊ FESTA DAS CORES</h1>
-    <button onclick="iniciarApp()" style="padding:20px 40px;font-size:20px;background:var(--emerald);border:none;border-radius:15px;font-weight:bold;color:#000;cursor:pointer">SELECIONAR PASTA E INICIAR</button>
-</div>
-
-<div id="intro-screen"><video id="intro-video" playsinline webkit-playsinline autoplay></video></div>
-
-<div id="ui-wrapper">
-<div class="stage">
-<div class="stage-background" id="main-bg"></div>
-<div id="bg-singer-layer"></div>
-<video id="video-player" playsinline webkit-playsinline></video>
-<div id="marquee-container"><div id="marquee-text">★ KARAOKÊ FESTA DAS CORES ★</div></div>
-<div id="stage-bottom-bar">
-<button class="btn-bar" onclick="document.documentElement.requestFullscreen()">🖥️</button>
-<div id="stage-progress-container"><div id="stage-progress-bar-bg"><div id="stage-progress-fill"></div></div><div id="stage-time-remaining">-00:00</div></div>
-<button class="btn-bar" onclick="pularMusica()">⏭</button>
-</div>
-<div id="timer-screen"><div id="song-display"></div><div id="countdown-num">5</div></div>
-</div>
-
-<div class="search-bar">
-<button id="btn-teclado" onclick="abrirTeclado()">CÓDIGO</button>
-<button id="btn-catalogo" onclick="abrirCatalogo()">CATÁLOGO</button>
-<button id="btn-play-bar" onclick="startPlaylist()" disabled>INICIAR SHOW</button>
-</div>
-
-<div class="ui-panel">
-<div class="queue-header"><h3>🎵 FILA DE MÚSICAS</h3><div id="queue-count-badge">0</div></div>
-<div class="controls-grid"><button class="btn-parar" onclick="pararTudo()">PARAR</button><button class="btn-limpar" onclick="limparFila()">LIMPAR</button></div>
-<div id="track-list"></div>
-</div>
-</div>
-
-<div id="numeric-keypad-overlay" class="modal-overlay">
-<div class="modal-box">
-<h3>DIGITE O CÓDIGO</h3>
-<div id="keypad-code" style="font-size:24px;color:var(--vivid-yellow);margin:10px 0">—</div>
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
-<button onclick="addDigito('1')">1</button><button onclick="addDigito('2')">2</button><button onclick="addDigito('3')">3</button>
-<button onclick="addDigito('4')">4</button><button onclick="addDigito('5')">5</button><button onclick="addDigito('6')">6</button>
-<button onclick="addDigito('7')">7</button><button onclick="addDigito('8')">8</button><button onclick="addDigito('9')">9</button>
-<button onclick="limparDigito()">C</button><button onclick="addDigito('0')">0</button><button onclick="confirmarCodigo()">OK</button>
-</div>
-<button class="btn-modal-cancel" style="margin-top:10px" onclick="fecharTeclado()">FECHAR</button>
-</div>
-</div>
-
-<div id="modal-cantor-overlay" class="modal-overlay">
-<div class="modal-box">
-<h3>CÓDIGO ENCONTRADO</h3>
-<div id="modal-musica-nome" style="font-size:14px;margin:10px 0"></div>
-<input type="text" id="input-cantor" placeholder="Quem canta?">
-<button class="btn-modal-ok" onclick="confirmarCantor()">CONFIRMAR</button>
-<button class="btn-modal-cancel" onclick="fecharModalCantor()">CANCELAR</button>
-</div>
-</div>
-
-<div id="catalogo-overlay" class="modal-overlay">
-<div id="catalogo-box">
-<div style="display:flex;justify-content:space-between;align-items:center"><h2>CATÁLOGO</h2><button onclick="fecharCatalogo()" style="background:var(--magenta);color:#fff;border:none;padding:8px 15px;border-radius:10px;font-weight:bold">FECHAR</button></div>
-<input type="text" id="cat-campo-busca" placeholder="Pesquisar..." oninput="renderCatalogo(this.value)">
-<div id="cat-lista"></div>
-</div>
-</div>
-
-<div id="logo-tela-overlay"><img id="logo-tela-img"></div>
-<input type="file" id="f-folder" webkitdirectory directory multiple style="display:none">
-
-<script>
-let player, videoFiles={}, catalog=[], queue=[], imagensIndex={}, capasCantor={}, bgsPadrao={};
-let codigoTeclado='', modalTempCode=null, modalTempFile=null, modalTempNome=null, _logoUrl=null;
-
-function log(m){console.log('[OK] '+m)}
-
-window.onload = () => {
-    player = document.getElementById('video-player');
-    document.getElementById('f-folder').addEventListener('change', handleFolder);
-    player.onended = () => { fecharVideo(); queue.shift(); renderFila(); if(queue.length) setTimeout(startPlaylist, 800); };
-    player.ontimeupdate = updateProgress;
-};
-
-function iniciarApp(){
-    // 1. Abre a pasta (Requer clique do usuário, o que temos agora)
-    document.getElementById('f-folder').click();
-    
-    // 2. Toca a Intro
-    let intro = videoFiles['INTRO'];
-    let tela = document.getElementById('intro-screen');
-    let vid = document.getElementById('intro-video');
-    document.getElementById('start-screen').style.display = 'none';
-    
-    if(intro){
-        tela.classList.add('active');
-        vid.src = intro.contentUri || URL.createObjectURL(intro);
-        vid.play().then(() => { vid.onended = liberarApp; }).catch(liberarApp);
-    } else { liberarApp(); }
-}
-
-function liberarApp(){
-    document.getElementById('intro-screen').classList.remove('active');
-    document.getElementById('ui-wrapper').classList.add('liberado');
-}
-
-function handleFolder(e){
-    const files = Array.from(e.target.files);
-    videoFiles = {}; catalog=[]; imagensIndex={}; capasCantor={}; bgsPadrao={};
-    for(let f of files){
-        let name = f.name.toUpperCase();
-        let path = (f.webkitRelativePath || f.name).toUpperCase();
-        if(name.endsWith('.MP4')){
-            if(name.includes('INTRO')){ videoFiles['INTRO'] = f; continue; }
-            let m = name.match(/(\d+)/);
-            let code = m ? m[1].padStart(4,'0') : String(Object.keys(videoFiles).length+1).padStart(4,'0');
-            videoFiles[code] = f;
-            catalog.push({code, nome: f.name.replace(/\.mp4/i, '')});
-        } else if(/\.(PNG|JPE?G)$/i.test(name)){
-            let base = f.name.replace(/\.(png|jpe?g)$/i,'');
-            let key = base.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
-            imagensIndex[key] = f;
-            if(name === 'LOGO.PNG' && !path.includes('/')) _logoUrl = f.contentUri || URL.createObjectURL(f);
-            
-            let parts = path.split(/[\/\\]/);
-            if(parts.includes('CAPAS')) capasCantor[key] = f;
-            if(parts.includes('BGS')) bgsPadrao[key] = f;
-        }
-    }
-    document.getElementById('btn-play-bar').disabled = Object.keys(videoFiles).length === 0;
-    log(`${Object.keys(videoFiles).length} vídeos, ${Object.keys(capasCantor).length} capas, ${Object.keys(bgsPadrao).length} bgs`);
-}
-
-function buscarCapaCantor(cantor){
-    if(!cantor) return null;
-    let key = cantor.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
-    if(capasCantor[key]) return capasCantor[key];
-    for(let k in capasCantor) if(k.includes(key) || key.includes(k)) return capasCantor[k];
-    return null;
-}
-
-function buscarBgPadrao(){
-    let keys = ['BG PRINCIPAL', 'BGPRINCIPAL', 'BGOFICIAL'];
-    for(let k of keys) if(bgsPadrao[k]) return bgsPadrao[k];
-    for(let k in bgsPadrao) if(k.startsWith('BG')) return bgsPadrao[k];
-    return null;
-}
-
-// ============ LÓGICA DE INÍCIO DA FAIXA ============
-async function startPlaylist(){
-    if(!queue.length || player.style.display === 'block') return;
-    let cur = queue[0];
-    
-    // 1. Busca imagem (Capa do cantor ou BG Padrão)
-    let img = buscarCapaCantor(cur.cantor) || buscarBgPadrao();
-    let bgLayer = document.getElementById('bg-singer-layer');
-    if(img){
-        bgLayer.style.backgroundImage = `url("${img.contentUri || URL.createObjectURL(img)}")`;
-        bgLayer.style.opacity = '1';
-    } else { bgLayer.style.opacity = '0'; }
-
-    // 2. Contagem
-    document.body.classList.add('countdown-ativo');
-    document.getElementById('song-display').innerHTML = `${cur.nome}<br><span style="color:var(--emerald);font-size:16px">🎤 ${cur.cantor}</span>`;
-    document.getElementById('timer-screen').classList.add('active');
-    let num = document.getElementById('countdown-num');
-    for(let i=5; i>=1; i--){ num.innerText = i; await new Promise(r=>setTimeout(r,1000)); }
-    
-    // 3. Logo e Play
-    bgLayer.style.opacity = '0';
-    document.getElementById('timer-screen').classList.remove('active');
-    document.body.classList.remove('countdown-ativo');
-    
-    if(_logoUrl){
-        let logoOverlay = document.getElementById('logo-tela-overlay');
-        document.getElementById('logo-tela-img').src = _logoUrl;
-        logoOverlay.style.display = 'flex';
-        await new Promise(r=>setTimeout(r,1500));
-        logoOverlay.style.display = 'none';
-    }
-
-    player.src = cur.file.contentUri || URL.createObjectURL(cur.file);
-    player.style.display = 'block';
-    player.play().catch(()=>{});
-    renderFila();
-}
-
-function fecharVideo(){
-    player.pause(); player.src = ''; player.style.display = 'none';
-    document.getElementById('stage-progress-fill').style.width = '0%';
-    document.getElementById('stage-time-remaining').innerText = '-00:00';
-}
-function updateProgress(){
-    if(!player.duration) return;
-    let cur = player.currentTime, dur = player.duration, rem = Math.max(0, dur-cur);
-    document.getElementById('stage-progress-fill').style.width = (cur/dur)*100 + '%';
-    document.getElementById('stage-time-remaining').innerText = `-${Math.floor(rem/60).toString().padStart(2,'0')}:${Math.floor(rem%60).toString().padStart(2,'0')}`;
-}
-
-// ============ TECLADO ============
-function abrirTeclado(){ codigoTeclado=''; document.getElementById('keypad-code').innerText='—'; document.getElementById('numeric-keypad-overlay').classList.add('active'); }
-function addDigito(d){ if(codigoTeclado.length<10){ codigoTeclado+=d; document.getElementById('keypad-code').innerText=codigoTeclado; } }
-function limparDigito(){ codigoTeclado=''; document.getElementById('keypad-code').innerText='—'; }
-function fecharTeclado(){ document.getElementById('numeric-keypad-overlay').classList.remove('active'); }
-function confirmarCodigo(){
-    let code = codigoTeclado.padStart(4,'0');
-    if(videoFiles[code]){ fecharTeclado(); abrirModalCantor(code); }
-    else { alert('Código não encontrado!'); }
-}
-
-// ============ CATÁLOGO ============
-function abrirCatalogo(){ document.getElementById('catalogo-overlay').classList.add('active'); renderCatalogo(''); }
-function fecharCatalogo(){ document.getElementById('catalogo-overlay').classList.remove('active'); }
-function renderCatalogo(termo){
-    termo = termo.toLowerCase();
-    let lista = document.getElementById('cat-lista');
-    let itens = catalog.filter(c => c.nome.toLowerCase().includes(termo) || c.code.includes(termo));
-    lista.innerHTML = itens.map(i => `<button class="cat-item" onclick="fecharCatalogo(); abrirModalCantor('${i.code}')"><b>#${i.code}</b> - ${i.nome}</button>`).join('');
-}
-
-// ============ FILA ============
-function abrirModalCantor(code){
-    modalTempCode = code;
-    modalTempFile = videoFiles[code];
-    modalTempNome = catalog.find(c=>c.code === code).nome;
-    document.getElementById('modal-musica-nome').innerText = `#${code} - ${modalTempNome}`;
-    document.getElementById('input-cantor').value = '';
-    document.getElementById('modal-cantor-overlay').classList.add('active');
-}
-function fecharModalCantor(){ document.getElementById('modal-cantor-overlay').classList.remove('active'); }
-function confirmarCantor(){
-    let cantor = document.getElementById('input-cantor').value.trim().toUpperCase() || 'CONVIDADO';
-    queue.push({ code: modalTempCode, nome: modalTempNome, cantor: cantor, file: modalTempFile });
-    fecharModalCantor(); renderFila();
-}
-function renderFila(){
-    let playing = player.style.display === 'block';
-    let list = document.getElementById('track-list');
-    if(!queue.length) list.innerHTML = '<div style="text-align:center;padding:20px;color:#666">FILA VAZIA</div>';
-    else list.innerHTML = queue.map((i,idx) => `
-        <div class="item ${idx===0 && playing ? 'now-playing' : ''}">
-            <div class="item-title">${i.nome}</div>
-            <div class="item-meta"><span class="item-singer">🎤 ${i.cantor}</span><span class="item-code">#${i.code}</span></div>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">♪</div>
+        <div>
+          <h1>Karaokê Festa das Cores</h1>
+          <p id="library-status">Selecione sua pasta de músicas</p>
         </div>
-    `).join('');
-    document.getElementById('queue-count-badge').innerText = playing ? Math.max(0, queue.length-1) : queue.length;
-}
-function pararTudo(){ fecharVideo(); queue=[]; renderFila(); }
-function limparFila(){ queue=[]; renderFila(); }
-function pularMusica(){ if(queue.length) player.dispatchEvent(new Event('ended')); }
-</script>
+      </div>
+      <div class="top-actions">
+        <button class="icon-button" type="button" title="Selecionar pasta" aria-label="Selecionar pasta" onclick="selecionarPasta()">📁</button>
+        <button class="icon-button" type="button" title="Sair" aria-label="Sair" onclick="sairDoApp()">⏻</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="stage" aria-label="Palco do karaokê">
+        <div id="stage-background"></div>
+        <video id="video-player" playsinline webkit-playsinline preload="metadata"></video>
+
+        <div class="stage-topline">
+          <span class="live-badge"><span class="live-dot"></span> Palco</span>
+          <span class="library-badge" id="video-count">0 músicas</span>
+        </div>
+
+        <div class="stage-caption">
+          <div class="eyebrow" id="stage-eyebrow">Pronto para cantar?</div>
+          <h2 id="stage-title">Seu próximo show começa aqui</h2>
+          <p id="stage-subtitle">Adicione músicas à fila pelo código ou catálogo.</p>
+        </div>
+
+        <div class="stage-controls">
+          <button type="button" title="Tela cheia" aria-label="Tela cheia" onclick="alternarTelaCheia()">⛶</button>
+          <div class="progress-track"><div id="progress-fill"></div></div>
+          <span id="time-remaining">--:--</span>
+          <button type="button" title="Pular música" aria-label="Pular música" onclick="pularMusica()">⏭</button>
+        </div>
+      </section>
+
+      <nav class="toolbar" aria-label="Controles de músicas">
+        <button class="secondary-button" type="button" onclick="abrirTeclado()">⌗ &nbsp; CÓDIGO</button>
+        <button class="secondary-button" type="button" onclick="abrirCatalogo()">☷ &nbsp; CATÁLOGO</button>
+        <button id="play-button" class="primary-button" type="button" onclick="iniciarFila()" disabled>▶ &nbsp; INICIAR SHOW</button>
+      </nav>
+
+      <section class="queue-panel">
+        <div class="section-heading">
+          <h2>Fila de músicas</h2>
+          <div class="queue-actions">
+            <span id="queue-count">0</span>
+            <button class="danger-button" type="button" onclick="pararTudo()">PARAR</button>
+            <button class="secondary-button" type="button" onclick="limparFila()">LIMPAR</button>
+          </div>
+        </div>
+        <div id="track-list"><div class="empty-state">Selecione uma pasta para carregar as músicas.</div></div>
+      </section>
+    </main>
+  </div>
+
+  <input id="folder-input" type="file" webkitdirectory directory multiple>
+
+  <section id="start-screen">
+    <div class="start-card">
+      <div class="brand-mark">♪</div>
+      <h1>Karaokê Festa das Cores</h1>
+      <p>Selecione a pasta que contém os vídeos. As capas dos cantores podem ficar em <b>CAPAS</b> e os fundos padrão em <b>BGS</b>.</p>
+      <button id="start-button" class="primary-button" type="button" onclick="selecionarPasta()">SELECIONAR PASTA</button>
+      <span id="start-hint">Exemplo: CAPAS/Belo.png · BGS/BGOFICIAL.jpg</span>
+    </div>
+  </section>
+
+  <section id="intro-screen" aria-label="Introdução">
+    <video id="intro-video" playsinline webkit-playsinline preload="auto"></video>
+  </section>
+
+  <section id="countdown-overlay" aria-live="polite">
+    <div id="countdown-song"></div>
+    <div id="countdown-singer"></div>
+    <div id="countdown-number">5</div>
+  </section>
+
+  <section id="logo-overlay"><img id="logo-image" alt="Logo do karaokê"></section>
+
+  <section id="keypad-modal" class="overlay" role="dialog" aria-modal="true" aria-labelledby="keypad-title">
+    <div class="dialog">
+      <div class="dialog-header">
+        <div><h2 id="keypad-title">Adicionar pelo código</h2><p>Digite o número da música.</p></div>
+        <button class="dialog-close" type="button" aria-label="Fechar" onclick="fecharModal('keypad-modal')">✕</button>
+      </div>
+      <div id="keypad-display">—</div>
+      <div class="keypad-grid">
+        <button type="button" onclick="adicionarDigito('1')">1</button>
+        <button type="button" onclick="adicionarDigito('2')">2</button>
+        <button type="button" onclick="adicionarDigito('3')">3</button>
+        <button type="button" onclick="adicionarDigito('4')">4</button>
+        <button type="button" onclick="adicionarDigito('5')">5</button>
+        <button type="button" onclick="adicionarDigito('6')">6</button>
+        <button type="button" onclick="adicionarDigito('7')">7</button>
+        <button type="button" onclick="adicionarDigito('8')">8</button>
+        <button type="button" onclick="adicionarDigito('9')">9</button>
+        <button type="button" onclick="limparDigitos()">C</button>
+        <button type="button" onclick="adicionarDigito('0')">0</button>
+        <button type="button" onclick="confirmarCodigo()">OK</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="catalog-modal" class="overlay" role="dialog" aria-modal="true" aria-labelledby="catalog-title">
+    <div class="dialog">
+      <div class="dialog-header">
+        <div><h2 id="catalog-title">Catálogo</h2><p>Pesquise pelo título ou código.</p></div>
+        <button class="dialog-close" type="button" aria-label="Fechar" onclick="fecharModal('catalog-modal')">✕</button>
+      </div>
+      <input id="catalog-search" class="field" type="search" placeholder="Pesquisar músicas..." oninput="renderizarCatalogo(this.value)">
+      <div id="catalog-list"></div>
+    </div>
+  </section>
+
+  <section id="singer-modal" class="overlay" role="dialog" aria-modal="true" aria-labelledby="singer-title">
+    <div class="dialog">
+      <div class="dialog-header">
+        <div><h2 id="singer-title">Quem vai cantar?</h2><p id="selected-track"></p></div>
+        <button class="dialog-close" type="button" aria-label="Fechar" onclick="fecharModal('singer-modal')">✕</button>
+      </div>
+      <input id="singer-input" class="field" type="text" maxlength="60" placeholder="Nome do cantor">
+      <div id="singer-preview">A capa do cantor será exibida durante a contagem regressiva, se estiver disponível.</div>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" onclick="fecharModal('singer-modal')">CANCELAR</button>
+        <button class="primary-button" type="button" onclick="confirmarCantor()">ADICIONAR À FILA</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast" role="status"></div>
+
+  <script>
+    "use strict";
+
+    const state = {
+      videos: new Map(),
+      catalog: [],
+      queue: [],
+      covers: new Map(),
+      backgrounds: new Map(),
+      intro: null,
+      logo: null,
+      pendingTrack: null,
+      digits: "",
+      introStarted: false,
+      folderLoaded: false,
+      countdownToken: 0,
+      toastTimer: null
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const android = window.AndroidHost || null;
+    const player = $("video-player");
+    const introPlayer = $("intro-video");
+
+    function normalize(text) {
+      return String(text || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()
+        .replace(/\.[^.]+$/, "")
+        .replace(/[^A-Z0-9]+/g, " ")
+        .trim()
+        .replace(/\s+/g, " ");
+    }
+
+    function fileUrl(file) {
+      if (!file) return "";
+      if (file.contentUri || file.uri) return file.contentUri || file.uri;
+      if (file instanceof Blob) {
+        if (!file._karaokeObjectUrl) file._karaokeObjectUrl = URL.createObjectURL(file);
+        return file._karaokeObjectUrl;
+      }
+      return "";
+    }
+
+    function notify(message) {
+      const toast = $("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      clearTimeout(state.toastTimer);
+      state.toastTimer = setTimeout(() => toast.classList.remove("visible"), 2600);
+    }
+
+    function selecionarPasta() {
+      if (android && typeof android.chooseFolder === "function") {
+        try {
+          android.chooseFolder();
+          return;
+        } catch (error) {
+          console.error(error);
+          notify("Não foi possível abrir o seletor de pastas do Android.");
+        }
+      }
+      $("folder-input").click();
+    }
+
+    function onNativeFolderLoaded(files) {
+      try {
+        const list = typeof files === "string" ? JSON.parse(files) : files;
+        carregarArquivos(Array.isArray(list) ? list : []);
+        state.folderLoaded = true;
+        if (!state.intro) liberarInterface();
+      } catch (error) {
+        console.error("Erro lendo arquivos da pasta:", error);
+        $("library-status").textContent = "Falha ao carregar a pasta";
+        notify("Não foi possível ler os arquivos selecionados.");
+        liberarInterface();
+      }
+    }
+
+    function onNativeFolderLoadFailed() {
+      $("library-status").textContent = "Falha ao ler a pasta";
+      notify("O Android não conseguiu ler essa pasta. Tente selecionar outra.");
+      liberarInterface();
+    }
+
+    function onIntroFoundDuringScan(uri) {
+      if (!uri || state.introStarted) return;
+      state.intro = { name: "INTRO.mp4", path: "INTRO.mp4", uri, contentUri: uri };
+      tocarIntro();
+    }
+
+    window.onNativeFolderLoaded = onNativeFolderLoaded;
+    window.onNativeFolderLoadFailed = onNativeFolderLoadFailed;
+    window.onIntroFoundDuringScan = onIntroFoundDuringScan;
+
+    function carregarArquivos(files) {
+      state.videos.clear();
+      state.catalog = [];
+      state.covers.clear();
+      state.backgrounds.clear();
+      state.logo = null;
+      state.intro = state.intro && state.intro.uri ? state.intro : null;
+
+      for (const raw of files) {
+        if (!raw || !raw.name) continue;
+
+        const name = String(raw.name);
+        const path = String(raw.path || raw.webkitRelativePath || name).replace(/\\/g, "/");
+        const upperName = name.toUpperCase();
+        const item = {
+          name,
+          path,
+          uri: raw.uri || raw.contentUri || "",
+          contentUri: raw.uri || raw.contentUri || "",
+          file: raw instanceof Blob ? raw : null
+        };
+
+        if (/\.MP4$/i.test(name)) {
+          if (/^INTRO(?:[-_ ]?\d*)?\.MP4$/i.test(name)) {
+            if (!state.intro) state.intro = item;
+            continue;
+          }
+
+          const match = name.match(/(\d+)/);
+          const code = match ? match[1].padStart(4, "0") : String(state.catalog.length + 1).padStart(4, "0");
+          const track = {
+            code,
+            name: name.replace(/\.mp4$/i, ""),
+            path,
+            file: item.file,
+            uri: item.uri,
+            contentUri: item.contentUri
+          };
+
+          if (!state.videos.has(code)) state.videos.set(code, track);
+          state.catalog.push(track);
+          continue;
+        }
+
+        if (/\.(PNG|JPG|JPEG)$/i.test(name)) {
+          const key = normalize(name);
+          const parts = path.split("/").map(part => part.toUpperCase());
+          const isCover = parts.includes("CAPAS");
+          const isBackground = parts.includes("BGS") || parts.includes("BG");
+          if (isCover) state.covers.set(key, item);
+          if (isBackground) state.backgrounds.set(key, item);
+          if (key === "LOGO") state.logo = item;
+        }
+      }
+
+      state.catalog.sort((a, b) => a.code.localeCompare(b.code) || a.name.localeCompare(b.name));
+      $("video-count").textContent = `${state.catalog.length} ${state.catalog.length === 1 ? "música" : "músicas"}`;
+      $("library-status").textContent = state.catalog.length
+        ? `${state.catalog.length} músicas carregadas`
+        : "Nenhum vídeo encontrado";
+      $("play-button").disabled = state.catalog.length === 0;
+      desenharFila();
+      renderizarCatalogo("");
+
+      if (!state.intro) liberarInterface();
+      if (!state.catalog.length) notify("Não encontrei vídeos MP4 nessa pasta.");
+      else notify(`${state.catalog.length} músicas carregadas.`);
+    }
+
+    $("folder-input").addEventListener("change", (event) => {
+      const files = Array.from(event.target.files || []);
+      carregarArquivos(files);
+      state.folderLoaded = true;
+      if (state.intro) tocarIntro();
+      event.target.value = "";
+    });
+
+    function liberarInterface() {
+      $("start-screen").style.display = "none";
+      $("intro-screen").classList.remove("active");
+      $("app").style.visibility = "visible";
+    }
+
+    function tocarIntro() {
+      if (!state.intro || state.introStarted) return;
+      state.introStarted = true;
+      const src = fileUrl(state.intro);
+      if (!src) {
+        liberarInterface();
+        return;
+      }
+
+      $("start-screen").style.display = "none";
+      $("intro-screen").classList.add("active");
+      introPlayer.src = src;
+      introPlayer.onended = () => {
+        $("intro-screen").classList.remove("active");
+        liberarInterface();
+      };
+      introPlayer.onerror = () => {
+        $("intro-screen").classList.remove("active");
+        liberarInterface();
+        notify("Não foi possível reproduzir o vídeo de introdução.");
+      };
+
+      const playResult = introPlayer.play();
+      if (playResult && typeof playResult.catch === "function") {
+        playResult.catch(() => {
+          $("intro-screen").classList.remove("active");
+          liberarInterface();
+          notify("A introdução não pôde iniciar; o karaokê está pronto.");
+        });
+      }
+    }
+
+    function liberarQuandoPastaPronta() {
+      if (!state.intro && state.folderLoaded) liberarInterface();
+    }
+
+    function extrairCodigo(filename) {
+      const match = String(filename || "").match(/^\s*(\d+)/);
+      return match ? match[1] : "";
+    }
+
+    function inferirCantor(track) {
+      if (!track) return "";
+      const title = normalize(track.name).replace(/^\d+\s*/, "");
+      if (!title) return "";
+
+      // Usa o nome da capa como referência. Ex.: arquivo "0000 Belo Tua Boca..."
+      // corresponde à imagem CAPAS/Belo.png.
+      let best = "";
+      for (const coverKey of state.covers.keys()) {
+        const singer = coverKey.replace(/\s+/g, " ").trim();
+        if (!singer || singer === "LOGO") continue;
+        if ((title === singer || title.startsWith(singer + " ")) && singer.length > best.length) {
+          best = singer;
+        }
+      }
+      return best;
+    }
+
+    function abrirTeclado() {
+      state.digits = "";
+      $("keypad-display").textContent = "—";
+      $("keypad-modal").classList.add("active");
+    }
+
+    function adicionarDigito(value) {
+      if (state.digits.length >= 10) return;
+      state.digits += value;
+      $("keypad-display").textContent = state.digits;
+    }
+
+    function limparDigitos() {
+      state.digits = "";
+      $("keypad-display").textContent = "—";
+    }
+
+    function confirmarCodigo() {
+      const code = state.digits.padStart(4, "0");
+      const track = state.videos.get(code);
+      if (!track) {
+        notify(`Código ${code} não encontrado.`);
+        return;
+      }
+      fecharModal("keypad-modal");
+      abrirModalCantor(track);
+    }
+
+    function abrirCatalogo() {
+      $("catalog-modal").classList.add("active");
+      $("catalog-search").value = "";
+      renderizarCatalogo("");
+      $("catalog-search").focus();
+    }
+
+    function renderizarCatalogo(term) {
+      const list = $("catalog-list");
+      const query = normalize(term);
+      const filtered = state.catalog.filter(track =>
+        !query || normalize(track.name).includes(query) || track.code.includes(query)
+      );
+
+      if (!filtered.length) {
+        list.innerHTML = `<div class="empty-state">${state.catalog.length ? "Nenhuma música corresponde à busca." : "Carregue uma pasta com vídeos MP4."}</div>`;
+        return;
+      }
+
+      list.innerHTML = "";
+      for (const track of filtered.slice(0, 500)) {
+        const button = document.createElement("button");
+        button.className = "catalog-row";
+        button.type = "button";
+        const code = document.createElement("span");
+        code.className = "catalog-code";
+        code.textContent = `#${track.code}`;
+        const name = document.createElement("span");
+        name.className = "catalog-name";
+        name.textContent = track.name;
+        button.append(code, name);
+        button.addEventListener("click", () => {
+          fecharModal("catalog-modal");
+          abrirModalCantor(track);
+        });
+        list.appendChild(button);
+      }
+    }
+
+    function abrirModalCantor(track) {
+      if (!track) return;
+      state.pendingTrack = track;
+      const inferred = inferirCantor(track);
+      $("selected-track").textContent = `#${track.code} · ${track.name}`;
+      $("singer-input").value = inferred;
+      atualizarPreviewCapa();
+      $("singer-modal").classList.add("active");
+      setTimeout(() => $("singer-input").focus(), 50);
+    }
+
+    $("singer-input").addEventListener("input", atualizarPreviewCapa);
+
+    function procurarCapa(singer) {
+      const key = normalize(singer);
+      if (!key) return null;
+      for (const extension of [".PNG", ".JPG", ".JPEG"]) {
+        const exact = state.covers.get(key + extension);
+        if (exact) return exact;
+      }
+      for (const [coverKey, file] of state.covers) {
+        const base = coverKey.replace(/\.(PNG|JPG|JPEG)$/i, "");
+        if (base === key) return file;
+      }
+      return null;
+    }
+
+    function procurarBgPrincipal() {
+      const names = ["BGOFICIAL", "BG PRINCIPAL", "BGPRINCIPAL", "BG PRINCIPAL OFICIAL", "FUNDO PRINCIPAL"];
+      for (const name of names) {
+        for (const extension of [".PNG", ".JPG", ".JPEG"]) {
+          const found = state.backgrounds.get(name + extension);
+          if (found) return found;
+        }
+      }
+      for (const [key, file] of state.backgrounds) {
+        const base = key.replace(/\.(PNG|JPG|JPEG)$/i, "");
+        if (base.startsWith("BG")) return file;
+      }
+      return null;
+    }
+
+    function atualizarPreviewCapa() {
+      const singer = $("singer-input").value.trim();
+      const cover = procurarCapa(singer);
+      $("singer-preview").textContent = cover
+        ? `Capa encontrada: ${cover.name}`
+        : (procurarBgPrincipal()
+          ? "Sem capa do cantor; será usado o fundo principal."
+          : "Não encontrei capa nem fundo principal; o palco ficará sem imagem.");
+    }
+
+    function confirmarCantor() {
+      const track = state.pendingTrack;
+      if (!track) return;
+      const singer = $("singer-input").value.trim() || inferirCantor(track) || "CONVIDADO";
+      state.queue.push({ ...track, singer: singer.toUpperCase() });
+      state.pendingTrack = null;
+      fecharModal("singer-modal");
+      desenharFila();
+      notify("Música adicionada à fila.");
+    }
+
+    function desenharFila() {
+      const list = $("track-list");
+      $("queue-count").textContent = String(state.queue.length);
+
+      if (!state.queue.length) {
+        list.innerHTML = `<div class="empty-state">${state.catalog.length ? "A fila está vazia. Adicione uma música pelo código ou catálogo." : "Selecione uma pasta para carregar as músicas."}</div>`;
+        return;
+      }
+
+      list.innerHTML = "";
+      state.queue.forEach((track, index) => {
+        const row = document.createElement("div");
+        row.className = `queue-item${index === 0 && player.style.display !== "none" ? " playing" : ""}`;
+
+        const number = document.createElement("div");
+        number.className = "queue-number";
+        number.textContent = `#${track.code}`;
+
+        const text = document.createElement("div");
+        const title = document.createElement("div");
+        title.className = "queue-title";
+        title.textContent = track.name;
+        const singer = document.createElement("div");
+        singer.className = "queue-singer";
+        singer.textContent = `🎤 ${track.singer}`;
+        text.append(title, singer);
+
+        const status = document.createElement("span");
+        status.className = "queue-status";
+        status.textContent = index === 0 && player.style.display !== "none" ? "Tocando" : "";
+
+        row.append(number, text, status);
+        list.appendChild(row);
+      });
+    }
+
+    function definirImagemStage(image) {
+      const stage = $("stage-background");
+      if (!image) {
+        stage.style.backgroundImage = "none";
+        return;
+      }
+      const url = fileUrl(image);
+      stage.style.backgroundImage = url ? `linear-gradient(rgba(0,0,0,.18),rgba(0,0,0,.36)), url("${url.replace(/"/g, "%22")}")` : "none";
+    }
+
+    function iniciarFila() {
+      if (!state.queue.length || player.style.display !== "none") return;
+      tocarProxima();
+    }
+
+    async function tocarProxima() {
+      if (!state.queue.length || player.style.display !== "none") return;
+      const track = state.queue[0];
+      const token = ++state.countdownToken;
+
+      const image = procurarCapa(track.singer) || procurarBgPrincipal();
+      definirImagemStage(image);
+
+      $("stage-eyebrow").textContent = "Prepare o microfone";
+      $("stage-title").textContent = track.name;
+      $("stage-subtitle").textContent = `🎤 ${track.singer}  ·  #${track.code}`;
+
+      $("countdown-song").textContent = track.name;
+      $("countdown-singer").textContent = `🎤 ${track.singer}`;
+      $("countdown-overlay").classList.add("active");
+
+      for (let number = 5; number >= 1; number--) {
+        if (token !== state.countdownToken) return;
+        $("countdown-number").textContent = String(number);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      if (token !== state.countdownToken) return;
+      $("countdown-overlay").classList.remove("active");
+
+      if (state.logo) {
+        const logoUrl = fileUrl(state.logo);
+        if (logoUrl) {
+          $("logo-image").src = logoUrl;
+          $("logo-overlay").style.display = "flex";
+          await new Promise(resolve => setTimeout(resolve, 1100));
+          $("logo-overlay").style.display = "none";
+        }
+      }
+
+      const source = track.contentUri || track.uri || fileUrl(track.file);
+      if (!source) {
+        notify("Não consegui abrir o arquivo de vídeo desta música.");
+        state.queue.shift();
+        desenharFila();
+        return;
+      }
+
+      player.src = source;
+      player.style.display = "block";
+      $("stage-background").style.opacity = ".25";
+      try {
+        await player.play();
+      } catch (error) {
+        console.error("Falha ao iniciar vídeo:", error);
+        notify("O vídeo não iniciou. Toque em iniciar show novamente.");
+        player.style.display = "none";
+        return;
+      }
+      desenharFila();
+    }
+
+    player.addEventListener("timeupdate", () => {
+      if (!Number.isFinite(player.duration) || player.duration <= 0) return;
+      const remaining = Math.max(0, player.duration - player.currentTime);
+      $("progress-fill").style.width = `${(player.currentTime / player.duration) * 100}%`;
+      $("time-remaining").textContent = `${String(Math.floor(remaining / 60)).padStart(2, "0")}:${String(Math.floor(remaining % 60)).padStart(2, "0")}`;
+    });
+
+    player.addEventListener("ended", terminarMusica);
+    player.addEventListener("error", () => {
+      if (player.style.display !== "none") notify("Erro ao reproduzir o vídeo. Verifique o arquivo e tente novamente.");
+    });
+
+    function terminarMusica() {
+      player.pause();
+      player.removeAttribute("src");
+      player.load();
+      player.style.display = "none";
+      $("stage-background").style.opacity = ".8";
+      $("progress-fill").style.width = "0";
+      $("time-remaining").textContent = "--:--";
+      state.queue.shift();
+      desenharFila();
+
+      if (state.queue.length) {
+        setTimeout(tocarProxima, 700);
+      } else {
+        $("stage-eyebrow").textContent = "Show finalizado";
+        $("stage-title").textContent = "Obrigado por cantar!";
+        $("stage-subtitle").textContent = "Adicione novas músicas para continuar.";
+      }
+    }
+
+    function pularMusica() {
+      if (player.style.display !== "none") {
+        player.currentTime = player.duration || 0;
+        terminarMusica();
+      } else if (state.queue.length) {
+        state.countdownToken++;
+        $("countdown-overlay").classList.remove("active");
+        state.queue.shift();
+        desenharFila();
+        if (state.queue.length) tocarProxima();
+      }
+    }
+
+    function pararTudo() {
+      state.countdownToken++;
+      $("countdown-overlay").classList.remove("active");
+      $("logo-overlay").style.display = "none";
+      player.pause();
+      player.removeAttribute("src");
+      player.load();
+      player.style.display = "none";
+      $("stage-background").style.opacity = ".8";
+      $("progress-fill").style.width = "0";
+      $("time-remaining").textContent = "--:--";
+      state.queue = [];
+      desenharFila();
+      $("stage-eyebrow").textContent = "Palco pronto";
+      $("stage-title").textContent = "Seu próximo show começa aqui";
+      $("stage-subtitle").textContent = "Adicione músicas à fila pelo código ou catálogo.";
+    }
+
+    function limparFila() {
+      if (player.style.display !== "none" && state.queue.length) {
+        state.queue = [state.queue[0]];
+      } else {
+        state.queue = [];
+      }
+      desenharFila();
+      notify("Fila atualizada.");
+    }
+
+    function fecharModal(id) {
+      $(id).classList.remove("active");
+    }
+
+    function alternarTelaCheia() {
+      const stage = document.querySelector(".stage");
+      if (document.fullscreenElement) {
+        document.exitFullscreen?.();
+      } else if (stage.requestFullscreen) {
+        stage.requestFullscreen().catch(() => stage.classList.toggle("fullscreen"));
+      } else {
+        stage.classList.toggle("fullscreen");
+      }
+    }
+
+    function sairDoApp() {
+      if (android && typeof android.exitApp === "function") {
+        android.exitApp();
+      } else {
+        notify("Para fechar o app, use o botão voltar do aparelho.");
+      }
+    }
+
+    document.addEventListener("keydown", (event) => {
+      const keypadOpen = $("keypad-modal").classList.contains("active");
+      if (keypadOpen && /^[0-9]$/.test(event.key)) {
+        adicionarDigito(event.key);
+        event.preventDefault();
+      } else if (keypadOpen && event.key === "Enter") {
+        confirmarCodigo();
+        event.preventDefault();
+      } else if (keypadOpen && event.key === "Backspace") {
+        state.digits = state.digits.slice(0, -1);
+        $("keypad-display").textContent = state.digits || "—";
+        event.preventDefault();
+      } else if (event.key === "Escape" || event.key === "Backspace") {
+        for (const id of ["keypad-modal", "catalog-modal", "singer-modal"]) {
+          if ($(id).classList.contains("active")) {
+            fecharModal(id);
+            event.preventDefault();
+            return;
+          }
+        }
+      }
+    });
+
+    $("catalog-modal").addEventListener("click", event => {
+      if (event.target === $("catalog-modal")) fecharModal("catalog-modal");
+    });
+    $("keypad-modal").addEventListener("click", event => {
+      if (event.target === $("keypad-modal")) fecharModal("keypad-modal");
+    });
+    $("singer-modal").addEventListener("click", event => {
+      if (event.target === $("singer-modal")) fecharModal("singer-modal");
+    });
+
+    // A tela inicial é removida depois que a pasta é escolhida e carregada.
+    if (!android) $("library-status").textContent = "Selecione sua pasta de músicas";
+  </script>
 </body>
-</html>
+    </html>
