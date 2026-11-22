@@ -33,6 +33,19 @@ jobs:
           cp AndroidManifest.xml app/src/main/AndroidManifest.xml
           cp index.html app/src/main/assets/index.html
 
+          # Copia recursos opcionais caso estejam na raiz do repositório
+          for ext in jpg png gif webp mp4; do
+            for f in *.$ext; do
+              if [[ -f "$f" && "$f" != "ic_launcher.png" ]]; then
+                cp "$f" "app/src/main/assets/$f"
+              fi
+            done
+          done
+
+          if [[ -d fontes ]]; then
+            cp -r fontes app/src/main/assets/fontes
+          fi
+
           sed -i -E 's/ package="[^"]*"//' app/src/main/AndroidManifest.xml
           sed -i '/<uses-sdk[[:space:]]/d' app/src/main/AndroidManifest.xml
 
@@ -53,8 +66,8 @@ jobs:
                   applicationId 'br.com.ursoplayer.karaoke'
                   minSdk 23
                   targetSdk 28
-                  versionCode 10
-                  versionName '2.1'
+                  versionCode 11
+                  versionName '2.2'
               }
 
               compileOptions {
