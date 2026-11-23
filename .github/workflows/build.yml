@@ -49,6 +49,11 @@ jobs:
           include ':app'
           EOF
 
+          cat << 'EOF' > gradle.properties
+          android.useAndroidX=true
+          android.enableJetifier=true
+          EOF
+
           cat << 'EOF' > build.gradle
           buildscript {
               repositories { google(); mavenCentral() }
