@@ -1055,12 +1055,458 @@
             border-top: 1px solid #333;
             padding-top: 6px;
         }
-    </style>
+    
+    /* BLOQUEIO TOTAL E ABSOLUTO DO PALCO INICIAL */
+    #ui-wrapper.oculto-inicio,
+    #ui-wrapper:not(.liberado) {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    #ui-wrapper.liberado {
+        display: grid !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+    }
+
+    /* ELIMINA ÍCONE NATIVO DE PLAY */
+    video {
+        outline: none !important;
+        background-color: transparent !important;
+    }
+    video::-webkit-media-controls,
+    video::-webkit-media-controls-start-playback-button,
+    video::-webkit-media-controls-play-button,
+    video::-webkit-media-controls-overlay-play-button,
+    video::-webkit-media-controls-panel,
+    video::-webkit-media-controls-enclosure {
+        display: none !important;
+        -webkit-appearance: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* ADAPTAÇÃO PARA TOQUE EM CELULARES E CURSOR DO MOUSE */
+    * {
+        -webkit-tap-highlight-color: transparent !important;
+        box-sizing: border-box !important;
+    }
+    button {
+        touch-action: manipulation !important;
+    }
+
+    /* BOTÃO SAIR FIXO NO CANTO SUPERIOR ESQUERDO (ONDE PASSA O LETREIRO) */
+    .btn-sair-topo-fixo {
+        position: fixed !important;
+        top: 10px !important;
+        left: 14px !important;
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 12px !important;
+        background: rgba(10, 6, 20, 0.75) !important;
+        border: 1.5px solid rgba(212, 128, 255, 0.6) !important;
+        backdrop-filter: blur(8px) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        color: #d480ff !important;
+        box-shadow: 0 0 15px rgba(176, 38, 255, 0.4) !important;
+        z-index: 99999 !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-sair-topo-fixo:hover,
+    .btn-sair-topo-fixo:focus,
+    .btn-sair-topo-fixo:focus-visible {
+        background: rgba(176, 38, 255, 0.4) !important;
+        border-color: #ffffff !important;
+        box-shadow: 0 0 22px rgba(212, 128, 255, 0.8) !important;
+        transform: scale(1.08) !important;
+        outline: none !important;
+    }
+    .btn-sair-topo-fixo svg {
+        width: 20px !important;
+        height: 20px !important;
+        fill: none !important;
+        stroke: currentColor !important;
+        stroke-width: 2.2 !important;
+        stroke-linecap: round !important;
+        stroke-linejoin: round !important;
+    }
+
+    /* DÁ RESPIRO PARA O LETREIRO NÃO COLIDIR COM O BOTÃO SAIR */
+    marquee, .letreiro, #letreiro, [class*="letreiro"], .ticker, [class*="ticker"] {
+        padding-left: 56px !important;
+    }
+
+    /* BOTÕES PARAR E LIMPAR DIVIDINDO 50% DA LARGURA CADA */
+    .btn-parar, .btn-limpar {
+        flex: 1 1 0% !important;
+        width: 50% !important;
+        min-width: 0 !important;
+        height: 68px !important;
+        border-radius: 22px !important;
+        font-family: var(--font-title, sans-serif) !important;
+        font-weight: 900 !important;
+        font-size: 16px !important;
+        letter-spacing: 2px !important;
+        text-transform: uppercase !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        border: none !important;
+        box-sizing: border-box !important;
+        padding: 0 8px !important;
+        transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease !important;
+    }
+    .btn-parar span, .btn-limpar span {
+        font-size: 16px !important;
+        letter-spacing: 2px !important;
+        white-space: nowrap !important;
+        pointer-events: none !important;
+    }
+
+    /* PARAR: LARANJA / ÂMBAR 3D GLOSSY COM TEXTO BRANCO */
+    .btn-parar {
+        background: linear-gradient(180deg, #ff9e1b 0%, #f97316 55%, #c2410c 100%) !important;
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+        box-shadow: 0 8px 25px rgba(249, 115, 22, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
+    }
+
+    /* LIMPAR: VERMELHO RUBI 3D GLOSSY COM TEXTO BRANCO */
+    .btn-limpar {
+        background: linear-gradient(180deg, #ff2e51 0%, #ef4444 55%, #b91c1c 100%) !important;
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
+    }
+
+    /* NAVEGAÇÃO POR CONTROLE REMOTO (SMART TV / TV BOX D-PAD): HALO BRILHANTE */
+    .btn-parar:focus,
+    .btn-parar:focus-visible,
+    .btn-limpar:focus,
+    .btn-limpar:focus-visible,
+    .btn-control:focus,
+    .btn-control:focus-visible,
+    button:focus-visible {
+        outline: 3px solid #ffffff !important;
+        box-shadow: 0 0 25px #ffffff, 0 0 35px rgba(255, 255, 255, 0.8) !important;
+        transform: translateY(-2px) scale(1.03) !important;
+        z-index: 50 !important;
+    }
+
+    /* MODAL DE CONFIRMAÇÃO DE SAÍDA */
+    #modal-sair-overlay {
+        position: fixed; inset: 0; z-index: 40000; display: none;
+        align-items: center; justify-content: center; background: rgba(0,0,0,0.88);
+        backdrop-filter: blur(8px); padding: 20px;
+    }
+    #modal-sair-overlay.active { display: flex !important; }
+    #modal-sair-box {
+        background: linear-gradient(160deg, #1f1435, #0c0817); border: 2px solid #d480ff; border-radius: 20px;
+        padding: 24px; width: min(90vw, 420px); display: flex; flex-direction: column; gap: 14px; text-align: center;
+        box-shadow: 0 0 35px rgba(176, 38, 255, 0.45); color: #fff;
+    }
+    #modal-sair-titulo { font: 900 20px var(--font-title); color: #d480ff; letter-spacing: 2px; }
+    #modal-sair-sub { font-size: 14px; color: #ddd; margin: 0; }
+    .modal-sair-acoes { display: flex; gap: 10px; margin-top: 10px; }
+    .modal-sair-acoes button {
+        flex: 1; padding: 12px; border: none; border-radius: 12px;
+        font: 800 14px var(--font-title); cursor: pointer;
+    }
+    #btn-cancelar-sair { background: #333; color: #fff; }
+    #btn-confirmar-sair {
+        background: linear-gradient(135deg, #b026ff, #7a00e6); color: #fff;
+        box-shadow: 0 0 20px rgba(176, 38, 255, 0.6);
+    }
+
+    /* Tela de Logo pos-contagem */
+    #logo-tela-overlay {
+        position: absolute; inset: 0; z-index: 20000;
+        background: #000; display: none; align-items: center; justify-content: center;
+        opacity: 0; transition: opacity 0.3s ease;
+    }
+    #logo-tela-overlay.ativo { display: flex !important; opacity: 1 !important; }
+    #logo-tela-img {
+        max-width: 75%; max-height: 75%; object-fit: contain;
+        filter: drop-shadow(0 0 35px rgba(0,255,255,0.45));
+        animation: zoomLogoAparecer 1.8s ease-out forwards;
+    }
+    @keyframes zoomLogoAparecer {
+        0% { transform: scale(0.92); opacity: 0.2; }
+        20% { opacity: 1; }
+        100% { transform: scale(1.03); opacity: 1; }
+    }
+
+    /* Campo de busca no Catalogo */
+    .cat-busca-box { display: flex; gap: 8px; margin: 4px 0 10px; width: 100%; }
+    #cat-campo-busca {
+        flex: 1; padding: 12px 18px; border-radius: 14px;
+        border: 2px solid var(--neon); background: rgba(0,0,0,0.65);
+        color: #fff; font-size: 16px; font-family: var(--font-title); font-weight: 700; outline: none;
+    }
+    #cat-campo-busca:focus { border-color: var(--magenta); box-shadow: 0 0 15px rgba(255,0,255,0.4); }
+    #cat-btn-limpar-busca {
+        padding: 10px 18px; border-radius: 14px; border: 0; background: #333; color: #fff;
+        font-weight: 900; font-family: var(--font-title); font-size: 13px; cursor: pointer;
+    }
+
+    /* Modal de Duplicados (Codigo 0000) */
+    #modal-duplicados-overlay {
+        position: fixed; inset: 0; z-index: 35000; display: none;
+        align-items: center; justify-content: center; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); padding: 20px;
+    }
+    #modal-duplicados-overlay.active { display: flex !important; }
+    #modal-duplicados-box {
+        background: linear-gradient(160deg, #181226, #090812); border: 2px solid var(--vivid-yellow); border-radius: 20px;
+        padding: 24px; width: min(92vw, 650px); max-height: 85vh; display: flex; flex-direction: column; gap: 14px;
+        box-shadow: 0 0 40px rgba(255,221,0,0.3); color: #fff;
+    }
+    #modal-duplicados-titulo { font: 900 20px var(--font-title); color: var(--vivid-yellow); text-align: center; letter-spacing: 2px; }
+    #modal-duplicados-lista { flex: 1; overflow-y: auto; max-height: 45vh; display: flex; flex-direction: column; gap: 8px; padding-right: 6px; }
+    .item-dup { background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 10px; border-left: 4px solid #ff4444; font-size: 13px; }
+    .item-dup b { color: var(--neon); display: block; margin-bottom: 2px; }
+    .item-dup small { color: #aaa; word-break: break-all; }
+    .modal-dup-acoes { display: flex; gap: 10px; margin-top: 6px; }
+    .modal-dup-acoes button { flex: 1; padding: 14px; border: none; border-radius: 12px; font: 800 14px var(--font-title); cursor: pointer; }
+    #btn-fechar-dup { background: #333; color: #fff; }
+    #btn-remover-dup { background: #ff2244; color: #fff; box-shadow: 0 0 20px rgba(255,34,68,0.5); }
+    
+</style>
     <style>
       html.android-tv :focus, html.android-tv button:focus, html.android-tv input:focus {
         outline: 3px solid #00ffff !important; outline-offset: 3px;
       }
-    </style>
+    
+    /* BLOQUEIO TOTAL E ABSOLUTO DO PALCO INICIAL */
+    #ui-wrapper.oculto-inicio,
+    #ui-wrapper:not(.liberado) {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    #ui-wrapper.liberado {
+        display: grid !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+    }
+
+    /* ELIMINA ÍCONE NATIVO DE PLAY */
+    video {
+        outline: none !important;
+        background-color: transparent !important;
+    }
+    video::-webkit-media-controls,
+    video::-webkit-media-controls-start-playback-button,
+    video::-webkit-media-controls-play-button,
+    video::-webkit-media-controls-overlay-play-button,
+    video::-webkit-media-controls-panel,
+    video::-webkit-media-controls-enclosure {
+        display: none !important;
+        -webkit-appearance: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* ADAPTAÇÃO PARA TOQUE EM CELULARES E CURSOR DO MOUSE */
+    * {
+        -webkit-tap-highlight-color: transparent !important;
+        box-sizing: border-box !important;
+    }
+    button {
+        touch-action: manipulation !important;
+    }
+
+    /* BOTÃO SAIR FIXO NO CANTO SUPERIOR ESQUERDO (ONDE PASSA O LETREIRO) */
+    .btn-sair-topo-fixo {
+        position: fixed !important;
+        top: 10px !important;
+        left: 14px !important;
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 12px !important;
+        background: rgba(10, 6, 20, 0.75) !important;
+        border: 1.5px solid rgba(212, 128, 255, 0.6) !important;
+        backdrop-filter: blur(8px) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        color: #d480ff !important;
+        box-shadow: 0 0 15px rgba(176, 38, 255, 0.4) !important;
+        z-index: 99999 !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-sair-topo-fixo:hover,
+    .btn-sair-topo-fixo:focus,
+    .btn-sair-topo-fixo:focus-visible {
+        background: rgba(176, 38, 255, 0.4) !important;
+        border-color: #ffffff !important;
+        box-shadow: 0 0 22px rgba(212, 128, 255, 0.8) !important;
+        transform: scale(1.08) !important;
+        outline: none !important;
+    }
+    .btn-sair-topo-fixo svg {
+        width: 20px !important;
+        height: 20px !important;
+        fill: none !important;
+        stroke: currentColor !important;
+        stroke-width: 2.2 !important;
+        stroke-linecap: round !important;
+        stroke-linejoin: round !important;
+    }
+
+    /* DÁ RESPIRO PARA O LETREIRO NÃO COLIDIR COM O BOTÃO SAIR */
+    marquee, .letreiro, #letreiro, [class*="letreiro"], .ticker, [class*="ticker"] {
+        padding-left: 56px !important;
+    }
+
+    /* BOTÕES PARAR E LIMPAR DIVIDINDO 50% DA LARGURA CADA */
+    .btn-parar, .btn-limpar {
+        flex: 1 1 0% !important;
+        width: 50% !important;
+        min-width: 0 !important;
+        height: 68px !important;
+        border-radius: 22px !important;
+        font-family: var(--font-title, sans-serif) !important;
+        font-weight: 900 !important;
+        font-size: 16px !important;
+        letter-spacing: 2px !important;
+        text-transform: uppercase !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        border: none !important;
+        box-sizing: border-box !important;
+        padding: 0 8px !important;
+        transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease !important;
+    }
+    .btn-parar span, .btn-limpar span {
+        font-size: 16px !important;
+        letter-spacing: 2px !important;
+        white-space: nowrap !important;
+        pointer-events: none !important;
+    }
+
+    /* PARAR: LARANJA / ÂMBAR 3D GLOSSY COM TEXTO BRANCO */
+    .btn-parar {
+        background: linear-gradient(180deg, #ff9e1b 0%, #f97316 55%, #c2410c 100%) !important;
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+        box-shadow: 0 8px 25px rgba(249, 115, 22, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
+    }
+
+    /* LIMPAR: VERMELHO RUBI 3D GLOSSY COM TEXTO BRANCO */
+    .btn-limpar {
+        background: linear-gradient(180deg, #ff2e51 0%, #ef4444 55%, #b91c1c 100%) !important;
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
+    }
+
+    /* NAVEGAÇÃO POR CONTROLE REMOTO (SMART TV / TV BOX D-PAD): HALO BRILHANTE */
+    .btn-parar:focus,
+    .btn-parar:focus-visible,
+    .btn-limpar:focus,
+    .btn-limpar:focus-visible,
+    .btn-control:focus,
+    .btn-control:focus-visible,
+    button:focus-visible {
+        outline: 3px solid #ffffff !important;
+        box-shadow: 0 0 25px #ffffff, 0 0 35px rgba(255, 255, 255, 0.8) !important;
+        transform: translateY(-2px) scale(1.03) !important;
+        z-index: 50 !important;
+    }
+
+    /* MODAL DE CONFIRMAÇÃO DE SAÍDA */
+    #modal-sair-overlay {
+        position: fixed; inset: 0; z-index: 40000; display: none;
+        align-items: center; justify-content: center; background: rgba(0,0,0,0.88);
+        backdrop-filter: blur(8px); padding: 20px;
+    }
+    #modal-sair-overlay.active { display: flex !important; }
+    #modal-sair-box {
+        background: linear-gradient(160deg, #1f1435, #0c0817); border: 2px solid #d480ff; border-radius: 20px;
+        padding: 24px; width: min(90vw, 420px); display: flex; flex-direction: column; gap: 14px; text-align: center;
+        box-shadow: 0 0 35px rgba(176, 38, 255, 0.45); color: #fff;
+    }
+    #modal-sair-titulo { font: 900 20px var(--font-title); color: #d480ff; letter-spacing: 2px; }
+    #modal-sair-sub { font-size: 14px; color: #ddd; margin: 0; }
+    .modal-sair-acoes { display: flex; gap: 10px; margin-top: 10px; }
+    .modal-sair-acoes button {
+        flex: 1; padding: 12px; border: none; border-radius: 12px;
+        font: 800 14px var(--font-title); cursor: pointer;
+    }
+    #btn-cancelar-sair { background: #333; color: #fff; }
+    #btn-confirmar-sair {
+        background: linear-gradient(135deg, #b026ff, #7a00e6); color: #fff;
+        box-shadow: 0 0 20px rgba(176, 38, 255, 0.6);
+    }
+
+    /* Tela de Logo pos-contagem */
+    #logo-tela-overlay {
+        position: absolute; inset: 0; z-index: 20000;
+        background: #000; display: none; align-items: center; justify-content: center;
+        opacity: 0; transition: opacity 0.3s ease;
+    }
+    #logo-tela-overlay.ativo { display: flex !important; opacity: 1 !important; }
+    #logo-tela-img {
+        max-width: 75%; max-height: 75%; object-fit: contain;
+        filter: drop-shadow(0 0 35px rgba(0,255,255,0.45));
+        animation: zoomLogoAparecer 1.8s ease-out forwards;
+    }
+    @keyframes zoomLogoAparecer {
+        0% { transform: scale(0.92); opacity: 0.2; }
+        20% { opacity: 1; }
+        100% { transform: scale(1.03); opacity: 1; }
+    }
+
+    /* Campo de busca no Catalogo */
+    .cat-busca-box { display: flex; gap: 8px; margin: 4px 0 10px; width: 100%; }
+    #cat-campo-busca {
+        flex: 1; padding: 12px 18px; border-radius: 14px;
+        border: 2px solid var(--neon); background: rgba(0,0,0,0.65);
+        color: #fff; font-size: 16px; font-family: var(--font-title); font-weight: 700; outline: none;
+    }
+    #cat-campo-busca:focus { border-color: var(--magenta); box-shadow: 0 0 15px rgba(255,0,255,0.4); }
+    #cat-btn-limpar-busca {
+        padding: 10px 18px; border-radius: 14px; border: 0; background: #333; color: #fff;
+        font-weight: 900; font-family: var(--font-title); font-size: 13px; cursor: pointer;
+    }
+
+    /* Modal de Duplicados (Codigo 0000) */
+    #modal-duplicados-overlay {
+        position: fixed; inset: 0; z-index: 35000; display: none;
+        align-items: center; justify-content: center; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); padding: 20px;
+    }
+    #modal-duplicados-overlay.active { display: flex !important; }
+    #modal-duplicados-box {
+        background: linear-gradient(160deg, #181226, #090812); border: 2px solid var(--vivid-yellow); border-radius: 20px;
+        padding: 24px; width: min(92vw, 650px); max-height: 85vh; display: flex; flex-direction: column; gap: 14px;
+        box-shadow: 0 0 40px rgba(255,221,0,0.3); color: #fff;
+    }
+    #modal-duplicados-titulo { font: 900 20px var(--font-title); color: var(--vivid-yellow); text-align: center; letter-spacing: 2px; }
+    #modal-duplicados-lista { flex: 1; overflow-y: auto; max-height: 45vh; display: flex; flex-direction: column; gap: 8px; padding-right: 6px; }
+    .item-dup { background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 10px; border-left: 4px solid #ff4444; font-size: 13px; }
+    .item-dup b { color: var(--neon); display: block; margin-bottom: 2px; }
+    .item-dup small { color: #aaa; word-break: break-all; }
+    .modal-dup-acoes { display: flex; gap: 10px; margin-top: 6px; }
+    .modal-dup-acoes button { flex: 1; padding: 14px; border: none; border-radius: 12px; font: 800 14px var(--font-title); cursor: pointer; }
+    #btn-fechar-dup { background: #333; color: #fff; }
+    #btn-remover-dup { background: #ff2244; color: #fff; box-shadow: 0 0 20px rgba(255,34,68,0.5); }
+    
+</style>
     <style id="tema-pro">
     /* ==========================================================================
        TEMA PROFISSIONAL — PAISAGEM FIXA PARA SMART TV (Android TV)
@@ -1331,7 +1777,230 @@
     /* ---------- Foco do controle remoto (bem visível de longe) ---------- */
     html.android-tv :focus, html.android-tv button:focus, html.android-tv input:focus { outline: .5vh solid var(--vivid-yellow) !important; outline-offset: .4vh; }
     #marca-agua { font-family: var(--font-title); }
-    </style>
+    
+    /* BLOQUEIO TOTAL E ABSOLUTO DO PALCO INICIAL */
+    #ui-wrapper.oculto-inicio,
+    #ui-wrapper:not(.liberado) {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    #ui-wrapper.liberado {
+        display: grid !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+    }
+
+    /* ELIMINA ÍCONE NATIVO DE PLAY */
+    video {
+        outline: none !important;
+        background-color: transparent !important;
+    }
+    video::-webkit-media-controls,
+    video::-webkit-media-controls-start-playback-button,
+    video::-webkit-media-controls-play-button,
+    video::-webkit-media-controls-overlay-play-button,
+    video::-webkit-media-controls-panel,
+    video::-webkit-media-controls-enclosure {
+        display: none !important;
+        -webkit-appearance: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* ADAPTAÇÃO PARA TOQUE EM CELULARES E CURSOR DO MOUSE */
+    * {
+        -webkit-tap-highlight-color: transparent !important;
+        box-sizing: border-box !important;
+    }
+    button {
+        touch-action: manipulation !important;
+    }
+
+    /* BOTÃO SAIR FIXO NO CANTO SUPERIOR ESQUERDO (ONDE PASSA O LETREIRO) */
+    .btn-sair-topo-fixo {
+        position: fixed !important;
+        top: 10px !important;
+        left: 14px !important;
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 12px !important;
+        background: rgba(10, 6, 20, 0.75) !important;
+        border: 1.5px solid rgba(212, 128, 255, 0.6) !important;
+        backdrop-filter: blur(8px) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        color: #d480ff !important;
+        box-shadow: 0 0 15px rgba(176, 38, 255, 0.4) !important;
+        z-index: 99999 !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-sair-topo-fixo:hover,
+    .btn-sair-topo-fixo:focus,
+    .btn-sair-topo-fixo:focus-visible {
+        background: rgba(176, 38, 255, 0.4) !important;
+        border-color: #ffffff !important;
+        box-shadow: 0 0 22px rgba(212, 128, 255, 0.8) !important;
+        transform: scale(1.08) !important;
+        outline: none !important;
+    }
+    .btn-sair-topo-fixo svg {
+        width: 20px !important;
+        height: 20px !important;
+        fill: none !important;
+        stroke: currentColor !important;
+        stroke-width: 2.2 !important;
+        stroke-linecap: round !important;
+        stroke-linejoin: round !important;
+    }
+
+    /* DÁ RESPIRO PARA O LETREIRO NÃO COLIDIR COM O BOTÃO SAIR */
+    marquee, .letreiro, #letreiro, [class*="letreiro"], .ticker, [class*="ticker"] {
+        padding-left: 56px !important;
+    }
+
+    /* BOTÕES PARAR E LIMPAR DIVIDINDO 50% DA LARGURA CADA */
+    .btn-parar, .btn-limpar {
+        flex: 1 1 0% !important;
+        width: 50% !important;
+        min-width: 0 !important;
+        height: 68px !important;
+        border-radius: 22px !important;
+        font-family: var(--font-title, sans-serif) !important;
+        font-weight: 900 !important;
+        font-size: 16px !important;
+        letter-spacing: 2px !important;
+        text-transform: uppercase !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        border: none !important;
+        box-sizing: border-box !important;
+        padding: 0 8px !important;
+        transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease !important;
+    }
+    .btn-parar span, .btn-limpar span {
+        font-size: 16px !important;
+        letter-spacing: 2px !important;
+        white-space: nowrap !important;
+        pointer-events: none !important;
+    }
+
+    /* PARAR: LARANJA / ÂMBAR 3D GLOSSY COM TEXTO BRANCO */
+    .btn-parar {
+        background: linear-gradient(180deg, #ff9e1b 0%, #f97316 55%, #c2410c 100%) !important;
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+        box-shadow: 0 8px 25px rgba(249, 115, 22, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
+    }
+
+    /* LIMPAR: VERMELHO RUBI 3D GLOSSY COM TEXTO BRANCO */
+    .btn-limpar {
+        background: linear-gradient(180deg, #ff2e51 0%, #ef4444 55%, #b91c1c 100%) !important;
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
+    }
+
+    /* NAVEGAÇÃO POR CONTROLE REMOTO (SMART TV / TV BOX D-PAD): HALO BRILHANTE */
+    .btn-parar:focus,
+    .btn-parar:focus-visible,
+    .btn-limpar:focus,
+    .btn-limpar:focus-visible,
+    .btn-control:focus,
+    .btn-control:focus-visible,
+    button:focus-visible {
+        outline: 3px solid #ffffff !important;
+        box-shadow: 0 0 25px #ffffff, 0 0 35px rgba(255, 255, 255, 0.8) !important;
+        transform: translateY(-2px) scale(1.03) !important;
+        z-index: 50 !important;
+    }
+
+    /* MODAL DE CONFIRMAÇÃO DE SAÍDA */
+    #modal-sair-overlay {
+        position: fixed; inset: 0; z-index: 40000; display: none;
+        align-items: center; justify-content: center; background: rgba(0,0,0,0.88);
+        backdrop-filter: blur(8px); padding: 20px;
+    }
+    #modal-sair-overlay.active { display: flex !important; }
+    #modal-sair-box {
+        background: linear-gradient(160deg, #1f1435, #0c0817); border: 2px solid #d480ff; border-radius: 20px;
+        padding: 24px; width: min(90vw, 420px); display: flex; flex-direction: column; gap: 14px; text-align: center;
+        box-shadow: 0 0 35px rgba(176, 38, 255, 0.45); color: #fff;
+    }
+    #modal-sair-titulo { font: 900 20px var(--font-title); color: #d480ff; letter-spacing: 2px; }
+    #modal-sair-sub { font-size: 14px; color: #ddd; margin: 0; }
+    .modal-sair-acoes { display: flex; gap: 10px; margin-top: 10px; }
+    .modal-sair-acoes button {
+        flex: 1; padding: 12px; border: none; border-radius: 12px;
+        font: 800 14px var(--font-title); cursor: pointer;
+    }
+    #btn-cancelar-sair { background: #333; color: #fff; }
+    #btn-confirmar-sair {
+        background: linear-gradient(135deg, #b026ff, #7a00e6); color: #fff;
+        box-shadow: 0 0 20px rgba(176, 38, 255, 0.6);
+    }
+
+    /* Tela de Logo pos-contagem */
+    #logo-tela-overlay {
+        position: absolute; inset: 0; z-index: 20000;
+        background: #000; display: none; align-items: center; justify-content: center;
+        opacity: 0; transition: opacity 0.3s ease;
+    }
+    #logo-tela-overlay.ativo { display: flex !important; opacity: 1 !important; }
+    #logo-tela-img {
+        max-width: 75%; max-height: 75%; object-fit: contain;
+        filter: drop-shadow(0 0 35px rgba(0,255,255,0.45));
+        animation: zoomLogoAparecer 1.8s ease-out forwards;
+    }
+    @keyframes zoomLogoAparecer {
+        0% { transform: scale(0.92); opacity: 0.2; }
+        20% { opacity: 1; }
+        100% { transform: scale(1.03); opacity: 1; }
+    }
+
+    /* Campo de busca no Catalogo */
+    .cat-busca-box { display: flex; gap: 8px; margin: 4px 0 10px; width: 100%; }
+    #cat-campo-busca {
+        flex: 1; padding: 12px 18px; border-radius: 14px;
+        border: 2px solid var(--neon); background: rgba(0,0,0,0.65);
+        color: #fff; font-size: 16px; font-family: var(--font-title); font-weight: 700; outline: none;
+    }
+    #cat-campo-busca:focus { border-color: var(--magenta); box-shadow: 0 0 15px rgba(255,0,255,0.4); }
+    #cat-btn-limpar-busca {
+        padding: 10px 18px; border-radius: 14px; border: 0; background: #333; color: #fff;
+        font-weight: 900; font-family: var(--font-title); font-size: 13px; cursor: pointer;
+    }
+
+    /* Modal de Duplicados (Codigo 0000) */
+    #modal-duplicados-overlay {
+        position: fixed; inset: 0; z-index: 35000; display: none;
+        align-items: center; justify-content: center; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); padding: 20px;
+    }
+    #modal-duplicados-overlay.active { display: flex !important; }
+    #modal-duplicados-box {
+        background: linear-gradient(160deg, #181226, #090812); border: 2px solid var(--vivid-yellow); border-radius: 20px;
+        padding: 24px; width: min(92vw, 650px); max-height: 85vh; display: flex; flex-direction: column; gap: 14px;
+        box-shadow: 0 0 40px rgba(255,221,0,0.3); color: #fff;
+    }
+    #modal-duplicados-titulo { font: 900 20px var(--font-title); color: var(--vivid-yellow); text-align: center; letter-spacing: 2px; }
+    #modal-duplicados-lista { flex: 1; overflow-y: auto; max-height: 45vh; display: flex; flex-direction: column; gap: 8px; padding-right: 6px; }
+    .item-dup { background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 10px; border-left: 4px solid #ff4444; font-size: 13px; }
+    .item-dup b { color: var(--neon); display: block; margin-bottom: 2px; }
+    .item-dup small { color: #aaa; word-break: break-all; }
+    .modal-dup-acoes { display: flex; gap: 10px; margin-top: 6px; }
+    .modal-dup-acoes button { flex: 1; padding: 14px; border: none; border-radius: 12px; font: 800 14px var(--font-title); cursor: pointer; }
+    #btn-fechar-dup { background: #333; color: #fff; }
+    #btn-remover-dup { background: #ff2244; color: #fff; box-shadow: 0 0 20px rgba(255,34,68,0.5); }
+    
+</style>
     <script>
       (function(){
         var kind = 'phone';
@@ -1342,12 +2011,250 @@
         if (kind === 'phone') document.documentElement.classList.add('android-phone');
       })();
     </script>
+
+<style id="ajustes-cirurgicos-festa-das-cores">
+    /* 12. Visual degradê neon e sombreamento/contornos refinados sem mudar layout ou botões */
+    #ui-wrapper {
+        background: radial-gradient(circle at 15% 15%, rgba(0, 255, 255, 0.08), transparent 45%),
+                    radial-gradient(circle at 85% 85%, rgba(255, 0, 255, 0.10), transparent 50%),
+                    linear-gradient(135deg, #050510 0%, #0b0820 50%, #050510 100%) !important;
+    }
+    .stage {
+        border: 1.5px solid rgba(0, 255, 255, 0.38) !important;
+        box-shadow: 0 0 22px rgba(0, 255, 255, 0.22), inset 0 0 18px rgba(255, 0, 255, 0.16) !important;
+    }
+    .ui-panel {
+        background: linear-gradient(180deg, rgba(18, 14, 42, 0.92) 0%, rgba(9, 7, 22, 0.96) 100%) !important;
+        border: 1.5px solid rgba(255, 0, 255, 0.35) !important;
+        box-shadow: 0 0 24px rgba(139, 92, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    }
+    #btn-teclado, #btn-catalogo, #btn-play-bar, .btn-parar, .btn-limpar {
+        border: 1.5px solid rgba(255, 255, 255, 0.28) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55), 0 0 16px rgba(0, 255, 255, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.45) !important;
+    }
+    #btn-teclado:focus, #btn-catalogo:focus, #btn-play-bar:focus, .btn-parar:focus, .btn-limpar:focus,
+    #btn-sair-app-fixo:focus, .btn-bar-transp:focus, #btn-tela-canto:focus {
+        outline: 3px solid #ffd60a !important;
+        box-shadow: 0 0 22px #ffd60a, 0 0 38px rgba(0, 255, 255, 0.75) !important;
+    }
+
+    /* 5. BGs do palco principal 100% nítidos (sem opacidade embaçada), mantendo texto legível na frente */
+    .stage-background, #main-bg {
+        opacity: 1 !important;
+        filter: contrast(1.04) saturate(1.08) !important;
+        -webkit-filter: contrast(1.04) saturate(1.08) !important;
+    }
+    body.countdown-ativo .stage-background,
+    body.countdown-ativo #main-bg {
+        opacity: 0 !important;
+    }
+    #bg-video-palco {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 1;
+        opacity: 1 !important;
+        pointer-events: none;
+        display: none;
+    }
+    #idle-hero {
+        background: radial-gradient(ellipse at center, rgba(6, 5, 26, 0.14) 0%, rgba(6, 5, 26, 0.42) 100%) !important;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95), 0 0 20px rgba(0, 0, 0, 0.9) !important;
+    }
+
+    /* 8. Camada de capa do artista na contagem regressiva: paisagem inteira sem esticar/cortar + efeito glass suave nas bordas */
+    #capa-artista-glass-bg {
+        position: absolute;
+        inset: -20px;
+        background-size: cover;
+        background-position: center center;
+        filter: blur(22px) brightness(0.62) saturate(1.25);
+        -webkit-filter: blur(22px) brightness(0.62) saturate(1.25);
+        z-index: 1;
+        opacity: 0;
+        transition: opacity 0.35s ease;
+        pointer-events: none;
+    }
+    #capa-artista-glass-bg.ativo {
+        opacity: 1 !important;
+    }
+    #bg-singer-layer, #bg-singer-layer-2 {
+        background-size: contain !important;
+        background-position: center center !important;
+        background-repeat: no-repeat !important;
+        filter: drop-shadow(0 8px 28px rgba(0, 0, 0, 0.85)) !important;
+        -webkit-filter: drop-shadow(0 8px 28px rgba(0, 0, 0, 0.85)) !important;
+    }
+
+    /* 6. Modo Rockdoido: raios cinematográficos mais intensos e frequentes alternando esbranquiçado e azulado */
+    #raio-flash {
+        background: radial-gradient(ellipse at 50% 25%,
+            rgba(255, 255, 255, 0.68) 0%,
+            rgba(185, 225, 255, 0.52) 28%,
+            rgba(90, 165, 255, 0.30) 55%,
+            rgba(0, 0, 0, 0) 100%) !important;
+        mix-blend-mode: screen !important;
+    }
+    #raio-flash.azul {
+        background: radial-gradient(ellipse at 50% 25%,
+            rgba(170, 225, 255, 0.72) 0%,
+            rgba(65, 155, 255, 0.55) 32%,
+            rgba(30, 95, 255, 0.32) 60%,
+            rgba(0, 0, 0, 0) 100%) !important;
+    }
+    #raio-flash.ativo { animation: flashRaioCinema 0.42s ease-out !important; }
+    @keyframes flashRaioCinema {
+        0% { opacity: 0; }
+        6% { opacity: 1; }
+        16% { opacity: 0.25; }
+        28% { opacity: 0.95; }
+        45% { opacity: 0.35; }
+        100% { opacity: 0; }
+    }
+
+    /* 1 & 9. Botão Sair ao lado do contador da fila sem sobrepor; some com fila > 0 e aparece quando fila == 0 */
+    .panel-head {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+    }
+    .panel-head-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        flex-shrink: 0 !important;
+    }
+    .btn-sair-topo-fixo, #btn-sair-app-fixo {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 50% !important;
+        background: linear-gradient(145deg, rgba(255, 47, 185, 0.28), rgba(139, 92, 246, 0.32)) !important;
+        border: 1.5px solid rgba(255, 110, 210, 0.75) !important;
+        color: #ffffff !important;
+        box-shadow: 0 0 14px rgba(255, 47, 185, 0.45) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        flex-shrink: 0 !important;
+        z-index: 20 !important;
+    }
+    #btn-sair-app-fixo.oculto-fila {
+        display: none !important;
+    }
+
+    /* 10. QRCode lista (qrlista.png) fixo no centro da área da fila quando vazio, alternável por 999999999 */
+    #track-list {
+        position: relative !important;
+    }
+    #qrlista-container {
+        position: absolute;
+        inset: 12px;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        pointer-events: none;
+        z-index: 5;
+    }
+    #qrlista-container.visivel {
+        display: flex !important;
+    }
+    #qrlista-container img {
+        max-width: 78%;
+        max-height: 78%;
+        object-fit: contain;
+        border-radius: 16px;
+        border: 2px solid rgba(0, 255, 255, 0.55);
+        box-shadow: 0 0 24px rgba(0, 255, 255, 0.35), 0 0 36px rgba(255, 0, 255, 0.25);
+        background: rgba(255, 255, 255, 0.96);
+        padding: 8px;
+    }
+    #qrlista-container span {
+        font-family: var(--font-title);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        color: var(--neon);
+        text-shadow: 0 0 8px rgba(0, 0, 0, 0.95);
+        background: rgba(5, 5, 16, 0.75);
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 255, 255, 0.35);
+    }
+    #track-list.com-qr:empty::before {
+        display: none !important;
+        content: none !important;
+    }
+
+    /* 13. Barra de progresso 100% transparente sem efeito glass, clicável/arrastável no celular para adiantar/retroceder */
+    #stage-progress-container {
+        background: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: 1px solid rgba(255, 255, 255, 0.28) !important;
+        box-shadow: none !important;
+        cursor: pointer !important;
+    }
+    #stage-progress-bar-bg {
+        height: 10px !important;
+        background: rgba(255, 255, 255, 0.22) !important;
+        cursor: pointer !important;
+        touch-action: none !important;
+    }
+    #stage-progress-fill {
+        transition: width 0.08s linear !important;
+    }
+    .btn-bar-transp, #btn-tela-canto {
+        background: rgba(0, 0, 0, 0.28) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    /* 14. Letreiro com fundo transparente percorrendo o palco todo em velocidade confortável de leitura */
+    #marquee-container {
+        background: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        width: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+    }
+    #marquee-container.modo-fila {
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+    marquee, .letreiro, #letreiro, [class*="letreiro"], .ticker, [class*="ticker"] {
+        padding-left: 0 !important;
+    }
+    #marquee-text {
+        animation: marqueePalcoCompleto 28s linear infinite !important;
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.98), 0 0 12px rgba(0, 0, 0, 0.95), 0 0 6px rgba(255, 221, 0, 0.55) !important;
+    }
+    @keyframes marqueePalcoCompleto {
+        0%   { transform: translateX(100vw); }
+        100% { transform: translateX(-100%); }
+    }
+</style>
+
 </head>
 <body oncontextmenu="return false;">
 
     <!-- TELA DA INTRO EM VÍDEO (intro.mp4 na raiz) -->
     <div id="intro-screen">
-        <video id="intro-video" playsinline autoplay preload="auto">
+        <video id="intro-video" playsinline autoplay preload="auto" playsinline webkit-playsinline preload="auto">
             <source src="intro.mp4" type="video/mp4">
         </video>
         <div id="intro-curtain" aria-hidden="true"></div>
@@ -1443,9 +2350,11 @@
         <div class="diag-fechar">Ctrl+Shift+D para abrir/fechar</div>
     </div>
 
-    <div id="ui-wrapper">
+    <div id="ui-wrapper" class="oculto-inicio" style="display: none !important; opacity: 0 !important; visibility: hidden !important;">
         <div class="stage" id="stage-area">
             <div class="stage-background" id="main-bg" style="background-image: url('bgpadrao.jpg');"></div>
+            <video id="bg-video-palco" muted loop playsinline webkit-playsinline></video>
+            <div id="capa-artista-glass-bg"></div>
 
             <div id="bg-singer-layer"></div>
             <div id="bg-singer-layer-2"></div>
@@ -1488,7 +2397,7 @@
                 <div class="chuva-zona" id="chuva-zona-5"></div>
             </div>
 
-            <video id="video-player" playsinline></video>
+            <video id="video-player" playsinline playsinline webkit-playsinline preload="auto"></video>
             <audio id="audio-jb" loop></audio>
 
             <div id="idle-hero" aria-hidden="true">
@@ -1593,31 +2502,10 @@
             </div>
             <div class="controls-grid">
 <button type="button" class="btn-control btn-parar" tabindex="3" onclick="stopAudio()" title="Parar música">
-                    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <circle cx="32" cy="34" r="24" fill="#8a4400" opacity="0.4" transform="translate(0,2)"/>
-                        <circle cx="32" cy="32" r="24" fill="#ff8800" stroke="#8a4400" stroke-width="1.5"/>
-                        <circle cx="32" cy="32" r="19" fill="#0a0a0a" stroke="#5a2c00" stroke-width="1"/>
-                        <circle cx="32" cy="32" r="16" fill="none" stroke="#ffb340" stroke-width="1.5" opacity="0.5"/>
-                        <rect x="24" y="24" width="16" height="16" rx="2" fill="#ffb340" stroke="#8a4400" stroke-width="1.2" stroke-linejoin="round"/>
-                        <rect x="25" y="25" width="6" height="6" rx="1" fill="#ffffff" opacity="0.4"/>
-                        <ellipse cx="22" cy="18" rx="6" ry="3" fill="#ffffff" opacity="0.35" transform="rotate(-30 22 18)"/>
-                        <path d="M 48 22 Q 52 28 48 42" stroke="#ffffff" stroke-width="1.5" fill="none" opacity="0.25" stroke-linecap="round"/>
-                    </svg>
                     <span>PARAR</span>
                 </button>
 
                 <button type="button" class="btn-control btn-limpar" tabindex="4" onclick="limparLista()" title="Limpar fila de músicas">
-                    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <rect x="18" y="20" width="28" height="36" rx="2" fill="#7a0000" opacity="0.35" transform="translate(0,2)"/>
-                        <path d="M18 22 L18 52 Q18 56 22 56 L42 56 Q46 56 46 52 L46 22 Z" fill="#dd0000" stroke="#990000" stroke-width="1.5" stroke-linejoin="round"/>
-                        <path d="M20 22 L20 52 Q20 54 22 54 L26 54 L26 22 Z" fill="#ff6666" opacity="0.5"/>
-                        <rect x="14" y="16" width="36" height="6" rx="2" fill="#ff2222" stroke="#990000" stroke-width="1.5"/>
-                        <rect x="26" y="12" width="12" height="5" rx="2" fill="#ff4444" stroke="#990000" stroke-width="1.2"/>
-                        <line x1="26" y1="28" x2="26" y2="50" stroke="#7a0000" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
-                        <line x1="32" y1="28" x2="32" y2="50" stroke="#7a0000" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
-                        <line x1="38" y1="28" x2="38" y2="50" stroke="#7a0000" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
-                        <rect x="19" y="23" width="4" height="26" rx="1" fill="#ffffff" opacity="0.35"/>
-                    </svg>
                     <span>LIMPAR</span>
                 </button>
             </div>
@@ -1650,7 +2538,12 @@
                 <button type="button" id="cat-trocar-pasta" onclick="trocarPasta()">TROCAR PASTA</button>
                 <button type="button" id="cat-fechar" onclick="fecharCatalogo()">FECHAR ✕</button>
             </div>
-            <div id="cat-letras"></div>
+            
+    <div class="cat-busca-box">
+        <input type="text" id="cat-campo-busca" placeholder="🔍 Pesquisar por música, cantor ou código..." oninput="filtrarBuscaCatalogo(this.value)">
+        <button type="button" id="cat-btn-limpar-busca" onclick="limparBuscaCatalogo()">LIMPAR</button>
+    </div>
+    <div id="cat-letras"></div>
             <div id="cat-lista"></div>
         </div>
     </div>
@@ -1682,7 +2575,7 @@
         let singerBgInterval = null;
         let screensaverTimer = null;
         let isVideosLoaded = false;
-        let folderLoadFinished = true;
+        let folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores(); }
         let introLoadingTask = null;
         let introScreensaverActive = false;
         let introScreensaverState = null;
@@ -2126,7 +3019,18 @@
 
             introVideo.pause();
             introVideo.currentTime = 0;
-            introScreen.classList.remove('active');
+            
+    introScreen.classList.remove('active');
+    var ui = document.getElementById('ui-wrapper');
+    if (ui) {
+        ui.classList.remove('oculto-inicio');
+        ui.classList.add('liberado');
+        ui.style.display = '';
+        ui.style.opacity = '';
+        ui.style.visibility = '';
+        if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores();
+    }
+    
             if (dispositivoEhCelular()) await restaurarInterfaceCelular();
             else await restaurarInterfaceTV();
             return true;
@@ -2175,7 +3079,18 @@
                 return false;
             }
 
-            introScreen.classList.remove('active');
+            
+    introScreen.classList.remove('active');
+    var ui = document.getElementById('ui-wrapper');
+    if (ui) {
+        ui.classList.remove('oculto-inicio');
+        ui.classList.add('liberado');
+        ui.style.display = '';
+        ui.style.opacity = '';
+        ui.style.visibility = '';
+        if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores();
+    }
+    
             introVideo.pause();
             introVideo.currentTime = 0;
             if (dispositivoEhCelular()) await restaurarInterfaceCelular();
@@ -2393,7 +3308,7 @@
 
             // Choose the internal memory, SD card, or USB drive before showing the start prompt.
             const usaSeletorNativo = !!(window.AndroidHost && AndroidHost.chooseFolder);
-            if (usaSeletorNativo) setTimeout(() => selectFolder(), 700);
+            if (usaSeletorNativo) selectFolder();
             if (verificarNecessitaOverlayOK() && !usaSeletorNativo) {
                 setTimeout(() => mostrarOverlayOK(), 200);
             }
@@ -2866,7 +3781,7 @@
         };
 
         window.onNativeFolderLoadFailed = function() {
-            folderLoadFinished = true;
+            folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores(); }
         };
 
         window.onNativeFolderLoaded = async function(entries, silent) {
@@ -2908,7 +3823,18 @@
                 if (!intro && rockDoidoSlides.length > 0) {
                     const introScreen = document.getElementById('intro-screen');
                     const introVideo = document.getElementById('intro-video');
-                    if (introScreen) introScreen.classList.remove('active');
+                    if (introScreen) 
+    introScreen.classList.remove('active');
+    var ui = document.getElementById('ui-wrapper');
+    if (ui) {
+        ui.classList.remove('oculto-inicio');
+        ui.classList.add('liberado');
+        ui.style.display = '';
+        ui.style.opacity = '';
+        ui.style.visibility = '';
+        if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores();
+    }
+    
                     if (introVideo) introVideo.style.display = 'none';
                     document.getElementById('intro-error').classList.remove('active');
                     document.getElementById('overlay-ok').classList.remove('active');
@@ -3044,7 +3970,18 @@
             introVideo.loop = false;
             introVideo.pause();
             introVideo.currentTime = 0;
-            introScreen.classList.remove('active');
+            
+    introScreen.classList.remove('active');
+    var ui = document.getElementById('ui-wrapper');
+    if (ui) {
+        ui.classList.remove('oculto-inicio');
+        ui.classList.add('liberado');
+        ui.style.display = '';
+        ui.style.opacity = '';
+        ui.style.visibility = '';
+        if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores();
+    }
+    
             introCurtain.classList.add('hidden');
 
             const state = introScreensaverState;
@@ -3096,6 +4033,8 @@
         }
 
         async function handleFolderSelect(e) {
+    window._arquivosCarregadosCache = Array.from(e.target.files); identificarLogoMestra(window._arquivosCarregadosCache);
+
             const files = Array.from(e.target.files);
             if (!files.length) return;
             isVideosLoaded = false;
@@ -3234,7 +4173,7 @@
                     exibirErroIntro('Não encontrei intro.mp4 na pasta escolhida. Selecione a pasta que contém o vídeo de introdução.', true);
                 }
             }
-            folderLoadFinished = true;
+            folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores(); }
             atualizarDiagnostico();
         }
 
@@ -3287,8 +4226,15 @@
             numeroContagem.classList.remove('rodando');
 
             pararCrossfade();
-            timerScreen.classList.remove('active');
-            document.body.classList.remove('countdown-ativo');
+                timerScreen.classList.remove('active');
+                if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }
+                if (_logoUrlObrigatorio) {
+                    await new Promise(resLogo => {
+                        exibirLogoPosContagem(1800, resLogo);
+                    });
+                }
+                document.body.classList.remove('countdown-ativo');
+                if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }
 
             const fileUrl = current.file.isUrl ? current.file.url : (current.file.contentUri || URL.createObjectURL(current.file));
             player.src = fileUrl;
@@ -3384,7 +4330,243 @@
             toggleFullscreenUI();
         }
 
-        function processarCodigo(val) {
+        
+    function aplicarLayoutFestaDasCores() {
+        try {
+            // 1. Remove qualquer botão sair antigo que tenha ficado em local incorreto
+            const botoes = Array.from(document.querySelectorAll('button'));
+            botoes.forEach(b => {
+                if (b.textContent.trim() === 'SAIR' || b.className.includes('btn-sair-topo')) {
+                    b.remove();
+                }
+            });
+
+            // 2. Ajusta os botões PARAR e LIMPAR para 50% cada
+            const btnParar = document.querySelector('.btn-parar') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('PARAR'));
+            const btnLimpar = document.querySelector('.btn-limpar') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('LIMPAR'));
+
+            if (btnParar && btnLimpar) {
+                const pai = btnParar.parentElement;
+                if (pai) {
+                    pai.style.width = '100%';
+                    pai.style.maxWidth = '100%';
+                    pai.style.display = 'flex';
+                    pai.style.flexDirection = 'row';
+                    pai.style.gap = '14px';
+                    pai.style.boxSizing = 'border-box';
+                    pai.style.padding = '0';
+                    pai.style.marginTop = 'auto';
+                }
+                [btnParar, btnLimpar].forEach(b => {
+                    b.style.flex = '1 1 0%';
+                    b.style.width = '50%';
+                    b.style.minWidth = '0';
+                    b.style.height = '68px';
+                    b.style.borderRadius = '22px';
+                    b.style.fontWeight = '900';
+                    b.style.fontSize = '16px';
+                    b.style.letterSpacing = '2px';
+                    b.style.textTransform = 'uppercase';
+                    b.style.border = 'none';
+                    b.style.display = 'flex';
+                    b.style.alignItems = 'center';
+                    b.style.justifyContent = 'center';
+                    b.style.color = '#ffffff';
+                    b.setAttribute('tabindex', '0');
+                });
+                // PARAR: Laranja 3D Glossy
+                btnParar.style.background = 'linear-gradient(180deg, #ff9e1b 0%, #f97316 55%, #c2410c 100%)';
+                btnParar.style.boxShadow = '0 8px 25px rgba(249, 115, 22, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35)';
+                
+                // LIMPAR: Vermelho 3D Glossy
+                btnLimpar.style.background = 'linear-gradient(180deg, #ff2e51 0%, #ef4444 55%, #b91c1c 100%)';
+                btnLimpar.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35)';
+            }
+
+            // 3. INJETA O BOTÃO SAIR FIXO NO CANTO SUPERIOR ESQUERDO (ONDE PASSA O LETREIRO)
+            if (!document.getElementById('btn-sair-app-fixo')) {
+                const btnSair = document.createElement('button');
+                btnSair.id = 'btn-sair-app-fixo';
+                btnSair.className = 'btn-sair-topo-fixo';
+                btnSair.setAttribute('tabindex', '0');
+                btnSair.setAttribute('title', 'Sair do Karaokê');
+                btnSair.innerHTML = '<svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>';
+                btnSair.onclick = pedirConfirmacaoSair;
+                
+                // Insere no ui-wrapper para aparecer junto com a tela do palco
+                const wrapper = document.getElementById('ui-wrapper') || document.body;
+                wrapper.appendChild(btnSair);
+            }
+        } catch(e) { console.error('Erro ao ajustar layout:', e); }
+    }
+
+    window.addEventListener('DOMContentLoaded', aplicarLayoutFestaDasCores);
+    window.addEventListener('load', () => {
+        aplicarLayoutFestaDasCores();
+        setTimeout(aplicarLayoutFestaDasCores, 800);
+    });
+
+    // SUPORTE A CONTROLE REMOTO TV / TECLADO BLUETOOTH / TECLADO USB
+    window.addEventListener('keydown', (e) => {
+        if (/^[0-9]$/.test(e.key)) {
+            if (typeof digitarNumero === 'function') digitarNumero(e.key);
+            else if (typeof handleKeypad === 'function') handleKeypad(e.key);
+        }
+        if (e.key === 'Escape' || e.key === 'GoBack' || e.keyCode === 27 || e.keyCode === 4) {
+            const modSair = document.getElementById('modal-sair-overlay');
+            const modDup = document.getElementById('modal-duplicados-overlay');
+            if (modDup && modDup.classList.contains('active')) fecharModalDuplicados();
+            else if (modSair && modSair.classList.contains('active')) fecharModalSair();
+            else pedirConfirmacaoSair();
+        }
+    });
+
+    let _logoUrlObrigatorio = null;
+    let _bgOficialUrl = null;
+    let _duplicadosEncontrados = [];
+
+    function pedirConfirmacaoSair() {
+        const modal = document.getElementById('modal-sair-overlay');
+        if (modal) modal.classList.add('active');
+        else if (confirm('Deseja realmente fechar o Karaokê?')) confirmarSairApp();
+    }
+    function fecharModalSair() {
+        const modal = document.getElementById('modal-sair-overlay');
+        if (modal) modal.classList.remove('active');
+    }
+    function confirmarSairApp() {
+        fecharModalSair();
+        if (window.AndroidHost && AndroidHost.exitApp) {
+            AndroidHost.exitApp();
+        } else {
+            window.close();
+        }
+    }
+
+    function identificarLogoMestra(files) {
+        _logoUrlObrigatorio = null;
+        _bgOficialUrl = null;
+        for (let f of (files || [])) {
+            const nome = (f.name || '').toLowerCase();
+            const path = (f.webkitRelativePath || f.name).replace(/\\/g, '/');
+            const partes = path.split('/').filter(Boolean);
+
+            if (nome === 'logo.png' && partes.length <= 2) {
+                _logoUrlObrigatorio = f.contentUri || URL.createObjectURL(f);
+            }
+            if (nome === 'bgoficial.png') {
+                _bgOficialUrl = f.contentUri || URL.createObjectURL(f);
+            }
+        }
+        if (!_logoUrlObrigatorio) {
+            for (let f of (files || [])) {
+                if ((f.name || '').toLowerCase() === 'logo.png') {
+                    _logoUrlObrigatorio = f.contentUri || URL.createObjectURL(f);
+                    break;
+                }
+            }
+        }
+    }
+
+    function exibirLogoPosContagem(duracaoMs, callbackFim) {
+        const overlay = document.getElementById('logo-tela-overlay');
+        const img = document.getElementById('logo-tela-img');
+
+        if (!overlay || !_logoUrlObrigatorio) {
+            if (callbackFim) callbackFim();
+            return;
+        }
+
+        img.src = _logoUrlObrigatorio;
+        overlay.classList.add('ativo');
+
+        setTimeout(() => {
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.classList.remove('ativo');
+                overlay.style.opacity = '1';
+                if (callbackFim) callbackFim();
+            }, 250);
+        }, duracaoMs);
+    }
+
+    let _termoBuscaCatalogo = '';
+    function filtrarBuscaCatalogo(val) {
+        _termoBuscaCatalogo = (val || '').trim().toLowerCase();
+        const barraLetras = document.getElementById('cat-letras');
+        if (barraLetras) barraLetras.style.display = _termoBuscaCatalogo ? 'none' : 'flex';
+        renderCatalogo();
+    }
+    function limparBuscaCatalogo() {
+        const campo = document.getElementById('cat-campo-busca');
+        if (campo) campo.value = '';
+        filtrarBuscaCatalogo('');
+    }
+
+    function checarDuplicadosCodigo0000(todosArquivos) {
+        _duplicadosEncontrados = [];
+        const mapTitulos = new Map();
+        const listaArquivos = todosArquivos || [];
+
+        for (let f of listaArquivos) {
+            const nome = f.name || '';
+            if (!/\\.mp4$/i.test(nome) || nome.toLowerCase().startsWith('intro')) continue;
+            const chave = normalizarNome(descricaoDoArquivo(nome) || nome.replace(/\\.mp4$/i, ''));
+            if (!chave) continue;
+
+            if (mapTitulos.has(chave)) {
+                _duplicadosEncontrados.push({ original: mapTitulos.get(chave), duplicado: f, chave: chave });
+            } else {
+                mapTitulos.set(chave, f);
+            }
+        }
+
+        const modal = document.getElementById('modal-duplicados-overlay');
+        const sub = document.getElementById('modal-duplicados-sub');
+        const containerLista = document.getElementById('modal-duplicados-lista');
+        const btnRemover = document.getElementById('btn-remover-dup');
+
+        if (_duplicadosEncontrados.length === 0) {
+            sub.innerHTML = '<span style="color:#00ff88; font-weight:bold;">PARABÉNS! Nenhum vídeo duplicado encontrado.</span><br>Sua lista está 100% limpa e otimizada.';
+            containerLista.innerHTML = '';
+            btnRemover.style.display = 'none';
+            modal.classList.add('active');
+            return;
+        }
+
+        sub.innerHTML = 'Encontrados <b style="color:#ff4444;">' + _duplicadosEncontrados.length + '</b> vídeo(s) duplicado(s). Deseja excluí-los?';
+        btnRemover.style.display = 'block';
+        containerLista.innerHTML = _duplicadosEncontrados.map(d => `
+            <div class="item-dup">
+                <b>⚠️ MÚSICA REPETIDA:</b>
+                <div>Cópia: ${escHtml(d.duplicado.webkitRelativePath || d.duplicado.name)}</div>
+                <small>Mantendo: ${escHtml(d.original.webkitRelativePath || d.original.name)}</small>
+            </div>
+        `).join('');
+        modal.classList.add('active');
+    }
+    function fecharModalDuplicados() { document.getElementById('modal-duplicados-overlay').classList.remove('active'); }
+    async function confirmarRemoverDuplicados() {
+        const sub = document.getElementById('modal-duplicados-sub');
+        sub.innerHTML = '<span style="color:#ffdd00;">Excluindo duplicados e reiniciando karaokê...</span>';
+        let removidos = 0;
+        for (let item of _duplicadosEncontrados) {
+            if (item.duplicado.contentUri && window.AndroidHost && AndroidHost.deleteFile) {
+                try { if (AndroidHost.deleteFile(item.duplicado.contentUri)) removidos++; } catch(e) {}
+            }
+        }
+        fecharModalDuplicados();
+        mostrarAviso('✔ ' + removidos + ' vídeo(s) duplicado(s) eliminado(s)! Reiniciando...', false);
+        setTimeout(async () => {
+            if (window.AndroidHost && AndroidHost.refreshFolder) AndroidHost.refreshFolder();
+            await reproduzirCicloIntro();
+        }, 800);
+    }
+    
+    function processarCodigo(val) {
+        const codStr = String(val).trim();
+        if (codStr === '0000') { checarDuplicadosCodigo0000(window._arquivosCarregadosCache || []); return; }
+    
             if (!val) return;
             const codigoDigitado = String(val).trim();
 
@@ -3796,7 +4978,12 @@
                 const p = document.querySelector('#cat-lista .cat-item');
                 if (p) p.focus();
             };
-            const itens = catFiltro === 'TODAS' ? todos : todos.filter(i => inicialDaMusica(i.nome) === catFiltro);
+            
+        let itens = catFiltro === 'TODAS' ? todos : todos.filter(i => inicialDaMusica(i.nome) === catFiltro);
+        if (_termoBuscaCatalogo) {
+            itens = todos.filter(i => (i.nome || '').toLowerCase().includes(_termoBuscaCatalogo) || (i.code || '').includes(_termoBuscaCatalogo));
+        }
+    
             const lista = document.getElementById('cat-lista');
             lista.innerHTML = itens.length
                 ? itens.map(i => `<button type="button" class="cat-item" data-code="${escHtml(i.code)}"><span class="cod">${escHtml(i.code)}</span><span class="nome">${escHtml(i.nome)}</span></button>`).join('')
@@ -3842,5 +5029,594 @@
             else fileInput.click();
         }
     </script>
+
+    <!-- TELA DE LOGO EXCLUSIVA POS-CONTAGEM (APENAS LOGO.PNG) -->
+    <div id="logo-tela-overlay">
+        <img id="logo-tela-img" alt="Logo">
+    </div>
+
+    <!-- MODAL GERENCIADOR DE DUPLICADOS (CODIGO 0000) -->
+    <div id="modal-duplicados-overlay">
+        <div id="modal-duplicados-box">
+            <div id="modal-duplicados-titulo">🔍 VERIFICADOR DE DUPLICADOS</div>
+            <p id="modal-duplicados-sub" style="text-align:center; font-size: 14px; color: #bbb;"></p>
+            <div id="modal-duplicados-lista"></div>
+            <div class="modal-dup-acoes">
+                <button type="button" id="btn-fechar-dup" onclick="fecharModalDuplicados()">CANCELAR</button>
+                <button type="button" id="btn-remover-dup" onclick="confirmarRemoverDuplicados()">ELIMINAR DUPLICADOS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIRMAÇÃO PARA FECHAR O APK -->
+    <div id="modal-sair-overlay">
+        <div id="modal-sair-box">
+            <div id="modal-sair-titulo">🚪 SAIR DO KARAOKÊ</div>
+            <p id="modal-sair-sub">Tem certeza de que deseja fechar o aplicativo?</p>
+            <div class="modal-sair-acoes">
+                <button type="button" id="btn-cancelar-sair" onclick="fecharModalSair()">CONTINUAR</button>
+                <button type="button" id="btn-confirmar-sair" onclick="confirmarSairApp()">SIM, SAIR</button>
+            </div>
+        </div>
+    </div>
+    
+
+<script id="js-ajustes-cirurgicos-mestre">
+(function() {
+    // Estado global dos recursos solicitados
+    window._introsPlaylist = [];
+    window._introAtualIdx = 0;
+    window._capasArtistas = {};
+    window._qrListaUrl = null;
+    window._qrListaOcultoManual = false;
+    window._deviceProfile = 'phone';
+
+    // 1. Reconhecimento automático do dispositivo (TV Box, Smart TV Android, Celular APK)
+    function detectarPerfilDispositivo() {
+        let kind = 'phone';
+        try {
+            if (window.AndroidHost && typeof AndroidHost.getDeviceKind === 'function') {
+                kind = AndroidHost.getDeviceKind();
+            } else {
+                const ua = navigator.userAgent || '';
+                const isTv = /BRAVIA|SmartTV|SMART-TV|AFT|MiTV|TV Box|Android TV|GoogleTV|WebOS|Tizen/i.test(ua)
+                          || (Math.min(screen.width, screen.height) >= 600 && !('ontouchstart' in window));
+                kind = isTv ? 'tv' : 'phone';
+            }
+        } catch (e) {}
+        window._deviceProfile = kind;
+        document.documentElement.dataset.device = kind;
+        document.body.classList.toggle('device-tv', kind === 'tv' || kind === 'tvbox');
+        document.body.classList.toggle('device-phone', kind === 'phone');
+        return kind;
+    }
+
+    // 1 & 9. Posiciona o botão Sair ao lado do contador da fila sem sobrepor e controla visibilidade pela fila
+    function organizarCabecalhoFilaESair() {
+        const panelHead = document.querySelector('.panel-head');
+        const badge = document.getElementById('queue-count-badge');
+        if (!panelHead || !badge) return;
+
+        let actionsWrap = panelHead.querySelector('.panel-head-actions');
+        if (!actionsWrap) {
+            actionsWrap = document.createElement('div');
+            actionsWrap.className = 'panel-head-actions';
+            panelHead.appendChild(actionsWrap);
+            actionsWrap.appendChild(badge);
+        }
+
+        let btnSair = document.getElementById('btn-sair-app-fixo');
+        if (!btnSair) {
+            btnSair = document.createElement('button');
+            btnSair.type = 'button';
+            btnSair.id = 'btn-sair-app-fixo';
+            btnSair.className = 'btn-sair-topo-fixo';
+            btnSair.setAttribute('tabindex', '5');
+            btnSair.setAttribute('title', 'Sair do Karaokê');
+            btnSair.setAttribute('aria-label', 'Sair do Karaokê');
+            btnSair.innerHTML = '<svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>';
+            btnSair.onclick = function() {
+                if (typeof pedirConfirmacaoSair === 'function') pedirConfirmacaoSair();
+            };
+        }
+        if (btnSair.parentElement !== actionsWrap) {
+            actionsWrap.appendChild(btnSair);
+        }
+
+        // 9. Quando tiver música na fila fica invisível; quando limpar a fila aparece
+        const temFila = Array.isArray(window.queue) ? window.queue.length > 0 : (parseInt(badge.textContent || '0', 10) > 0);
+        btnSair.classList.toggle('oculto-fila', temFila);
+    }
+
+    // 10. QRCode (qrlista.png) no centro da área da fila quando não houver músicas
+    function garantirContainerQrLista() {
+        const tl = document.getElementById('track-list');
+        if (!tl) return null;
+        let box = document.getElementById('qrlista-container');
+        if (!box) {
+            box = document.createElement('div');
+            box.id = 'qrlista-container';
+            box.innerHTML = '<img id="qrlista-img" alt="Lista de Músicas QR Code"><span>ESCANEIE A LISTA DE MÚSICAS</span>';
+            tl.appendChild(box);
+        }
+        return box;
+    }
+
+    function atualizarVisibilidadeQrLista() {
+        const tl = document.getElementById('track-list');
+        const box = garantirContainerQrLista();
+        if (!tl || !box) return;
+        const temFila = Array.isArray(window.queue) && window.queue.length > 0;
+        if (!temFila && window._qrListaUrl && !window._qrListaOcultoManual) {
+            const img = document.getElementById('qrlista-img');
+            if (img && img.src !== window._qrListaUrl) img.src = window._qrListaUrl;
+            box.classList.add('visivel');
+            tl.classList.add('com-qr');
+            if (!tl.contains(box)) tl.appendChild(box);
+        } else {
+            box.classList.remove('visivel');
+            tl.classList.remove('com-qr');
+        }
+    }
+
+    // Intercepta renderQueue para atualizar botão Sair + QRCode automaticamente
+    if (typeof window.renderQueue === 'function') {
+        const origRenderQueue = window.renderQueue;
+        window.renderQueue = function() {
+            origRenderQueue.apply(this, arguments);
+            organizarCabecalhoFilaESair();
+            atualizarVisibilidadeQrLista();
+        };
+    }
+
+    // Intercepta aplicarLayoutFestaDasCores para nunca mover o botão Sair para o canto esquerdo
+    window.aplicarLayoutFestaDasCores = function() {
+        organizarCabecalhoFilaESair();
+        atualizarVisibilidadeQrLista();
+    };
+
+    // 13. Barra de progresso clicável e arrastável para adiantar/retroceder no celular/mouse
+    function ativarSeekBarraProgresso() {
+        const container = document.getElementById('stage-progress-container');
+        const barBg = document.getElementById('stage-progress-bar-bg');
+        const target = barBg || container;
+        if (!target || target.dataset.seekReady) return;
+        target.dataset.seekReady = '1';
+
+        const seekAtClientX = (clientX) => {
+            const vid = document.getElementById('video-player');
+            if (!vid || !vid.duration || isNaN(vid.duration)) return;
+            const rect = target.getBoundingClientRect();
+            if (rect.width <= 0) return;
+            const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+            vid.currentTime = ratio * vid.duration;
+            if (typeof updateStageProgressBar === 'function') updateStageProgressBar();
+        };
+
+        let dragging = false;
+        target.addEventListener('pointerdown', (e) => {
+            dragging = true;
+            try { target.setPointerCapture(e.pointerId); } catch (_) {}
+            seekAtClientX(e.clientX);
+        });
+        target.addEventListener('pointermove', (e) => {
+            if (dragging) seekAtClientX(e.clientX);
+        });
+        target.addEventListener('pointerup', (e) => {
+            if (dragging) {
+                dragging = false;
+                try { target.releasePointerCapture(e.pointerId); } catch (_) {}
+            }
+        });
+        target.addEventListener('click', (e) => seekAtClientX(e.clientX));
+    }
+
+    // 3 & 15. Varre a pasta mestra KARAOKÊ (com ou sem acento) para intros (intro.mp4..intro5.mp4), capas, qrlista.png e bgs
+    function mapearArquivosPastaMestra(files) {
+        const introsMap = {};
+        window._capasArtistas = {};
+        window._qrListaUrl = null;
+        const bgVideos = [];
+
+        for (const f of (files || [])) {
+            const rawName = (f.name || '').trim();
+            const lowName = rawName.toLowerCase();
+            const relPath = (f.webkitRelativePath || rawName).replace(/\\/g, '/');
+            const normPath = relPath.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+
+            // Intros: intro.mp4, intro1.mp4, intro2.mp4, intro3.mp4, intro4.mp4, intro5.mp4
+            const mIntro = lowName.match(/^intro([1-5])?\.mp4$/i);
+            if (mIntro) {
+                const slot = mIntro[1] ? parseInt(mIntro[1], 10) : 0;
+                introsMap[slot] = f;
+            }
+
+            // QRCode lista: qrlista.png
+            if (lowName === 'qrlista.png' || lowName === 'qrlista.jpg' || lowName === 'qrlista.jpeg') {
+                window._qrListaUrl = f.contentUri || URL.createObjectURL(f);
+            }
+
+            // Pasta CAPAS: ex. capas/anitta.png -> chave 'ANITTA'
+            if (normPath.includes('/CAPAS/') && /\.(png|jpg|jpeg|webp)$/i.test(lowName)) {
+                const artistaKey = rawName.replace(/\.[^.]+$/, '')
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                    .toUpperCase().trim();
+                if (artistaKey) {
+                    window._capasArtistas[artistaKey] = f;
+                }
+            }
+
+            // Vídeos de BG do palco principal (se colocados em BGS/ ou bgpadrao*.mp4)
+            if ((normPath.includes('/BGS/') || /^bgpadrao\d*\.mp4$/i.test(lowName)) && lowName.endsWith('.mp4')) {
+                bgVideos.push(f);
+            }
+        }
+
+        // Ordena intros encontradas: intro.mp4 (0), intro1 (1), intro2 (2), intro3 (3), intro4 (4), intro5 (5)
+        const slotsOrdenados = Object.keys(introsMap).map(Number).sort((a, b) => a - b);
+        window._introsPlaylist = slotsOrdenados.map(s => introsMap[s]);
+
+        // Se houver vídeo de fundo para o palco principal, inicia nítido
+        const bgVidEl = document.getElementById('bg-video-palco');
+        if (bgVidEl && bgVideos.length > 0) {
+            const vUrl = bgVideos[0].contentUri || URL.createObjectURL(bgVideos[0]);
+            bgVidEl.src = vUrl;
+            bgVidEl.style.display = 'block';
+            bgVidEl.play().catch(() => {});
+        } else if (bgVidEl) {
+            bgVidEl.style.display = 'none';
+        }
+
+        atualizarVisibilidadeQrLista();
+    }
+
+    // 3 & 11. Reproduz sequência de até 5 intros (intro.mp4..intro5.mp4) sem ícone de play e abre o palco principal
+    window.reproduzirCicloIntro = async function() {
+        const introScreen = document.getElementById('intro-screen');
+        const introVideo = document.getElementById('intro-video');
+        const introCurtain = document.getElementById('intro-curtain');
+        const introErro = document.getElementById('intro-error');
+
+        let lista = window._introsPlaylist && window._introsPlaylist.length
+            ? window._introsPlaylist
+            : (introVideo && introVideo.src ? [{ src: introVideo.src }] : []);
+
+        if (!lista.length) {
+            if (introScreen) introScreen.classList.remove('active');
+            const ui = document.getElementById('ui-wrapper');
+            if (ui) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); }
+            return false;
+        }
+
+        if (typeof forcarPaisagem === 'function') await forcarPaisagem();
+        if (introErro) introErro.classList.remove('active');
+        if (introScreen) introScreen.classList.add('active');
+
+        for (let idx = 0; idx < lista.length; idx++) {
+            const item = lista[idx];
+            const url = item.src || item.contentUri || URL.createObjectURL(item);
+            if (introCurtain) introCurtain.classList.remove('hidden');
+            introVideo.controls = false;
+            introVideo.removeAttribute('controls');
+            introVideo.loop = false;
+            introVideo.muted = false;
+            introVideo.src = url;
+            introVideo.dataset.unidade = 'sim';
+            introVideo.style.display = 'block';
+            introVideo.load();
+
+            try {
+                await new Promise((resolve, reject) => {
+                    const onEnd = () => { cleanup(); resolve(); };
+                    const onErr = () => { cleanup(); resolve(); };
+                    const cleanup = () => {
+                        introVideo.removeEventListener('ended', onEnd);
+                        introVideo.removeEventListener('error', onErr);
+                    };
+                    introVideo.addEventListener('ended', onEnd, { once: true });
+                    introVideo.addEventListener('error', onErr, { once: true });
+                    introVideo.play().then(() => {
+                        if (introCurtain) introCurtain.classList.add('hidden');
+                    }).catch(() => {
+                        // Fallback se navegador exigir muted inicialmente, desmutando em seguida
+                        introVideo.muted = true;
+                        introVideo.play().then(() => {
+                            if (introCurtain) introCurtain.classList.add('hidden');
+                            setTimeout(() => { introVideo.muted = false; }, 150);
+                        }).catch(reject);
+                    });
+                });
+            } catch (_) {}
+        }
+
+        introVideo.pause();
+        introVideo.currentTime = 0;
+        if (introScreen) introScreen.classList.remove('active');
+        const ui = document.getElementById('ui-wrapper');
+        if (ui) {
+            ui.classList.remove('oculto-inicio');
+            ui.classList.add('liberado');
+            ui.style.display = '';
+            ui.style.opacity = '';
+            ui.style.visibility = '';
+        }
+        if (typeof forcarPaisagem === 'function') await forcarPaisagem();
+        organizarCabecalhoFilaESair();
+        atualizarVisibilidadeQrLista();
+        return true;
+    };
+
+    // Intercepta handleFolderSelect e onNativeFolderLoaded para mapear intros, capas e qrlista.png
+    if (typeof window.handleFolderSelect === 'function') {
+        const origHandleFolder = window.handleFolderSelect;
+        window.handleFolderSelect = async function(e) {
+            const files = Array.from((e && e.target && e.target.files) || []);
+            mapearArquivosPastaMestra(files);
+            const res = await origHandleFolder.apply(this, arguments);
+            organizarCabecalhoFilaESair();
+            atualizarVisibilidadeQrLista();
+            return res;
+        };
+    }
+
+    // 7 & 8. Extrai o artista do nome do arquivo (ex: "0000-bang-anitta" -> "ANITTA"), busca em CAPAS/
+    // e elimina o efeito da inicial do cantor (nome aparece normal sem alterar BG).
+    function extrairArtistaDaMusica(item) {
+        const bruto = (item && item.file && item.file.name) ? item.file.name : (item && item.line ? item.line : '');
+        const semExt = bruto.replace(/\.mp4$/i, '').trim();
+        // Divide por hífen (-) ou traço (– / —)
+        const partes = semExt.split(/\s*[-–—]\s*/).map(p => p.trim()).filter(Boolean);
+        if (partes.length >= 2) {
+            // Ex: ["0000", "bang", "anitta"] -> último segmento é o artista ("anitta")
+            return partes[partes.length - 1].normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+        }
+        return '';
+    }
+
+    function buscarCapaArtista(artistaNorm) {
+        if (!artistaNorm || !window._capasArtistas) return null;
+        if (window._capasArtistas[artistaNorm]) return window._capasArtistas[artistaNorm];
+        // Busca parcial caso o arquivo tenha nome composto
+        const chaves = Object.keys(window._capasArtistas);
+        const match = chaves.find(k => k === artistaNorm || artistaNorm.includes(k) || k.includes(artistaNorm));
+        return match ? window._capasArtistas[match] : null;
+    }
+
+    window.startPlaylist = async function() {
+        clearTimeout(screensaverTimer);
+        if (document.body.classList.contains('modo-jb') && typeof pararAudioRockDoido === 'function') {
+            pararAudioRockDoido();
+        }
+        if (!queue.length || player.style.display === 'block') return;
+
+        if (typeof destravarAudio === 'function') destravarAudio();
+        if (typeof forcarPaisagem === 'function') await forcarPaisagem();
+        if (typeof mostrarLetreiroFila === 'function') mostrarLetreiroFila();
+
+        const current = queue[0];
+        const artista = extrairArtistaDaMusica(current);
+        const arquivoCapa = buscarCapaArtista(artista);
+        const glassBg = document.getElementById('capa-artista-glass-bg');
+
+        // 7. Não usa mais inicial/nome do cantor para buscar BGs; usa exclusivamente a capa do artista ou BG padrão
+        if (typeof pararCrossfade === 'function') pararCrossfade();
+        if (arquivoCapa) {
+            const capaUrl = arquivoCapa.isUrl ? arquivoCapa.url : (arquivoCapa.contentUri || URL.createObjectURL(arquivoCapa));
+            bgSinger.style.backgroundImage = `url("${capaUrl}")`;
+            bgSinger.style.opacity = '1';
+            bgSinger.style.zIndex = '2';
+            if (glassBg) {
+                glassBg.style.backgroundImage = `url("${capaUrl}")`;
+                glassBg.classList.add('ativo');
+            }
+            if (mainBg) mainBg.style.opacity = '0';
+        } else {
+            // Se não houver capa do artista, mantém o BG padrão visível na contagem regressiva
+            if (glassBg) {
+                glassBg.classList.remove('ativo');
+                glassBg.style.backgroundImage = '';
+            }
+            if (mainBg) {
+                mainBg.style.opacity = '1';
+                mainBg.style.visibility = 'visible';
+            }
+        }
+
+        document.body.classList.add('countdown-ativo');
+        if (!arquivoCapa && mainBg) {
+            mainBg.style.setProperty('opacity', '1', 'important');
+        }
+
+        const songDisplayEl = document.getElementById('song-display');
+        songDisplayEl.textContent = current.line + "\n🎤 ";
+        const countdownSinger = document.createElement('span');
+        countdownSinger.className = 'countdown-singer';
+        countdownSinger.textContent = current.singer;
+        songDisplayEl.appendChild(countdownSinger);
+        timerScreen.classList.add('active');
+
+        const numeroContagem = document.getElementById('countdown-num');
+        for (let i = 5; i >= 0; i--) {
+            numeroContagem.innerText = i;
+            numeroContagem.classList.remove('rodando');
+            void numeroContagem.offsetWidth;
+            numeroContagem.classList.add('rodando');
+            await new Promise(r => setTimeout(r, 1000));
+        }
+        numeroContagem.classList.remove('rodando');
+
+        if (typeof pararCrossfade === 'function') pararCrossfade();
+        if (glassBg) {
+            glassBg.classList.remove('ativo');
+            glassBg.style.backgroundImage = '';
+        }
+        timerScreen.classList.remove('active');
+        if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }
+        if (typeof _logoUrlObrigatorio !== 'undefined' && _logoUrlObrigatorio && typeof exibirLogoPosContagem === 'function') {
+            await new Promise(resLogo => exibirLogoPosContagem(1800, resLogo));
+        }
+        document.body.classList.remove('countdown-ativo');
+
+        const fileUrl = current.file.isUrl ? current.file.url : (current.file.contentUri || URL.createObjectURL(current.file));
+        player.src = fileUrl;
+        player.style.display = 'block';
+        try { await player.play(); }
+        catch (e) {
+            player.muted = true;
+            try { await player.play(); setTimeout(() => { player.muted = false; }, 500); }
+            catch (_) {}
+        }
+        renderQueue();
+        player.style.opacity = '1';
+        if (typeof pararRotacaoBg === 'function') pararRotacaoBg();
+    };
+
+    // 6. Raios cinematográficos alternando esbranquiçado e azulado com maior frequência no Modo Rockdoido
+    if (typeof window.dispararRaioMultiplo === 'function') {
+        const origDispararRaio = window.dispararRaioMultiplo;
+        window.dispararRaioMultiplo = function() {
+            origDispararRaio.apply(this, arguments);
+            const flash = document.getElementById('raio-flash');
+            const paths = document.querySelectorAll('#grupo-raios path');
+            const ehAzulado = Math.random() < 0.5;
+            if (flash) flash.classList.toggle('azul', ehAzulado);
+            paths.forEach(p => {
+                p.setAttribute('stroke', ehAzulado ? '#8fd3ff' : '#f7fbff');
+            });
+        };
+    }
+    window.iniciarRaios = function() {
+        if (typeof pararRaios === 'function') pararRaios();
+        setTimeout(() => { if (typeof dispararRaioMultiplo === 'function') dispararRaioMultiplo(); }, 180);
+        raioInterval = setInterval(() => {
+            if (typeof dispararRaioMultiplo === 'function') dispararRaioMultiplo();
+        }, 240 + Math.random() * 280);
+        raioMultiploInterval = setInterval(() => {
+            setTimeout(() => dispararRaioMultiplo(), 60);
+            setTimeout(() => dispararRaioMultiplo(), 160);
+            setTimeout(() => dispararRaioMultiplo(), 270);
+        }, 1600 + Math.random() * 1400);
+    };
+
+    // 10. Código secreto 999999999 alterna a exibição de qrlista.png no centro da fila
+    if (typeof window.processarCodigo === 'function') {
+        const origProcessarCodigo = window.processarCodigo;
+        window.processarCodigo = function(val) {
+            const codStr = String(val || '').trim();
+            if (codStr === '999999999') {
+                window._qrListaOcultoManual = !window._qrListaOcultoManual;
+                atualizarVisibilidadeQrLista();
+                if (typeof mostrarAviso === 'function') {
+                    mostrarAviso(window._qrListaOcultoManual ? 'QR Code da lista ocultado' : 'QR Code da lista exibido', false);
+                }
+                return;
+            }
+            return origProcessarCodigo.apply(this, arguments);
+        };
+    }
+
+    // 2. Suporte completo a controle remoto (D-Pad + teclas numéricas) e teclados USB/Bluetooth
+    document.addEventListener('keydown', (e) => {
+        // Se o protetor de tela (intro por 3 min de inatividade) estiver ativo, qualquer tecla volta ao palco
+        if (typeof introScreensaverActive !== 'undefined' && introScreensaverActive) {
+            e.preventDefault();
+            if (typeof encerrarIntroProtetorTela === 'function') encerrarIntroProtetorTela();
+            if (typeof forcarPaisagem === 'function') forcarPaisagem();
+            return;
+        }
+        // Aceita Enter/NumpadEnter no teclado numérico virtual e modais
+        const numOverlay = document.getElementById('numeric-keypad-overlay');
+        if (numOverlay && numOverlay.classList.contains('active')) {
+            if (e.key >= '0' && e.key <= '9') {
+                e.preventDefault();
+                if (typeof adicionarDigitoTeclado === 'function') adicionarDigitoTeclado(e.key);
+                return;
+            }
+            if (e.key === 'Backspace') {
+                e.preventDefault();
+                if (typeof apagarDigitoTeclado === 'function') apagarDigitoTeclado();
+                return;
+            }
+            if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+                e.preventDefault();
+                if (typeof confirmarCodigoTeclado === 'function') confirmarCodigoTeclado();
+                return;
+            }
+        }
+    }, true);
+
+    // 11. Inatividade de 3 minutos (180.000 ms) inicia as intros em sequência; qualquer toque volta imediatamente em tela cheia
+    window.ativarIntroProtetorTela = async function() {
+        if (document.body.classList.contains('modo-jb')) return;
+        if (typeof introScreensaverActive !== 'undefined' && introScreensaverActive) return;
+        const introScreen = document.getElementById('intro-screen');
+        const introVideo = document.getElementById('intro-video');
+        const introCurtain = document.getElementById('intro-curtain');
+        const lista = window._introsPlaylist && window._introsPlaylist.length
+            ? window._introsPlaylist
+            : (introVideo && introVideo.src ? [{ src: introVideo.src }] : []);
+        if (!lista.length) return;
+
+        introScreensaverActive = true;
+        if (typeof forcarPaisagem === 'function') await forcarPaisagem();
+        if (introScreen) introScreen.classList.add('active');
+        if (introCurtain) introCurtain.classList.add('hidden');
+
+        let idx = 0;
+        const tocarProximaIntroIdle = () => {
+            if (!introScreensaverActive) return;
+            const item = lista[idx % lista.length];
+            idx++;
+            const url = item.src || item.contentUri || URL.createObjectURL(item);
+            introVideo.controls = false;
+            introVideo.removeAttribute('controls');
+            introVideo.loop = (lista.length === 1);
+            introVideo.muted = false;
+            introVideo.src = url;
+            introVideo.style.display = 'block';
+            introVideo.onended = tocarProximaIntroIdle;
+            introVideo.play().catch(() => {
+                introVideo.muted = true;
+                introVideo.play().catch(() => {});
+            });
+        };
+        tocarProximaIntroIdle();
+    };
+
+    window.encerrarIntroProtetorTela = async function() {
+        if (typeof introScreensaverActive === 'undefined' || !introScreensaverActive) return;
+        introScreensaverActive = false;
+        introScreensaverWakeTime = Date.now();
+        const introVideo = document.getElementById('intro-video');
+        const introScreen = document.getElementById('intro-screen');
+        if (introVideo) {
+            introVideo.onended = null;
+            introVideo.loop = false;
+            introVideo.pause();
+            introVideo.currentTime = 0;
+        }
+        if (introScreen) introScreen.classList.remove('active');
+        if (typeof forcarPaisagem === 'function') await forcarPaisagem();
+    };
+
+    function inicializarAjustesCirurgicos() {
+        detectarPerfilDispositivo();
+        organizarCabecalhoFilaESair();
+        atualizarVisibilidadeQrLista();
+        ativarSeekBarraProgresso();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inicializarAjustesCirurgicos);
+    } else {
+        inicializarAjustesCirurgicos();
+    }
+    window.addEventListener('load', () => {
+        inicializarAjustesCirurgicos();
+        setTimeout(inicializarAjustesCirurgicos, 600);
+    });
+})();
+</script>
+
 </body>
 </html>
