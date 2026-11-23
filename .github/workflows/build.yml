@@ -1,4 +1,4 @@
-name: Build APK Videoke Show
+name: Build APK Videokê Show
 
 on:
   push:
@@ -39,18 +39,17 @@ jobs:
 
           mkdir -p app/src/main/java/br/com/ursoplayer/karaoke
           mkdir -p app/src/main/assets
-          mkdir -p app/src/main/res/mipmap-xxxhdpi
 
           cp index.html app/src/main/assets/index.html
           [ -d fontes ] && cp -r fontes app/src/main/assets/ || true
           [ -f bgpadrao.jpg ] && cp bgpadrao.jpg app/src/main/assets/ || true
 
-          [ -d res ] && cp -r res/* app/src/main/res/ || true
-          for d in mipmap mipmap-mdpi mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
-            [ -d "$d" ] && mkdir -p "app/src/main/res/$d" && cp -r "$d"/* "app/src/main/res/$d/" || true
+          for d in mipmap-mdpi mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
+            mkdir -p "app/src/main/res/$d"
+            if [ -f "ic_launcher.png" ]; then
+              cp "ic_launcher.png" "app/src/main/res/$d/ic_launcher.png"
+            fi
           done
-          [ -f ic_launcher.png ] && cp ic_launcher.png app/src/main/res/mipmap-xxxhdpi/ic_launcher.png || true
-          [ -f ic-launcher.png ] && cp ic-launcher.png app/src/main/res/mipmap-xxxhdpi/ic_launcher.png || true
 
           cat << 'EOF' > settings.gradle
           rootProject.name = "VideokeShow"
@@ -140,6 +139,7 @@ jobs:
           import android.net.Uri;
           import android.os.Bundle;
           import android.util.Base64;
+          import android.view.KeyEvent;
           import android.view.View;
           import android.view.WindowManager;
           import android.webkit.JavascriptInterface;
@@ -188,7 +188,6 @@ jobs:
                           String savedUri = prefs.getString("tree_uri", null);
                           if (savedUri != null) {
                               rootTreeUri = Uri.parse(savedUri);
-                              scanFolderAsync(false);
                           }
                       }
                   });
@@ -211,6 +210,29 @@ jobs:
               public void onWindowFocusChanged(boolean hasFocus) {
                   super.onWindowFocusChanged(hasFocus);
                   if (hasFocus) hideSystemUI();
+              }
+
+              @Override
+              public boolean dispatchKeyEvent(KeyEvent event) {
+                  if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                      int kc = event.getKeyCode();
+                      if (kc == KeyEvent.KEYCODE_MEDIA_NEXT) {
+                          webView.evaluateJavascript("if(typeof vskSkip==='function') vskSkip();", null);
+                          return true;
+                      }
+                      if (kc == KeyEvent.KEYCODE_MEDIA_STOP) {
+                          webView.evaluateJavascript("if(typeof vskStop==='function') vskStop();", null);
+                          return true;
+                      }
+                      if (kc == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
+                          webView.evaluateJavascript(
+                              "if(typeof video!=='undefined' && video.style.display==='block'){ if(video.paused) video.play(); else video.pause(); } else if(typeof vskStart==='function'){ vskStart(); }",
+                              null
+                          );
+                          return true;
+                      }
+                  }
+                  return super.dispatchKeyEvent(event);
               }
 
               @Override
