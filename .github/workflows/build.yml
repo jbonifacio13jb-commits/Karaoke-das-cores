@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      ANDROID_HOME: /usr/local/lib/android/sdk
     steps:
       - name: Checkout do Repositório
         uses: actions/checkout@v5
@@ -18,12 +21,22 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Configurar Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Gerar Projeto Android Nativo com Ponte SAF & TV Box
         run: |
           set -e
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
+
+          if [ ! -d "$ANDROID_HOME/cmdline-tools/latest" ]; then
+            mkdir -p "$ANDROID_HOME/cmdline-tools"
+            curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdline-tools.zip
+            unzip -q /tmp/cmdline-tools.zip -d "$ANDROID_HOME/cmdline-tools"
+            mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+            rm -f /tmp/cmdline-tools.zip
+          fi
+
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
           mkdir -p app/src/main/java/br/com/ursoplayer/karaoke
           mkdir -p app/src/main/assets
           mkdir -p app/src/main/res/values
