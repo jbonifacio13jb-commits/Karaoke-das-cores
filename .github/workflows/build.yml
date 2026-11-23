@@ -29,11 +29,11 @@ jobs:
             echo "<h1>Karaoke Festa das Cores</h1>" > www/index.html
           fi
 
-      - name: Configurar Java 17 e Android SDK
+      - name: Configurar Java 21 e Android SDK
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       - name: Instalar Node.js e Capacitor CLI
         uses: actions/setup-node@v4
@@ -57,94 +57,94 @@ jobs:
           MAIN_ACTIVITY=$(find android/app/src/main -name "MainActivity.java" -o -name "MainActivity.kt" | head -n 1)
           if [ -n "$MAIN_ACTIVITY" ]; then
             cat << 'EOF' > "$MAIN_ACTIVITY"
-          package com.ursoplayer.karaokefestadascores;
+            package com.ursoplayer.karaokefestadascores;
 
-          import android.content.pm.ActivityInfo;
-          import android.os.Bundle;
-          import android.view.KeyEvent;
-          import android.view.View;
-          import android.view.WindowManager;
-          import android.webkit.JavascriptInterface;
-          import com.getcapacitor.BridgeActivity;
+            import android.content.pm.ActivityInfo;
+            import android.os.Bundle;
+            import android.view.KeyEvent;
+            import android.view.View;
+            import android.view.WindowManager;
+            import android.webkit.JavascriptInterface;
+            import com.getcapacitor.BridgeActivity;
 
-          public class MainActivity extends BridgeActivity {
-              @Override
-              protected void onCreate(Bundle savedInstanceState) {
-                  super.onCreate(savedInstanceState);
-                  setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                  getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                  hideSystemBars();
-                  if (getBridge() != null && getBridge().getWebView() != null) {
-                      getBridge().getWebView().addJavascriptInterface(new AndroidHostBridge(), "AndroidHost");
-                  }
-              }
+            public class MainActivity extends BridgeActivity {
+                @Override
+                protected void onCreate(Bundle savedInstanceState) {
+                    super.onCreate(savedInstanceState);
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    hideSystemBars();
+                    if (getBridge() != null && getBridge().getWebView() != null) {
+                        getBridge().getWebView().addJavascriptInterface(new AndroidHostBridge(), "AndroidHost");
+                    }
+                }
 
-              @Override
-              public void onWindowFocusChanged(boolean hasFocus) {
-                  super.onWindowFocusChanged(hasFocus);
-                  if (hasFocus) {
-                      setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                      hideSystemBars();
-                  }
-              }
+                @Override
+                public void onWindowFocusChanged(boolean hasFocus) {
+                    super.onWindowFocusChanged(hasFocus);
+                    if (hasFocus) {
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                        hideSystemBars();
+                    }
+                }
 
-              private void hideSystemBars() {
-                  View decorView = getWindow().getDecorView();
-                  decorView.setSystemUiVisibility(
-                      View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                      | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                      | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                      | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                      | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                      | View.SYSTEM_UI_FLAG_FULLSCREEN
-                  );
-              }
+                private void hideSystemBars() {
+                    View decorView = getWindow().getDecorView();
+                    decorView.setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    );
+                }
 
-              @Override
-              public boolean dispatchKeyEvent(KeyEvent event) {
-                  if (getBridge() != null && getBridge().getWebView() != null) {
-                      int code = event.getKeyCode();
-                      if (code >= KeyEvent.KEYCODE_0 && code <= KeyEvent.KEYCODE_9) {
-                          char digit = (char) ('0' + (code - KeyEvent.KEYCODE_0));
-                          if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                              String js = "if (window.receberTeclaNativa) window.receberTeclaNativa('" + digit + "');";
-                              getBridge().getWebView().post(() -> getBridge().getWebView().evaluateJavascript(js, null));
-                          }
-                      }
-                  }
-                  return super.dispatchKeyEvent(event);
-              }
+                @Override
+                public boolean dispatchKeyEvent(KeyEvent event) {
+                    if (getBridge() != null && getBridge().getWebView() != null) {
+                        int code = event.getKeyCode();
+                        if (code >= KeyEvent.KEYCODE_0 && code <= KeyEvent.KEYCODE_9) {
+                            char digit = (char) ('0' + (code - KeyEvent.KEYCODE_0));
+                            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                                String js = "if (window.receberTeclaNativa) window.receberTeclaNativa('" + digit + "');";
+                                getBridge().getWebView().post(() -> getBridge().getWebView().evaluateJavascript(js, null));
+                            }
+                        }
+                    }
+                    return super.dispatchKeyEvent(event);
+                }
 
-              public class AndroidHostBridge {
-                  @JavascriptInterface
-                  public String getDeviceKind() {
-                      boolean isTv = getPackageManager().hasSystemFeature("android.software.leanback")
-                                  || getPackageManager().hasSystemFeature("android.hardware.type.television");
-                      if (isTv) return "tv";
-                      int smallestWidth = getResources().getConfiguration().smallestScreenWidthDp;
-                      return smallestWidth >= 600 ? "tvbox" : "phone";
-                  }
+                public class AndroidHostBridge {
+                    @JavascriptInterface
+                    public String getDeviceKind() {
+                        boolean isTv = getPackageManager().hasSystemFeature("android.software.leanback")
+                                    || getPackageManager().hasSystemFeature("android.hardware.type.television");
+                        if (isTv) return "tv";
+                        int smallestWidth = getResources().getConfiguration().smallestScreenWidthDp;
+                        return smallestWidth >= 600 ? "tvbox" : "phone";
+                    }
 
-                  @JavascriptInterface
-                  public void setOrientation(int mode) {
-                      runOnUiThread(() -> {
-                          if (mode == 1) {
-                              setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
-                          } else {
-                              setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                          }
-                      });
-                  }
+                    @JavascriptInterface
+                    public void setOrientation(int mode) {
+                        runOnUiThread(() -> {
+                            if (mode == 1) {
+                                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+                            } else {
+                                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                            }
+                        });
+                    }
 
-                  @JavascriptInterface
-                  public void exitApp() {
-                      runOnUiThread(() -> {
-                          finishAffinity();
-                          System.exit(0);
-                      });
-                  }
-              }
-          }
+                    @JavascriptInterface
+                    public void exitApp() {
+                        runOnUiThread(() -> {
+                            finishAffinity();
+                            System.exit(0);
+                        });
+                    }
+                }
+            }
           EOF
           fi
 
