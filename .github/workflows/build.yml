@@ -42,17 +42,16 @@ jobs:
                   html = f.read()
           
               master_patch = '''
-          <style id="karaoke-mestre-clean-intro">
-            .play-icon, .btn-play, .play-button, .intro-play, [class*="play-icon"], [class*="play-overlay"],
+          <style id="karaoke-mestre-v7-style">
+            /* Oculta apenas o ícone nativo de play em cima do vídeo de intro sem bloquear cliques no app */
             video::-webkit-media-controls-play-button,
             video::-webkit-media-controls-start-playback-button {
               display: none !important;
               opacity: 0 !important;
               pointer-events: none !important;
-              visibility: hidden !important;
             }
           </style>
-          <script id="karaoke-mestre-boot">
+          <script id="karaoke-mestre-v7-script">
           (function() {
             const INTRO_SUBFOLDERS = ["INTROS", "INTRO", "intros", "intro"];
           
@@ -63,79 +62,55 @@ jobs:
                 intros: null,
                 videos: null,
                 cantores: null
-              },
-              autoStartDone: false
+              }
             };
           
-            function isStartConfirmElement(el) {
-              if (!el) return false;
-              const txt = (el.innerText || el.textContent || "").trim().toLowerCase();
-              const aria = (el.getAttribute("aria-label") || "").toLowerCase();
-              const idCls = ((el.id || "") + " " + (el.className || "")).toLowerCase();
-              return (
-                (txt === "ok" || txt === "iniciar" || txt === "começar" || txt === "ok para iniciar" || txt.includes("aperte ok") || txt.includes("clique para iniciar") || txt.includes("toque para iniciar")) &&
-                (idCls.includes("start") || idCls.includes("init") || idCls.includes("modal") || idCls.includes("overlay") || idCls.includes("intro") || idCls.includes("ok") || aria.includes("start") || aria.includes("ok") || el.tagName === "BUTTON")
-              );
+            function hideBlockingOkPromptOnly() {
+              // Procura apenas avisos/modais de confirmação "OK" e fecha/oculta sem mexer nos botões do app
+              const nodes = document.querySelectorAll("[role='dialog'], .modal, .swal2-container, .popup, .aviso-ok, .modal-ok");
+              nodes.forEach(box => {
+                const txt = (box.innerText || box.textContent || "").trim().toLowerCase();
+                if (txt.includes("aperte ok") || txt.includes("ok para iniciar") || txt.includes("clique em ok") || txt.includes("pressione ok")) {
+                  const okBtn = box.querySelector("button");
+                  if (okBtn) {
+                    try { okBtn.click(); } catch (e) {}
+                  }
+                  box.style.display = "none";
+                }
+              });
             }
           
-            function isIntroFolderPrompt(el) {
-              if (!el) return false;
-              const txt = (el.innerText || el.textContent || "").trim().toLowerCase();
-              return (txt.includes("pasta das intros") || txt.includes("pasta de intros") || txt.includes("selecionar pasta intro") || txt.includes("escolher pasta das intros"));
+            function renameIntroFolderLabelsToMaster() {
+              const els = document.querySelectorAll("button, label, p, span, div, h1, h2, h3");
+              els.forEach(el => {
+                if (el.children && el.children.length > 0) return;
+                const txt = el.textContent || "";
+                if (/pasta\s+(das|de)\s+intros/i.test(txt) || /escolher\s+pasta\s+intro/i.test(txt) || /selecionar\s+pasta\s+intro/i.test(txt)) {
+                  el.textContent = txt
+                    .replace(/pasta\s+(das|de)\s+intros/gi, "pasta mestra KARAOKÊ")
+                    .replace(/escolher\s+pasta\s+intro/gi, "escolher pasta mestra KARAOKÊ")
+                    .replace(/selecionar\s+pasta\s+intro/gi, "selecionar pasta mestra KARAOKÊ");
+                }
+              });
             }
           
-            function cleanIntroPlayIcons() {
+            function prepareIntroWithoutPlayIcon() {
               document.querySelectorAll("video").forEach(v => {
                 v.controls = false;
                 v.removeAttribute("controls");
                 v.playsInline = true;
-                v.autoplay = true;
-                v.muted = false;
-                const p = v.play();
-                if (p && typeof p.catch === "function") {
-                  p.catch(() => {
-                    v.muted = true;
-                    v.play().catch(() => {});
-                  });
-                }
-              });
-          
-              const candidates = document.querySelectorAll("button, div, span, i, svg, a");
-              candidates.forEach(el => {
-                if (el.id === "karaoke-mestre-boot" || el.id === "karaoke-mestre-clean-intro") return;
-                const cls = (typeof el.className === "string" ? el.className : "").toLowerCase();
-                const txt = (el.innerText || el.textContent || "").trim();
-                const isPlaySymbol = txt === "▶" || txt === "►" || txt === "▷" || txt.toLowerCase() === "play";
-                const isPlayClass = cls.includes("play-btn") || cls.includes("play-icon") || cls.includes("icon-play") || cls.includes("btn-play");
-                if ((isPlaySymbol || isPlayClass) && !txt.toLowerCase().includes("pasta")) {
-                  el.style.setProperty("display", "none", "important");
-                  el.style.setProperty("opacity", "0", "important");
-                  el.style.setProperty("visibility", "hidden", "important");
-                }
-              });
-            }
-          
-            function dismissOkPromptsAndRouteMasterFolder() {
-              const all = Array.from(document.querySelectorAll("button, [role='button'], .modal, .dialog, .overlay, div, p, label"));
-              for (const el of all) {
-                if (isStartConfirmElement(el)) {
-                  el.style.setProperty("display", "none", "important");
-                  if (el.tagName === "BUTTON" && !window.KARAOKEMestre.autoStartDone) {
-                    window.KARAOKEMestre.autoStartDone = true;
-                    try { el.click(); } catch (e) {}
+                v.setAttribute("playsinline", "");
+                v.setAttribute("webkit-playsinline", "");
+                if (v.paused) {
+                  const p = v.play();
+                  if (p && typeof p.catch === "function") {
+                    p.catch(() => {
+                      v.muted = true;
+                      v.play().catch(() => {});
+                    });
                   }
                 }
-                if (isIntroFolderPrompt(el)) {
-                  const t = (el.textContent || "");
-                  if (t.includes("intros") || t.includes("INTROS")) {
-                    el.textContent = t
-                      .replace(/pasta das intros/gi, "pasta mestra KARAOKÊ")
-                      .replace(/pasta de intros/gi, "pasta mestra KARAOKÊ")
-                      .replace(/intros/gi, "pasta mestra KARAOKÊ");
-                  }
-                }
-              }
-              cleanIntroPlayIcons();
+              });
             }
           
             if (typeof window.showDirectoryPicker === "function") {
@@ -159,31 +134,24 @@ jobs:
                     }
                   }
                 } catch (e) {}
-                setTimeout(cleanIntroPlayIcons, 120);
                 return handle;
               };
             }
           
-            const observer = new MutationObserver(() => {
-              dismissOkPromptsAndRouteMasterFolder();
-            });
-          
-            function initMestreFlow() {
-              dismissOkPromptsAndRouteMasterFolder();
-              cleanIntroPlayIcons();
-              if (document.body) {
-                observer.observe(document.body, { childList: true, subtree: true, attributes: true });
-              }
+            function runOnceOnLoad() {
+              hideBlockingOkPromptOnly();
+              renameIntroFolderLabelsToMaster();
+              prepareIntroWithoutPlayIcon();
             }
           
             if (document.readyState === "loading") {
-              document.addEventListener("DOMContentLoaded", initMestreFlow);
+              document.addEventListener("DOMContentLoaded", runOnceOnLoad);
             } else {
-              initMestreFlow();
+              runOnceOnLoad();
             }
             window.addEventListener("load", () => {
-              dismissOkPromptsAndRouteMasterFolder();
-              cleanIntroPlayIcons();
+              runOnceOnLoad();
+              setTimeout(prepareIntroWithoutPlayIcon, 400);
             });
           })();
           </script>
@@ -196,7 +164,7 @@ jobs:
           
               with open(target_html, "w", encoding="utf-8") as f:
                   f.write(html)
-              print("Patch mestre aplicado com sucesso em www/index.html")
+              print("Patch v7 aplicado com sucesso em www/index.html")
           PYEOF
           
       - name: Configurar Java 21 e Android SDK
