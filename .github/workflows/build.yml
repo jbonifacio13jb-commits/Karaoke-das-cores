@@ -43,7 +43,7 @@ jobs:
       - name: Inicializar projeto Android com Capacitor
         run: |
           npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
           npx cap init "Karaoke Festa das Cores" "com.ursoplayer.karaokefestadascores" --web-dir www
           npx cap add android
           npx cap copy android
@@ -147,6 +147,21 @@ jobs:
             }
           EOF
           fi
+
+      - name: Resolver conflito de versões do Kotlin stdlib no Gradle
+        run: |
+          cat << 'EOF' >> android/build.gradle
+
+          allprojects {
+              configurations.all {
+                  resolutionStrategy {
+                      force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+                      force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+                      force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+                  }
+              }
+          }
+          EOF
 
       - name: Compilar APK Debug
         run: |
