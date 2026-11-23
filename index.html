@@ -480,7 +480,7 @@
             width: 100%;
             background: transparent;
             border: none;
-            padding: 8px 12px 8px 56px;
+            padding: 8px 12px;
             z-index: 99998;
             overflow: hidden;
             display: block;
@@ -655,27 +655,29 @@
             display: none !important; -webkit-appearance: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
         }
 
-        /* BOTÃO SAIR ISOLADO NO CANTO SUPERIOR ESQUERDO DO PALCO (SEM SOBREPOR LIMPAR) */
+        /* BOTÃO SAIR POSICIONADO NO CANTO DIREITO DO PAINEL, ACIMA DO BOTÃO LIMPAR */
+        .panel-head-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
         .btn-sair-topo-fixo {
-            position: absolute !important;
-            top: 10px !important;
-            left: 12px !important;
-            right: auto !important;
-            bottom: auto !important;
-            width: 38px !important;
-            height: 38px !important;
+            position: relative !important;
+            width: 44px !important;
+            height: 44px !important;
             border-radius: 12px !important;
-            background: rgba(10, 6, 20, 0.78) !important;
-            border: 1.5px solid rgba(212, 128, 255, 0.65) !important;
-            backdrop-filter: blur(8px) !important;
+            background: rgba(18, 10, 34, 0.9) !important;
+            border: 1.5px solid rgba(212, 128, 255, 0.75) !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             cursor: pointer !important;
             color: #d480ff !important;
-            box-shadow: 0 0 15px rgba(176, 38, 255, 0.4) !important;
-            z-index: 100001 !important;
+            box-shadow: 0 0 15px rgba(176, 38, 255, 0.45) !important;
+            z-index: 20 !important;
             transition: all 0.2s ease !important;
+            flex-shrink: 0 !important;
         }
         .btn-sair-topo-fixo:hover,
         .btn-sair-topo-fixo:focus,
@@ -687,8 +689,8 @@
             outline: none !important;
         }
         .btn-sair-topo-fixo svg {
-            width: 20px !important; height: 20px !important; fill: none !important;
-            stroke: currentColor !important; stroke-width: 2.2 !important; stroke-linecap: round !important; stroke-linejoin: round !important;
+            width: 22px !important; height: 22px !important; fill: none !important;
+            stroke: currentColor !important; stroke-width: 2.3 !important; stroke-linecap: round !important; stroke-linejoin: round !important;
         }
 
         .btn-parar, .btn-limpar {
@@ -838,7 +840,7 @@
         @keyframes heroPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.045); } }
         .hero-stats { font: 700 2.2vh var(--font-body); letter-spacing: .22em; color: rgba(255,255,255,.78); }
         .hero-stats b { color: var(--neon); font-weight: 900; font-size: 1.25em; }
-        #marquee-container { padding: 1.1vh 1.2vw 1.1vh 58px !important; min-height: 5.6vh; top: .7vh; }
+        #marquee-container { padding: 1.1vh 1.2vw !important; min-height: 5.6vh; top: .7vh; }
         #marquee-text { font: 800 clamp(16px, 2.6vh, 34px)/1.4 var(--font-title); letter-spacing: .04em; }
         body.fullscreen-mode #marquee-container { border-bottom: .3vh solid var(--magenta) !important; top: 0 !important; }
         #song-display { font: 800 clamp(18px, 3.2vh, 44px)/1.25 var(--font-title) !important; max-height: none !important; bottom: calc(var(--icone-size) + 3vh) !important; width: 90% !important; text-shadow: 0 .3vh 1.2vh #000, 0 0 3vh rgba(0,0,0,.9) !important; }
@@ -932,7 +934,7 @@
 </head>
 <body oncontextmenu="return false;">
 
-    <!-- TELA DA INTRO EM VÍDEO (sem src estático para não travar no Android WebView) -->
+    <!-- TELA DA INTRO EM VÍDEO (IMEDIATA APÓS PERMISSÃO DA PASTA) -->
     <div id="intro-screen">
         <video id="intro-video" playsinline webkit-playsinline preload="auto"></video>
         <div id="intro-curtain" aria-hidden="true"></div>
@@ -983,13 +985,9 @@
         <div class="diag-fechar">Ctrl+Shift+D para abrir/fechar</div>
     </div>
 
-    <!-- PALCO LIBERADO DESDE O INÍCIO PARA NUNCA FICAR TELA PRETA NO APK -->
+    <!-- PALCO LIBERADO APÓS AS INTROS -->
     <div id="ui-wrapper" class="liberado">
         <div class="stage" id="stage-area">
-            <button type="button" id="btn-sair-app-fixo" class="btn-sair-topo-fixo" tabindex="0" title="Sair do Karaokê" onclick="pedirConfirmacaoSair()">
-                <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
-            </button>
-
             <div class="stage-background" id="main-bg"></div>
 
             <div id="bg-singer-layer"></div>
@@ -1128,7 +1126,12 @@
         <div class="ui-panel">
             <div class="panel-head">
                 <div class="ph-titulo">FILA DE MÚSICAS<small>PRÓXIMOS A CANTAR</small></div>
-                <div class="ph-count" id="queue-count-badge">0</div>
+                <div class="panel-head-actions">
+                    <div class="ph-count" id="queue-count-badge">0</div>
+                    <button type="button" id="btn-sair-app-fixo" class="btn-sair-topo-fixo" tabindex="0" title="Sair do Karaokê" onclick="pedirConfirmacaoSair()">
+                        <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+                    </button>
+                </div>
             </div>
             <div class="controls-grid">
                 <button type="button" class="btn-control btn-parar" tabindex="4" onclick="stopAudio()" title="Parar música">
@@ -1195,10 +1198,9 @@
         let screensaverTimer = null;
         let isVideosLoaded = false;
         let folderLoadFinished = true;
-        let introLoadingTask = null;
+        let folderAlreadyRequested = false;
         let introScreensaverActive = false;
         let introScreensaverState = null;
-        let introScreensaverActivation = null;
         let introScreensaverWakeTime = 0;
         let audioDestravado = false;
         let historicoFila = [];
@@ -1225,6 +1227,7 @@
         let introToken = 0;
         let introCancelResolver = null;
         let introIdleAtivo = false;
+        let introJaRodouNaAbertura = false;
         let capasArtistas = Object.create(null);
         let qrVisivel = true;
         let qrElemento = null;
@@ -1261,11 +1264,9 @@
             try { return URL.createObjectURL(f); } catch (_) { return ''; }
         }
         function ehArquivoIntro(nome) {
-            return /^intro[1-5]?\.mp4$/i.test(String(nome || '').trim());
+            return /^intr[o0]?[1-5]?\.mp4$/i.test(String(nome || '').trim());
         }
 
-        // Extrai o nome do artista a partir do arquivo ou da linha do catálogo
-        // Ex: "0000-anitta-bang.mp4" -> "anitta" | "0123 - Anitta - Bang" -> "anitta"
         function extrairArtistaDoItem(item) {
             if (!item) return '';
             let raw = '';
@@ -1277,15 +1278,9 @@
             raw = raw.replace(/^\s*\d+\s*[-–—.:)_]?\s*/, '').trim();
             if (!raw) return '';
 
-            if (raw.includes(' - ')) {
-                return norm(raw.split(' - ')[0]);
-            }
-            if (raw.includes('-')) {
-                return norm(raw.split('-')[0]);
-            }
-            if (raw.includes('_')) {
-                return norm(raw.split('_')[0]);
-            }
+            if (raw.includes(' - ')) return norm(raw.split(' - ')[0]);
+            if (raw.includes('-')) return norm(raw.split('-')[0]);
+            if (raw.includes('_')) return norm(raw.split('_')[0]);
             return norm(raw);
         }
 
@@ -1564,7 +1559,7 @@
             return introArquivos[idx];
         }
 
-        async function playIntroSequence(isIdle) {
+        async function playIntroSequence(isIdle, tocarTodasNaOrdem) {
             if (!introArquivos.length) {
                 liberarPalcoGarantido();
                 return false;
@@ -1588,7 +1583,7 @@
             video.style.display = 'block';
             video.loop = false;
 
-            const listaReproducao = isIdle ? introArquivos : [sortearIntroArquivo()].filter(Boolean);
+            const listaReproducao = (isIdle || tocarTodasNaOrdem) ? introArquivos : [sortearIntroArquivo()].filter(Boolean);
 
             for (let i = 0; i < listaReproducao.length; i++) {
                 if (myToken !== introToken) break;
@@ -1664,8 +1659,8 @@
             atualizarQr();
         };
 
-        async function reproduzirCicloIntro() { return playIntroSequence(false); }
-        function iniciarIntroDuranteCarregamento() { return playIntroSequence(false); }
+        async function reproduzirCicloIntro() { return playIntroSequence(false, true); }
+        function iniciarIntroDuranteCarregamento() { return playIntroSequence(false, true); }
 
         function pararCrossfade() {
             if (singerBgInterval) { clearInterval(singerBgInterval); singerBgInterval = null; }
@@ -1868,8 +1863,14 @@
                 }, 30000);
             }
 
-            if (window.AndroidHost && AndroidHost.chooseFolder) {
-                selectFolder();
+            // Solicita a pasta apenas UMA vez se o nativo ainda não tiver enviado os arquivos
+            if (window.AndroidHost && AndroidHost.chooseFolder && !folderAlreadyRequested) {
+                folderAlreadyRequested = true;
+                setTimeout(() => {
+                    if (!isVideosLoaded && folderLoadFinished) {
+                        selectFolder();
+                    }
+                }, 250);
             }
 
             atualizarDiagnostico();
@@ -2144,6 +2145,10 @@
                 video.dataset.unidade = 'sim';
                 video.load();
             }
+            if (!introJaRodouNaAbertura) {
+                introJaRodouNaAbertura = true;
+                playIntroSequence(false, true);
+            }
         };
 
         window.onNativeFolderLoadFailed = function() {
@@ -2230,7 +2235,7 @@
 
         async function ativarIntroProtetorTela() {
             if (document.body.classList.contains('modo-jb') || !introArquivos.length || introIdleAtivo || (player && player.style.display === 'block')) return;
-            await playIntroSequence(true);
+            await playIntroSequence(true, true);
         }
 
         async function encerrarIntroProtetorTela() {
@@ -2264,16 +2269,13 @@
             _audioRockDoido = null; _arquivoAudioRockDoido = null; _caminhoAudioDetectado = null;
             let bgPadraoGif = null, bgPadraoFiles = [];
 
-            // Detecta intro.mp4, intro1.mp4, intro2.mp4, intro3.mp4, intro4.mp4, intro5.mp4
-            const nomesIntro = ['intro.mp4', 'intro1.mp4', 'intro2.mp4', 'intro3.mp4', 'intro4.mp4', 'intro5.mp4'];
-            for (const nomeIntro of nomesIntro) {
-                const fIntro = files.find(f => {
-                    const p = partsOf(f);
-                    return (f.name || '').toLowerCase() === nomeIntro && p.length <= 2;
-                });
-                if (fIntro) {
-                    introArquivos.push({ name: nomeIntro, file: fIntro, url: assetUrl(fIntro) });
-                }
+            // Detecta intro.mp4, intro2.mp4, intr2.mp4, intro1..5.mp4 em ordem para tocar imediatamente após permitir a pasta
+            const candidatosIntro = files
+                .filter(f => ehArquivoIntro(f.name || '') && partsOf(f).length <= 2)
+                .sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { numeric: true, sensitivity: 'base' }));
+
+            for (const fIntro of candidatosIntro) {
+                introArquivos.push({ name: fIntro.name, file: fIntro, url: assetUrl(fIntro) });
             }
 
             const introVideo = document.getElementById('intro-video');
@@ -2290,12 +2292,18 @@
                 }
             }
 
+            // Inicia imediatamente as intros assim que a pasta é permitida
+            let introPromise = null;
+            if (introArquivos.length && !introJaRodouNaAbertura) {
+                introJaRodouNaAbertura = true;
+                introPromise = playIntroSequence(false, true);
+            }
+
             for (let f of files) {
                 const name = (f.name || '').toUpperCase();
                 const path = pathOf(f).toUpperCase();
                 const pathLower = pathOf(f).toLowerCase();
 
-                // Reconhece capas dos artistas em /capas/, /capa/, /bgcapas/, /bgartistas/ ou /bgs/
                 if (/(^|\/)(capas?|bgcapas|bgartistas|bgs)\//i.test(pathLower) && /\.(png|jpe?g|webp|avif)$/i.test(f.name || '')) {
                     const baseRaw = (f.name || '').replace(/\.[^.]+$/, '');
                     const key = norm(baseRaw);
@@ -2367,11 +2375,15 @@
             atualizarContadores();
 
             folderLoadFinished = true;
-            liberarPalcoGarantido();
 
-            if (introArquivos.length) {
-                await playIntroSequence(false);
+            if (introPromise) {
+                await introPromise;
+            } else if (introArquivos.length && !introJaRodouNaAbertura) {
+                introJaRodouNaAbertura = true;
+                await playIntroSequence(false, true);
             }
+
+            liberarPalcoGarantido();
             if (totalVideos > 0) startScreensaverTimer(180000);
             atualizarQr();
             atualizarDiagnostico();
@@ -2390,7 +2402,6 @@
             const current = queue[0];
             pararCrossfade();
 
-            // Procura a capa pelo ARTISTA da música (ex: 0000-anitta-bang.mp4 -> anitta.png)
             const artistaNorm = current.artist || extrairArtistaDoItem(current);
             const urls = obterUrlsCapaArtista(artistaNorm);
 
@@ -2691,8 +2702,6 @@
                 const pendingCount = isPlaying ? Math.max(0, queue.length - 1) : queue.length;
                 countBadge.innerText = pendingCount;
             }
-            const btnSair = document.getElementById('btn-sair-app-fixo');
-            if (btnSair) btnSair.style.display = queue.length === 0 ? 'flex' : 'none';
             if (marqueeModo === "fila") renderFilaNoLetreiro();
             else mostrarLetreiroPadrao();
             atualizarQr();
@@ -2933,6 +2942,7 @@
         }
 
         function trocarPasta() {
+            introJaRodouNaAbertura = false;
             if (window.AndroidHost && AndroidHost.pickNewFolder) AndroidHost.pickNewFolder();
             else if (window.AndroidHost && AndroidHost.chooseFolder) AndroidHost.chooseFolder();
             else fileInput.click();
