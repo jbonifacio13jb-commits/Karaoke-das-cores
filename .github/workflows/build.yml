@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do Repositório
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Configurar JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -23,6 +23,7 @@ jobs:
 
       - name: Gerar Projeto Android Nativo com Ponte SAF & TV Box
         run: |
+          set -e
           mkdir -p app/src/main/java/br/com/ursoplayer/karaoke
           mkdir -p app/src/main/assets
           mkdir -p app/src/main/res/values
@@ -330,7 +331,22 @@ jobs:
           }
           EOF
 
-          gradle wrapper --gradle-version 8.5
+          if command -v gradle >/dev/null 2>&1; then
+            gradle wrapper --gradle-version 8.5
+          else
+            mkdir -p gradle/wrapper
+            cat << 'EOF' > gradle/wrapper/gradle-wrapper.properties
+          distributionBase=GRADLE_USER_HOME
+          distributionPath=wrapper/dists
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.5-bin.zip
+          zipStoreBase=GRADLE_USER_HOME
+          zipStorePath=wrapper/dists
+          EOF
+            curl -fsSL https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
+            curl -fsSL https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradlew -o gradlew
+            chmod +x gradlew
+          fi
+
           ./gradlew assembleRelease
 
       - name: Publicar APK como Artefato
