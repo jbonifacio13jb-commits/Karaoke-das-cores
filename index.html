@@ -1055,458 +1055,12 @@
             border-top: 1px solid #333;
             padding-top: 6px;
         }
-    
-    /* BLOQUEIO TOTAL E ABSOLUTO DO PALCO INICIAL */
-    #ui-wrapper.oculto-inicio,
-    #ui-wrapper:not(.liberado) {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-    }
-    #ui-wrapper.liberado {
-        display: grid !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        pointer-events: auto !important;
-    }
-
-    /* ELIMINA ÍCONE NATIVO DE PLAY */
-    video {
-        outline: none !important;
-        background-color: transparent !important;
-    }
-    video::-webkit-media-controls,
-    video::-webkit-media-controls-start-playback-button,
-    video::-webkit-media-controls-play-button,
-    video::-webkit-media-controls-overlay-play-button,
-    video::-webkit-media-controls-panel,
-    video::-webkit-media-controls-enclosure {
-        display: none !important;
-        -webkit-appearance: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-    }
-
-    /* ADAPTAÇÃO PARA TOQUE EM CELULARES E CURSOR DO MOUSE */
-    * {
-        -webkit-tap-highlight-color: transparent !important;
-        box-sizing: border-box !important;
-    }
-    button {
-        touch-action: manipulation !important;
-    }
-
-    /* BOTÃO SAIR FIXO NO CANTO SUPERIOR ESQUERDO (ONDE PASSA O LETREIRO) */
-    .btn-sair-topo-fixo {
-        position: fixed !important;
-        top: 10px !important;
-        left: 14px !important;
-        width: 38px !important;
-        height: 38px !important;
-        border-radius: 12px !important;
-        background: rgba(10, 6, 20, 0.75) !important;
-        border: 1.5px solid rgba(212, 128, 255, 0.6) !important;
-        backdrop-filter: blur(8px) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        cursor: pointer !important;
-        color: #d480ff !important;
-        box-shadow: 0 0 15px rgba(176, 38, 255, 0.4) !important;
-        z-index: 99999 !important;
-        transition: all 0.2s ease !important;
-    }
-    .btn-sair-topo-fixo:hover,
-    .btn-sair-topo-fixo:focus,
-    .btn-sair-topo-fixo:focus-visible {
-        background: rgba(176, 38, 255, 0.4) !important;
-        border-color: #ffffff !important;
-        box-shadow: 0 0 22px rgba(212, 128, 255, 0.8) !important;
-        transform: scale(1.08) !important;
-        outline: none !important;
-    }
-    .btn-sair-topo-fixo svg {
-        width: 20px !important;
-        height: 20px !important;
-        fill: none !important;
-        stroke: currentColor !important;
-        stroke-width: 2.2 !important;
-        stroke-linecap: round !important;
-        stroke-linejoin: round !important;
-    }
-
-    /* DÁ RESPIRO PARA O LETREIRO NÃO COLIDIR COM O BOTÃO SAIR */
-    marquee, .letreiro, #letreiro, [class*="letreiro"], .ticker, [class*="ticker"] {
-        padding-left: 56px !important;
-    }
-
-    /* BOTÕES PARAR E LIMPAR DIVIDINDO 50% DA LARGURA CADA */
-    .btn-parar, .btn-limpar {
-        flex: 1 1 0% !important;
-        width: 50% !important;
-        min-width: 0 !important;
-        height: 68px !important;
-        border-radius: 22px !important;
-        font-family: var(--font-title, sans-serif) !important;
-        font-weight: 900 !important;
-        font-size: 16px !important;
-        letter-spacing: 2px !important;
-        text-transform: uppercase !important;
-        cursor: pointer !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        text-align: center !important;
-        border: none !important;
-        box-sizing: border-box !important;
-        padding: 0 8px !important;
-        transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease !important;
-    }
-    .btn-parar span, .btn-limpar span {
-        font-size: 16px !important;
-        letter-spacing: 2px !important;
-        white-space: nowrap !important;
-        pointer-events: none !important;
-    }
-
-    /* PARAR: LARANJA / ÂMBAR 3D GLOSSY COM TEXTO BRANCO */
-    .btn-parar {
-        background: linear-gradient(180deg, #ff9e1b 0%, #f97316 55%, #c2410c 100%) !important;
-        color: #ffffff !important;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
-        box-shadow: 0 8px 25px rgba(249, 115, 22, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
-    }
-
-    /* LIMPAR: VERMELHO RUBI 3D GLOSSY COM TEXTO BRANCO */
-    .btn-limpar {
-        background: linear-gradient(180deg, #ff2e51 0%, #ef4444 55%, #b91c1c 100%) !important;
-        color: #ffffff !important;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
-        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
-    }
-
-    /* NAVEGAÇÃO POR CONTROLE REMOTO (SMART TV / TV BOX D-PAD): HALO BRILHANTE */
-    .btn-parar:focus,
-    .btn-parar:focus-visible,
-    .btn-limpar:focus,
-    .btn-limpar:focus-visible,
-    .btn-control:focus,
-    .btn-control:focus-visible,
-    button:focus-visible {
-        outline: 3px solid #ffffff !important;
-        box-shadow: 0 0 25px #ffffff, 0 0 35px rgba(255, 255, 255, 0.8) !important;
-        transform: translateY(-2px) scale(1.03) !important;
-        z-index: 50 !important;
-    }
-
-    /* MODAL DE CONFIRMAÇÃO DE SAÍDA */
-    #modal-sair-overlay {
-        position: fixed; inset: 0; z-index: 40000; display: none;
-        align-items: center; justify-content: center; background: rgba(0,0,0,0.88);
-        backdrop-filter: blur(8px); padding: 20px;
-    }
-    #modal-sair-overlay.active { display: flex !important; }
-    #modal-sair-box {
-        background: linear-gradient(160deg, #1f1435, #0c0817); border: 2px solid #d480ff; border-radius: 20px;
-        padding: 24px; width: min(90vw, 420px); display: flex; flex-direction: column; gap: 14px; text-align: center;
-        box-shadow: 0 0 35px rgba(176, 38, 255, 0.45); color: #fff;
-    }
-    #modal-sair-titulo { font: 900 20px var(--font-title); color: #d480ff; letter-spacing: 2px; }
-    #modal-sair-sub { font-size: 14px; color: #ddd; margin: 0; }
-    .modal-sair-acoes { display: flex; gap: 10px; margin-top: 10px; }
-    .modal-sair-acoes button {
-        flex: 1; padding: 12px; border: none; border-radius: 12px;
-        font: 800 14px var(--font-title); cursor: pointer;
-    }
-    #btn-cancelar-sair { background: #333; color: #fff; }
-    #btn-confirmar-sair {
-        background: linear-gradient(135deg, #b026ff, #7a00e6); color: #fff;
-        box-shadow: 0 0 20px rgba(176, 38, 255, 0.6);
-    }
-
-    /* Tela de Logo pos-contagem */
-    #logo-tela-overlay {
-        position: absolute; inset: 0; z-index: 20000;
-        background: #000; display: none; align-items: center; justify-content: center;
-        opacity: 0; transition: opacity 0.3s ease;
-    }
-    #logo-tela-overlay.ativo { display: flex !important; opacity: 1 !important; }
-    #logo-tela-img {
-        max-width: 75%; max-height: 75%; object-fit: contain;
-        filter: drop-shadow(0 0 35px rgba(0,255,255,0.45));
-        animation: zoomLogoAparecer 1.8s ease-out forwards;
-    }
-    @keyframes zoomLogoAparecer {
-        0% { transform: scale(0.92); opacity: 0.2; }
-        20% { opacity: 1; }
-        100% { transform: scale(1.03); opacity: 1; }
-    }
-
-    /* Campo de busca no Catalogo */
-    .cat-busca-box { display: flex; gap: 8px; margin: 4px 0 10px; width: 100%; }
-    #cat-campo-busca {
-        flex: 1; padding: 12px 18px; border-radius: 14px;
-        border: 2px solid var(--neon); background: rgba(0,0,0,0.65);
-        color: #fff; font-size: 16px; font-family: var(--font-title); font-weight: 700; outline: none;
-    }
-    #cat-campo-busca:focus { border-color: var(--magenta); box-shadow: 0 0 15px rgba(255,0,255,0.4); }
-    #cat-btn-limpar-busca {
-        padding: 10px 18px; border-radius: 14px; border: 0; background: #333; color: #fff;
-        font-weight: 900; font-family: var(--font-title); font-size: 13px; cursor: pointer;
-    }
-
-    /* Modal de Duplicados (Codigo 0000) */
-    #modal-duplicados-overlay {
-        position: fixed; inset: 0; z-index: 35000; display: none;
-        align-items: center; justify-content: center; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); padding: 20px;
-    }
-    #modal-duplicados-overlay.active { display: flex !important; }
-    #modal-duplicados-box {
-        background: linear-gradient(160deg, #181226, #090812); border: 2px solid var(--vivid-yellow); border-radius: 20px;
-        padding: 24px; width: min(92vw, 650px); max-height: 85vh; display: flex; flex-direction: column; gap: 14px;
-        box-shadow: 0 0 40px rgba(255,221,0,0.3); color: #fff;
-    }
-    #modal-duplicados-titulo { font: 900 20px var(--font-title); color: var(--vivid-yellow); text-align: center; letter-spacing: 2px; }
-    #modal-duplicados-lista { flex: 1; overflow-y: auto; max-height: 45vh; display: flex; flex-direction: column; gap: 8px; padding-right: 6px; }
-    .item-dup { background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 10px; border-left: 4px solid #ff4444; font-size: 13px; }
-    .item-dup b { color: var(--neon); display: block; margin-bottom: 2px; }
-    .item-dup small { color: #aaa; word-break: break-all; }
-    .modal-dup-acoes { display: flex; gap: 10px; margin-top: 6px; }
-    .modal-dup-acoes button { flex: 1; padding: 14px; border: none; border-radius: 12px; font: 800 14px var(--font-title); cursor: pointer; }
-    #btn-fechar-dup { background: #333; color: #fff; }
-    #btn-remover-dup { background: #ff2244; color: #fff; box-shadow: 0 0 20px rgba(255,34,68,0.5); }
-    
-</style>
+    </style>
     <style>
       html.android-tv :focus, html.android-tv button:focus, html.android-tv input:focus {
         outline: 3px solid #00ffff !important; outline-offset: 3px;
       }
-    
-    /* BLOQUEIO TOTAL E ABSOLUTO DO PALCO INICIAL */
-    #ui-wrapper.oculto-inicio,
-    #ui-wrapper:not(.liberado) {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-    }
-    #ui-wrapper.liberado {
-        display: grid !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        pointer-events: auto !important;
-    }
-
-    /* ELIMINA ÍCONE NATIVO DE PLAY */
-    video {
-        outline: none !important;
-        background-color: transparent !important;
-    }
-    video::-webkit-media-controls,
-    video::-webkit-media-controls-start-playback-button,
-    video::-webkit-media-controls-play-button,
-    video::-webkit-media-controls-overlay-play-button,
-    video::-webkit-media-controls-panel,
-    video::-webkit-media-controls-enclosure {
-        display: none !important;
-        -webkit-appearance: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-    }
-
-    /* ADAPTAÇÃO PARA TOQUE EM CELULARES E CURSOR DO MOUSE */
-    * {
-        -webkit-tap-highlight-color: transparent !important;
-        box-sizing: border-box !important;
-    }
-    button {
-        touch-action: manipulation !important;
-    }
-
-    /* BOTÃO SAIR FIXO NO CANTO SUPERIOR ESQUERDO (ONDE PASSA O LETREIRO) */
-    .btn-sair-topo-fixo {
-        position: fixed !important;
-        top: 10px !important;
-        left: 14px !important;
-        width: 38px !important;
-        height: 38px !important;
-        border-radius: 12px !important;
-        background: rgba(10, 6, 20, 0.75) !important;
-        border: 1.5px solid rgba(212, 128, 255, 0.6) !important;
-        backdrop-filter: blur(8px) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        cursor: pointer !important;
-        color: #d480ff !important;
-        box-shadow: 0 0 15px rgba(176, 38, 255, 0.4) !important;
-        z-index: 99999 !important;
-        transition: all 0.2s ease !important;
-    }
-    .btn-sair-topo-fixo:hover,
-    .btn-sair-topo-fixo:focus,
-    .btn-sair-topo-fixo:focus-visible {
-        background: rgba(176, 38, 255, 0.4) !important;
-        border-color: #ffffff !important;
-        box-shadow: 0 0 22px rgba(212, 128, 255, 0.8) !important;
-        transform: scale(1.08) !important;
-        outline: none !important;
-    }
-    .btn-sair-topo-fixo svg {
-        width: 20px !important;
-        height: 20px !important;
-        fill: none !important;
-        stroke: currentColor !important;
-        stroke-width: 2.2 !important;
-        stroke-linecap: round !important;
-        stroke-linejoin: round !important;
-    }
-
-    /* DÁ RESPIRO PARA O LETREIRO NÃO COLIDIR COM O BOTÃO SAIR */
-    marquee, .letreiro, #letreiro, [class*="letreiro"], .ticker, [class*="ticker"] {
-        padding-left: 56px !important;
-    }
-
-    /* BOTÕES PARAR E LIMPAR DIVIDINDO 50% DA LARGURA CADA */
-    .btn-parar, .btn-limpar {
-        flex: 1 1 0% !important;
-        width: 50% !important;
-        min-width: 0 !important;
-        height: 68px !important;
-        border-radius: 22px !important;
-        font-family: var(--font-title, sans-serif) !important;
-        font-weight: 900 !important;
-        font-size: 16px !important;
-        letter-spacing: 2px !important;
-        text-transform: uppercase !important;
-        cursor: pointer !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        text-align: center !important;
-        border: none !important;
-        box-sizing: border-box !important;
-        padding: 0 8px !important;
-        transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease !important;
-    }
-    .btn-parar span, .btn-limpar span {
-        font-size: 16px !important;
-        letter-spacing: 2px !important;
-        white-space: nowrap !important;
-        pointer-events: none !important;
-    }
-
-    /* PARAR: LARANJA / ÂMBAR 3D GLOSSY COM TEXTO BRANCO */
-    .btn-parar {
-        background: linear-gradient(180deg, #ff9e1b 0%, #f97316 55%, #c2410c 100%) !important;
-        color: #ffffff !important;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
-        box-shadow: 0 8px 25px rgba(249, 115, 22, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
-    }
-
-    /* LIMPAR: VERMELHO RUBI 3D GLOSSY COM TEXTO BRANCO */
-    .btn-limpar {
-        background: linear-gradient(180deg, #ff2e51 0%, #ef4444 55%, #b91c1c 100%) !important;
-        color: #ffffff !important;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
-        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
-    }
-
-    /* NAVEGAÇÃO POR CONTROLE REMOTO (SMART TV / TV BOX D-PAD): HALO BRILHANTE */
-    .btn-parar:focus,
-    .btn-parar:focus-visible,
-    .btn-limpar:focus,
-    .btn-limpar:focus-visible,
-    .btn-control:focus,
-    .btn-control:focus-visible,
-    button:focus-visible {
-        outline: 3px solid #ffffff !important;
-        box-shadow: 0 0 25px #ffffff, 0 0 35px rgba(255, 255, 255, 0.8) !important;
-        transform: translateY(-2px) scale(1.03) !important;
-        z-index: 50 !important;
-    }
-
-    /* MODAL DE CONFIRMAÇÃO DE SAÍDA */
-    #modal-sair-overlay {
-        position: fixed; inset: 0; z-index: 40000; display: none;
-        align-items: center; justify-content: center; background: rgba(0,0,0,0.88);
-        backdrop-filter: blur(8px); padding: 20px;
-    }
-    #modal-sair-overlay.active { display: flex !important; }
-    #modal-sair-box {
-        background: linear-gradient(160deg, #1f1435, #0c0817); border: 2px solid #d480ff; border-radius: 20px;
-        padding: 24px; width: min(90vw, 420px); display: flex; flex-direction: column; gap: 14px; text-align: center;
-        box-shadow: 0 0 35px rgba(176, 38, 255, 0.45); color: #fff;
-    }
-    #modal-sair-titulo { font: 900 20px var(--font-title); color: #d480ff; letter-spacing: 2px; }
-    #modal-sair-sub { font-size: 14px; color: #ddd; margin: 0; }
-    .modal-sair-acoes { display: flex; gap: 10px; margin-top: 10px; }
-    .modal-sair-acoes button {
-        flex: 1; padding: 12px; border: none; border-radius: 12px;
-        font: 800 14px var(--font-title); cursor: pointer;
-    }
-    #btn-cancelar-sair { background: #333; color: #fff; }
-    #btn-confirmar-sair {
-        background: linear-gradient(135deg, #b026ff, #7a00e6); color: #fff;
-        box-shadow: 0 0 20px rgba(176, 38, 255, 0.6);
-    }
-
-    /* Tela de Logo pos-contagem */
-    #logo-tela-overlay {
-        position: absolute; inset: 0; z-index: 20000;
-        background: #000; display: none; align-items: center; justify-content: center;
-        opacity: 0; transition: opacity 0.3s ease;
-    }
-    #logo-tela-overlay.ativo { display: flex !important; opacity: 1 !important; }
-    #logo-tela-img {
-        max-width: 75%; max-height: 75%; object-fit: contain;
-        filter: drop-shadow(0 0 35px rgba(0,255,255,0.45));
-        animation: zoomLogoAparecer 1.8s ease-out forwards;
-    }
-    @keyframes zoomLogoAparecer {
-        0% { transform: scale(0.92); opacity: 0.2; }
-        20% { opacity: 1; }
-        100% { transform: scale(1.03); opacity: 1; }
-    }
-
-    /* Campo de busca no Catalogo */
-    .cat-busca-box { display: flex; gap: 8px; margin: 4px 0 10px; width: 100%; }
-    #cat-campo-busca {
-        flex: 1; padding: 12px 18px; border-radius: 14px;
-        border: 2px solid var(--neon); background: rgba(0,0,0,0.65);
-        color: #fff; font-size: 16px; font-family: var(--font-title); font-weight: 700; outline: none;
-    }
-    #cat-campo-busca:focus { border-color: var(--magenta); box-shadow: 0 0 15px rgba(255,0,255,0.4); }
-    #cat-btn-limpar-busca {
-        padding: 10px 18px; border-radius: 14px; border: 0; background: #333; color: #fff;
-        font-weight: 900; font-family: var(--font-title); font-size: 13px; cursor: pointer;
-    }
-
-    /* Modal de Duplicados (Codigo 0000) */
-    #modal-duplicados-overlay {
-        position: fixed; inset: 0; z-index: 35000; display: none;
-        align-items: center; justify-content: center; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); padding: 20px;
-    }
-    #modal-duplicados-overlay.active { display: flex !important; }
-    #modal-duplicados-box {
-        background: linear-gradient(160deg, #181226, #090812); border: 2px solid var(--vivid-yellow); border-radius: 20px;
-        padding: 24px; width: min(92vw, 650px); max-height: 85vh; display: flex; flex-direction: column; gap: 14px;
-        box-shadow: 0 0 40px rgba(255,221,0,0.3); color: #fff;
-    }
-    #modal-duplicados-titulo { font: 900 20px var(--font-title); color: var(--vivid-yellow); text-align: center; letter-spacing: 2px; }
-    #modal-duplicados-lista { flex: 1; overflow-y: auto; max-height: 45vh; display: flex; flex-direction: column; gap: 8px; padding-right: 6px; }
-    .item-dup { background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 10px; border-left: 4px solid #ff4444; font-size: 13px; }
-    .item-dup b { color: var(--neon); display: block; margin-bottom: 2px; }
-    .item-dup small { color: #aaa; word-break: break-all; }
-    .modal-dup-acoes { display: flex; gap: 10px; margin-top: 6px; }
-    .modal-dup-acoes button { flex: 1; padding: 14px; border: none; border-radius: 12px; font: 800 14px var(--font-title); cursor: pointer; }
-    #btn-fechar-dup { background: #333; color: #fff; }
-    #btn-remover-dup { background: #ff2244; color: #fff; box-shadow: 0 0 20px rgba(255,34,68,0.5); }
-    
-</style>
+    </style>
     <style id="tema-pro">
     /* ==========================================================================
        TEMA PROFISSIONAL — PAISAGEM FIXA PARA SMART TV (Android TV)
@@ -1777,496 +1331,23 @@
     /* ---------- Foco do controle remoto (bem visível de longe) ---------- */
     html.android-tv :focus, html.android-tv button:focus, html.android-tv input:focus { outline: .5vh solid var(--vivid-yellow) !important; outline-offset: .4vh; }
     #marca-agua { font-family: var(--font-title); }
-    
-    /* BLOQUEIO TOTAL E ABSOLUTO DO PALCO INICIAL */
-    #ui-wrapper.oculto-inicio,
-    #ui-wrapper:not(.liberado) {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-    }
-    #ui-wrapper.liberado {
-        display: grid !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        pointer-events: auto !important;
-    }
-
-    /* ELIMINA ÍCONE NATIVO DE PLAY */
-    video {
-        outline: none !important;
-        background-color: transparent !important;
-    }
-    video::-webkit-media-controls,
-    video::-webkit-media-controls-start-playback-button,
-    video::-webkit-media-controls-play-button,
-    video::-webkit-media-controls-overlay-play-button,
-    video::-webkit-media-controls-panel,
-    video::-webkit-media-controls-enclosure {
-        display: none !important;
-        -webkit-appearance: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-    }
-
-    /* ADAPTAÇÃO PARA TOQUE EM CELULARES E CURSOR DO MOUSE */
-    * {
-        -webkit-tap-highlight-color: transparent !important;
-        box-sizing: border-box !important;
-    }
-    button {
-        touch-action: manipulation !important;
-    }
-
-    /* BOTÃO SAIR FIXO NO CANTO SUPERIOR ESQUERDO (ONDE PASSA O LETREIRO) */
-    .btn-sair-topo-fixo {
-        position: fixed !important;
-        top: 10px !important;
-        left: 14px !important;
-        width: 38px !important;
-        height: 38px !important;
-        border-radius: 12px !important;
-        background: rgba(10, 6, 20, 0.75) !important;
-        border: 1.5px solid rgba(212, 128, 255, 0.6) !important;
-        backdrop-filter: blur(8px) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        cursor: pointer !important;
-        color: #d480ff !important;
-        box-shadow: 0 0 15px rgba(176, 38, 255, 0.4) !important;
-        z-index: 99999 !important;
-        transition: all 0.2s ease !important;
-    }
-    .btn-sair-topo-fixo:hover,
-    .btn-sair-topo-fixo:focus,
-    .btn-sair-topo-fixo:focus-visible {
-        background: rgba(176, 38, 255, 0.4) !important;
-        border-color: #ffffff !important;
-        box-shadow: 0 0 22px rgba(212, 128, 255, 0.8) !important;
-        transform: scale(1.08) !important;
-        outline: none !important;
-    }
-    .btn-sair-topo-fixo svg {
-        width: 20px !important;
-        height: 20px !important;
-        fill: none !important;
-        stroke: currentColor !important;
-        stroke-width: 2.2 !important;
-        stroke-linecap: round !important;
-        stroke-linejoin: round !important;
-    }
-
-    /* DÁ RESPIRO PARA O LETREIRO NÃO COLIDIR COM O BOTÃO SAIR */
-    marquee, .letreiro, #letreiro, [class*="letreiro"], .ticker, [class*="ticker"] {
-        padding-left: 56px !important;
-    }
-
-    /* BOTÕES PARAR E LIMPAR DIVIDINDO 50% DA LARGURA CADA */
-    .btn-parar, .btn-limpar {
-        flex: 1 1 0% !important;
-        width: 50% !important;
-        min-width: 0 !important;
-        height: 68px !important;
-        border-radius: 22px !important;
-        font-family: var(--font-title, sans-serif) !important;
-        font-weight: 900 !important;
-        font-size: 16px !important;
-        letter-spacing: 2px !important;
-        text-transform: uppercase !important;
-        cursor: pointer !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        text-align: center !important;
-        border: none !important;
-        box-sizing: border-box !important;
-        padding: 0 8px !important;
-        transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease !important;
-    }
-    .btn-parar span, .btn-limpar span {
-        font-size: 16px !important;
-        letter-spacing: 2px !important;
-        white-space: nowrap !important;
-        pointer-events: none !important;
-    }
-
-    /* PARAR: LARANJA / ÂMBAR 3D GLOSSY COM TEXTO BRANCO */
-    .btn-parar {
-        background: linear-gradient(180deg, #ff9e1b 0%, #f97316 55%, #c2410c 100%) !important;
-        color: #ffffff !important;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
-        box-shadow: 0 8px 25px rgba(249, 115, 22, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
-    }
-
-    /* LIMPAR: VERMELHO RUBI 3D GLOSSY COM TEXTO BRANCO */
-    .btn-limpar {
-        background: linear-gradient(180deg, #ff2e51 0%, #ef4444 55%, #b91c1c 100%) !important;
-        color: #ffffff !important;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
-        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35) !important;
-    }
-
-    /* NAVEGAÇÃO POR CONTROLE REMOTO (SMART TV / TV BOX D-PAD): HALO BRILHANTE */
-    .btn-parar:focus,
-    .btn-parar:focus-visible,
-    .btn-limpar:focus,
-    .btn-limpar:focus-visible,
-    .btn-control:focus,
-    .btn-control:focus-visible,
-    button:focus-visible {
-        outline: 3px solid #ffffff !important;
-        box-shadow: 0 0 25px #ffffff, 0 0 35px rgba(255, 255, 255, 0.8) !important;
-        transform: translateY(-2px) scale(1.03) !important;
-        z-index: 50 !important;
-    }
-
-    /* MODAL DE CONFIRMAÇÃO DE SAÍDA */
-    #modal-sair-overlay {
-        position: fixed; inset: 0; z-index: 40000; display: none;
-        align-items: center; justify-content: center; background: rgba(0,0,0,0.88);
-        backdrop-filter: blur(8px); padding: 20px;
-    }
-    #modal-sair-overlay.active { display: flex !important; }
-    #modal-sair-box {
-        background: linear-gradient(160deg, #1f1435, #0c0817); border: 2px solid #d480ff; border-radius: 20px;
-        padding: 24px; width: min(90vw, 420px); display: flex; flex-direction: column; gap: 14px; text-align: center;
-        box-shadow: 0 0 35px rgba(176, 38, 255, 0.45); color: #fff;
-    }
-    #modal-sair-titulo { font: 900 20px var(--font-title); color: #d480ff; letter-spacing: 2px; }
-    #modal-sair-sub { font-size: 14px; color: #ddd; margin: 0; }
-    .modal-sair-acoes { display: flex; gap: 10px; margin-top: 10px; }
-    .modal-sair-acoes button {
-        flex: 1; padding: 12px; border: none; border-radius: 12px;
-        font: 800 14px var(--font-title); cursor: pointer;
-    }
-    #btn-cancelar-sair { background: #333; color: #fff; }
-    #btn-confirmar-sair {
-        background: linear-gradient(135deg, #b026ff, #7a00e6); color: #fff;
-        box-shadow: 0 0 20px rgba(176, 38, 255, 0.6);
-    }
-
-    /* Tela de Logo pos-contagem */
-    #logo-tela-overlay {
-        position: absolute; inset: 0; z-index: 20000;
-        background: #000; display: none; align-items: center; justify-content: center;
-        opacity: 0; transition: opacity 0.3s ease;
-    }
-    #logo-tela-overlay.ativo { display: flex !important; opacity: 1 !important; }
-    #logo-tela-img {
-        max-width: 75%; max-height: 75%; object-fit: contain;
-        filter: drop-shadow(0 0 35px rgba(0,255,255,0.45));
-        animation: zoomLogoAparecer 1.8s ease-out forwards;
-    }
-    @keyframes zoomLogoAparecer {
-        0% { transform: scale(0.92); opacity: 0.2; }
-        20% { opacity: 1; }
-        100% { transform: scale(1.03); opacity: 1; }
-    }
-
-    /* Campo de busca no Catalogo */
-    .cat-busca-box { display: flex; gap: 8px; margin: 4px 0 10px; width: 100%; }
-    #cat-campo-busca {
-        flex: 1; padding: 12px 18px; border-radius: 14px;
-        border: 2px solid var(--neon); background: rgba(0,0,0,0.65);
-        color: #fff; font-size: 16px; font-family: var(--font-title); font-weight: 700; outline: none;
-    }
-    #cat-campo-busca:focus { border-color: var(--magenta); box-shadow: 0 0 15px rgba(255,0,255,0.4); }
-    #cat-btn-limpar-busca {
-        padding: 10px 18px; border-radius: 14px; border: 0; background: #333; color: #fff;
-        font-weight: 900; font-family: var(--font-title); font-size: 13px; cursor: pointer;
-    }
-
-    /* Modal de Duplicados (Codigo 0000) */
-    #modal-duplicados-overlay {
-        position: fixed; inset: 0; z-index: 35000; display: none;
-        align-items: center; justify-content: center; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); padding: 20px;
-    }
-    #modal-duplicados-overlay.active { display: flex !important; }
-    #modal-duplicados-box {
-        background: linear-gradient(160deg, #181226, #090812); border: 2px solid var(--vivid-yellow); border-radius: 20px;
-        padding: 24px; width: min(92vw, 650px); max-height: 85vh; display: flex; flex-direction: column; gap: 14px;
-        box-shadow: 0 0 40px rgba(255,221,0,0.3); color: #fff;
-    }
-    #modal-duplicados-titulo { font: 900 20px var(--font-title); color: var(--vivid-yellow); text-align: center; letter-spacing: 2px; }
-    #modal-duplicados-lista { flex: 1; overflow-y: auto; max-height: 45vh; display: flex; flex-direction: column; gap: 8px; padding-right: 6px; }
-    .item-dup { background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 10px; border-left: 4px solid #ff4444; font-size: 13px; }
-    .item-dup b { color: var(--neon); display: block; margin-bottom: 2px; }
-    .item-dup small { color: #aaa; word-break: break-all; }
-    .modal-dup-acoes { display: flex; gap: 10px; margin-top: 6px; }
-    .modal-dup-acoes button { flex: 1; padding: 14px; border: none; border-radius: 12px; font: 800 14px var(--font-title); cursor: pointer; }
-    #btn-fechar-dup { background: #333; color: #fff; }
-    #btn-remover-dup { background: #ff2244; color: #fff; box-shadow: 0 0 20px rgba(255,34,68,0.5); }
-    
-</style>
+    </style>
     <script>
       (function(){
-        var kind = 'web';
-        try {
-          if (window.AndroidHost && typeof AndroidHost.getDeviceKind === 'function') {
-            kind = String(AndroidHost.getDeviceKind() || '').toLowerCase();
-          }
-        } catch (_) {}
-        if (!kind || kind === 'web') {
-          var ua = navigator.userAgent || '';
-          var minSide = Math.min(window.screen && window.screen.width ? window.screen.width : window.innerWidth,
-                                 window.screen && window.screen.height ? window.screen.height : window.innerHeight);
-          var hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-          if (/BRAVIA|AFT|MiTV|SmartTV|Leanback|GoogleTV|Android TV/i.test(ua)) {
-            kind = 'tv';
-          } else if (/Android/i.test(ua)) {
-            kind = (!hasTouch || minSide >= 600) ? 'tvbox' : 'phone';
-          }
-        }
+        var kind = 'phone';
+        try { if (window.AndroidHost) kind = AndroidHost.getDeviceKind(); }
+        catch (_) { kind = /Android/i.test(navigator.userAgent) ? 'phone' : 'web'; }
         document.documentElement.dataset.device = kind;
-        if (kind === 'tv' || kind === 'tvbox') {
-          document.documentElement.classList.add('android-tv');
-          document.documentElement.classList.remove('android-phone');
-        } else if (kind === 'phone') {
-          document.documentElement.classList.add('android-phone');
-          document.documentElement.classList.remove('android-tv');
-        }
-        window.detectarDispositivoKaraoke = function() { return kind; };
+        if (kind === 'tv') document.documentElement.classList.add('android-tv');
+        if (kind === 'phone') document.documentElement.classList.add('android-phone');
       })();
     </script>
-
-<style id="karaoke-ajustes-festa-neon">
-  /* #5: BGs de vídeo do palco nítidos sem véu opaco */
-  .stage-background {
-    opacity: 1 !important;
-    filter: none !important;
-  }
-  body.countdown-ativo .stage-background {
-    opacity: 0 !important;
-  }
-  #stage-area video:not(#video-player):not(#intro-video),
-  .stage-bg-video,
-  .bg-video-stage {
-    opacity: 1 !important;
-    filter: brightness(1.06) contrast(1.05) saturate(1.08) !important;
-    mix-blend-mode: normal !important;
-  }
-
-  /* #6: Raios cinematográficos realistas (branco e azulado com maior frequência) */
-  #raio-flash.ativo {
-    animation: flashRaioCine 0.42s ease-out !important;
-  }
-  @keyframes flashRaioCine {
-    0%   { opacity: 0; background: radial-gradient(ellipse at 50% 15%, rgba(255,255,255,0.65) 0%, rgba(110,195,255,0.45) 45%, transparent 80%); }
-    14%  { opacity: 0.95; }
-    28%  { opacity: 0.15; }
-    45%  { opacity: 0.9; background: radial-gradient(ellipse at 35% 20%, rgba(125,210,255,0.65) 0%, rgba(225,245,255,0.4) 50%, transparent 82%); }
-    70%  { opacity: 0.25; }
-    100% { opacity: 0; }
-  }
-  #raio-svg.ativo {
-    animation: relampagoCine 0.38s ease-out !important;
-  }
-  @keyframes relampagoCine {
-    0%   { opacity: 0; }
-    12%  { opacity: 1; }
-    30%  { opacity: 0.25; }
-    52%  { opacity: 1; }
-    78%  { opacity: 0.35; }
-    100% { opacity: 0; }
-  }
-
-  /* #8: BG da contagem regressiva pelo artista em capas/ (sem cortar, esticar ou distorcer + glass ao redor) */
-  #countdown-artist-bg {
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    pointer-events: none;
-    background: #050714;
-  }
-  body.countdown-ativo #countdown-artist-bg.ativo {
-    display: flex !important;
-  }
-  #countdown-artist-glass {
-    position: absolute;
-    inset: -24px;
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    filter: blur(22px) brightness(0.55) saturate(1.25);
-    transform: scale(1.12);
-  }
-  #countdown-artist-glass::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at center, rgba(10,14,32,0.22) 0%, rgba(5,7,20,0.68) 100%);
-  }
-  #countdown-artist-photo {
-    position: relative;
-    z-index: 2;
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    box-shadow: 0 12px 42px rgba(0,0,0,0.75), 0 0 28px rgba(41,231,255,0.25);
-  }
-
-  /* #10: qrlista.png fixo no centro da tela da fila */
-  .ui-panel {
-    position: relative;
-  }
-  #qrlista-fila-box {
-    position: relative;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin: auto;
-    padding: 12px 14px;
-    border-radius: 16px;
-    background: rgba(12, 10, 34, 0.72);
-    border: 1.5px solid rgba(41, 231, 255, 0.55);
-    box-shadow: 0 0 24px rgba(41, 231, 255, 0.25), 0 0 28px rgba(255, 47, 185, 0.18);
-    max-width: 240px;
-    z-index: 12;
-  }
-  #qrlista-fila-box.visivel {
-    display: flex !important;
-  }
-  #qrlista-fila-box img {
-    display: block;
-    max-width: 175px;
-    max-height: 175px;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    border-radius: 10px;
-    background: #ffffff;
-    padding: 6px;
-  }
-  #qrlista-fila-box span {
-    margin-top: 8px;
-    font-family: var(--font-title);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    color: var(--neon);
-    text-align: center;
-  }
-
-  /* #9: Botão sair do APK na área direita (fila e contador) — oculto com música na fila, visível quando limpa */
-  #btn-sair-fila-direito {
-    display: none;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    height: 44px;
-    border-radius: 14px;
-    border: 1.5px solid rgba(255, 47, 185, 0.75);
-    background: linear-gradient(90deg, rgba(255, 47, 185, 0.22), rgba(41, 231, 255, 0.22));
-    color: #ffffff;
-    font-family: var(--font-title);
-    font-size: 13px;
-    font-weight: 900;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    cursor: pointer;
-    box-shadow: 0 0 18px rgba(255, 47, 185, 0.35), inset 0 1px 0 rgba(255,255,255,0.25);
-    transition: transform 0.14s ease, box-shadow 0.2s ease, filter 0.2s ease;
-    flex-shrink: 0;
-  }
-  #btn-sair-fila-direito.visivel-fila {
-    display: flex !important;
-  }
-  #btn-sair-fila-direito:hover,
-  #btn-sair-fila-direito:focus {
-    transform: translateY(-2px);
-    box-shadow: 0 0 26px rgba(41, 231, 255, 0.65), 0 0 22px rgba(255, 47, 185, 0.55);
-    filter: brightness(1.12);
-  }
-  #btn-sair-fila-direito svg {
-    width: 18px;
-    height: 18px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2.3;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  /* #13: Barra de progresso transparente sem efeito glass, clicável para avançar/retroceder */
-  #stage-progress-container {
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    cursor: pointer;
-    touch-action: none;
-  }
-  #stage-progress-bar-bg {
-    height: 8px !important;
-    background: rgba(255, 255, 255, 0.26) !important;
-    cursor: pointer;
-  }
-  #stage-progress-fill {
-    background: linear-gradient(90deg, #00ffff 0%, #a855f7 52%, #ff00ff 100%) !important;
-    box-shadow: 0 0 12px rgba(0, 255, 255, 0.85), 0 0 20px rgba(255, 0, 255, 0.55) !important;
-  }
-
-  /* #14: Letreiro transparente percorrendo o palco todo em velocidade legível */
-  #marquee-container {
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-  }
-  #marquee-text {
-    animation: marqueeLegivelAnim 28s linear infinite !important;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95), 0 0 14px rgba(0, 0, 0, 0.9) !important;
-  }
-  @keyframes marqueeLegivelAnim {
-    0%   { transform: translateX(100vw); }
-    100% { transform: translateX(-100%); }
-  }
-
-  /* #12: Tons, sombras, contornos e degradê neon refinados sem alterar layout/funções */
-  .btn-control,
-  #btn-play-bar,
-  #btn-catalogo,
-  #btn-teclado {
-    border: 1px solid rgba(255, 255, 255, 0.28) !important;
-  }
-  .btn-carregar {
-    background: linear-gradient(135deg, #00e5ff 0%, #3b82f6 52%, #9333ea 100%) !important;
-    box-shadow: 0 0 18px rgba(0, 229, 255, 0.45), 0 6px 0 #1e1b4b, inset 0 1px 0 rgba(255,255,255,0.45) !important;
-  }
-  .btn-parar {
-    background: linear-gradient(135deg, #ffdd00 0%, #ff7b00 52%, #ff007f 100%) !important;
-    box-shadow: 0 0 18px rgba(255, 123, 0, 0.48), 0 6px 0 #4a1500, inset 0 1px 0 rgba(255,255,255,0.45) !important;
-  }
-  .btn-limpar {
-    background: linear-gradient(135deg, #ff2a85 0%, #ef4444 55%, #7c3aed 100%) !important;
-    box-shadow: 0 0 18px rgba(255, 42, 133, 0.48), 0 6px 0 #3b0724, inset 0 1px 0 rgba(255,255,255,0.45) !important;
-  }
-</style>
-
 </head>
 <body oncontextmenu="return false;">
 
     <!-- TELA DA INTRO EM VÍDEO (intro.mp4 na raiz) -->
     <div id="intro-screen">
-        <video id="intro-video" playsinline autoplay preload="auto" playsinline webkit-playsinline preload="auto">
+        <video id="intro-video" playsinline autoplay preload="auto">
             <source src="intro.mp4" type="video/mp4">
         </video>
         <div id="intro-curtain" aria-hidden="true"></div>
@@ -2362,7 +1443,7 @@
         <div class="diag-fechar">Ctrl+Shift+D para abrir/fechar</div>
     </div>
 
-    <div id="ui-wrapper" class="oculto-inicio" style="display: none !important; opacity: 0 !important; visibility: hidden !important;">
+    <div id="ui-wrapper">
         <div class="stage" id="stage-area">
             <div class="stage-background" id="main-bg" style="background-image: url('bgpadrao.jpg');"></div>
 
@@ -2407,7 +1488,7 @@
                 <div class="chuva-zona" id="chuva-zona-5"></div>
             </div>
 
-            <video id="video-player" playsinline playsinline webkit-playsinline preload="auto"></video>
+            <video id="video-player" playsinline></video>
             <audio id="audio-jb" loop></audio>
 
             <div id="idle-hero" aria-hidden="true">
@@ -2463,12 +1544,6 @@
                 </button>
             </div>
 
-            
-            <div id="countdown-artist-bg" aria-hidden="true">
-                <div id="countdown-artist-glass"></div>
-                <img id="countdown-artist-photo" alt="">
-            </div>
-
             <div id="timer-screen">
                 <div id="song-display"></div>
                 <div id="countdown-num">5</div>
@@ -2518,24 +1593,35 @@
             </div>
             <div class="controls-grid">
 <button type="button" class="btn-control btn-parar" tabindex="3" onclick="stopAudio()" title="Parar música">
+                    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <circle cx="32" cy="34" r="24" fill="#8a4400" opacity="0.4" transform="translate(0,2)"/>
+                        <circle cx="32" cy="32" r="24" fill="#ff8800" stroke="#8a4400" stroke-width="1.5"/>
+                        <circle cx="32" cy="32" r="19" fill="#0a0a0a" stroke="#5a2c00" stroke-width="1"/>
+                        <circle cx="32" cy="32" r="16" fill="none" stroke="#ffb340" stroke-width="1.5" opacity="0.5"/>
+                        <rect x="24" y="24" width="16" height="16" rx="2" fill="#ffb340" stroke="#8a4400" stroke-width="1.2" stroke-linejoin="round"/>
+                        <rect x="25" y="25" width="6" height="6" rx="1" fill="#ffffff" opacity="0.4"/>
+                        <ellipse cx="22" cy="18" rx="6" ry="3" fill="#ffffff" opacity="0.35" transform="rotate(-30 22 18)"/>
+                        <path d="M 48 22 Q 52 28 48 42" stroke="#ffffff" stroke-width="1.5" fill="none" opacity="0.25" stroke-linecap="round"/>
+                    </svg>
                     <span>PARAR</span>
                 </button>
 
                 <button type="button" class="btn-control btn-limpar" tabindex="4" onclick="limparLista()" title="Limpar fila de músicas">
+                    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <rect x="18" y="20" width="28" height="36" rx="2" fill="#7a0000" opacity="0.35" transform="translate(0,2)"/>
+                        <path d="M18 22 L18 52 Q18 56 22 56 L42 56 Q46 56 46 52 L46 22 Z" fill="#dd0000" stroke="#990000" stroke-width="1.5" stroke-linejoin="round"/>
+                        <path d="M20 22 L20 52 Q20 54 22 54 L26 54 L26 22 Z" fill="#ff6666" opacity="0.5"/>
+                        <rect x="14" y="16" width="36" height="6" rx="2" fill="#ff2222" stroke="#990000" stroke-width="1.5"/>
+                        <rect x="26" y="12" width="12" height="5" rx="2" fill="#ff4444" stroke="#990000" stroke-width="1.2"/>
+                        <line x1="26" y1="28" x2="26" y2="50" stroke="#7a0000" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                        <line x1="32" y1="28" x2="32" y2="50" stroke="#7a0000" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                        <line x1="38" y1="28" x2="38" y2="50" stroke="#7a0000" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                        <rect x="19" y="23" width="4" height="26" rx="1" fill="#ffffff" opacity="0.35"/>
+                    </svg>
                     <span>LIMPAR</span>
                 </button>
             </div>
             <div id="track-list"></div>
-
-            <div id="qrlista-fila-box" aria-label="QR Code da lista de músicas">
-                <img id="qrlista-fila-img" src="qrlista.png" alt="QR Lista de Músicas">
-                <span>ESCANEIE A LISTA DE MÚSICAS</span>
-            </div>
-            <button type="button" id="btn-sair-fila-direito" onclick="pedirConfirmacaoSair()" title="Sair do aplicativo">
-                <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                <span>SAIR DO APK</span>
-            </button>
-
         </div>
     </div>
 
@@ -2564,12 +1650,7 @@
                 <button type="button" id="cat-trocar-pasta" onclick="trocarPasta()">TROCAR PASTA</button>
                 <button type="button" id="cat-fechar" onclick="fecharCatalogo()">FECHAR ✕</button>
             </div>
-            
-    <div class="cat-busca-box">
-        <input type="text" id="cat-campo-busca" placeholder="🔍 Pesquisar por música, cantor ou código..." oninput="filtrarBuscaCatalogo(this.value)">
-        <button type="button" id="cat-btn-limpar-busca" onclick="limparBuscaCatalogo()">LIMPAR</button>
-    </div>
-    <div id="cat-letras"></div>
+            <div id="cat-letras"></div>
             <div id="cat-lista"></div>
         </div>
     </div>
@@ -2601,7 +1682,7 @@
         let singerBgInterval = null;
         let screensaverTimer = null;
         let isVideosLoaded = false;
-        let folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores(); }
+        let folderLoadFinished = true;
         let introLoadingTask = null;
         let introScreensaverActive = false;
         let introScreensaverState = null;
@@ -3045,18 +2126,7 @@
 
             introVideo.pause();
             introVideo.currentTime = 0;
-            
-    introScreen.classList.remove('active');
-    var ui = document.getElementById('ui-wrapper');
-    if (ui) {
-        ui.classList.remove('oculto-inicio');
-        ui.classList.add('liberado');
-        ui.style.display = '';
-        ui.style.opacity = '';
-        ui.style.visibility = '';
-        if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores();
-    }
-    
+            introScreen.classList.remove('active');
             if (dispositivoEhCelular()) await restaurarInterfaceCelular();
             else await restaurarInterfaceTV();
             return true;
@@ -3105,18 +2175,7 @@
                 return false;
             }
 
-            
-    introScreen.classList.remove('active');
-    var ui = document.getElementById('ui-wrapper');
-    if (ui) {
-        ui.classList.remove('oculto-inicio');
-        ui.classList.add('liberado');
-        ui.style.display = '';
-        ui.style.opacity = '';
-        ui.style.visibility = '';
-        if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores();
-    }
-    
+            introScreen.classList.remove('active');
             introVideo.pause();
             introVideo.currentTime = 0;
             if (dispositivoEhCelular()) await restaurarInterfaceCelular();
@@ -3334,7 +2393,7 @@
 
             // Choose the internal memory, SD card, or USB drive before showing the start prompt.
             const usaSeletorNativo = !!(window.AndroidHost && AndroidHost.chooseFolder);
-            if (usaSeletorNativo) selectFolder();
+            if (usaSeletorNativo) setTimeout(() => selectFolder(), 700);
             if (verificarNecessitaOverlayOK() && !usaSeletorNativo) {
                 setTimeout(() => mostrarOverlayOK(), 200);
             }
@@ -3807,7 +2866,7 @@
         };
 
         window.onNativeFolderLoadFailed = function() {
-            folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores(); }
+            folderLoadFinished = true;
         };
 
         window.onNativeFolderLoaded = async function(entries, silent) {
@@ -3849,18 +2908,7 @@
                 if (!intro && rockDoidoSlides.length > 0) {
                     const introScreen = document.getElementById('intro-screen');
                     const introVideo = document.getElementById('intro-video');
-                    if (introScreen) 
-    introScreen.classList.remove('active');
-    var ui = document.getElementById('ui-wrapper');
-    if (ui) {
-        ui.classList.remove('oculto-inicio');
-        ui.classList.add('liberado');
-        ui.style.display = '';
-        ui.style.opacity = '';
-        ui.style.visibility = '';
-        if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores();
-    }
-    
+                    if (introScreen) introScreen.classList.remove('active');
                     if (introVideo) introVideo.style.display = 'none';
                     document.getElementById('intro-error').classList.remove('active');
                     document.getElementById('overlay-ok').classList.remove('active');
@@ -3996,18 +3044,7 @@
             introVideo.loop = false;
             introVideo.pause();
             introVideo.currentTime = 0;
-            
-    introScreen.classList.remove('active');
-    var ui = document.getElementById('ui-wrapper');
-    if (ui) {
-        ui.classList.remove('oculto-inicio');
-        ui.classList.add('liberado');
-        ui.style.display = '';
-        ui.style.opacity = '';
-        ui.style.visibility = '';
-        if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores();
-    }
-    
+            introScreen.classList.remove('active');
             introCurtain.classList.add('hidden');
 
             const state = introScreensaverState;
@@ -4059,8 +3096,6 @@
         }
 
         async function handleFolderSelect(e) {
-    window._arquivosCarregadosCache = Array.from(e.target.files); identificarLogoMestra(window._arquivosCarregadosCache);
-
             const files = Array.from(e.target.files);
             if (!files.length) return;
             isVideosLoaded = false;
@@ -4199,7 +3234,7 @@
                     exibirErroIntro('Não encontrei intro.mp4 na pasta escolhida. Selecione a pasta que contém o vídeo de introdução.', true);
                 }
             }
-            folderLoadFinished = true; var ui = document.getElementById('ui-wrapper'); if (ui && (!document.getElementById('intro-video') || !document.getElementById('intro-video').src || document.getElementById('intro-video').paused)) { ui.classList.remove('oculto-inicio'); ui.classList.add('liberado'); ui.style.display = ''; ui.style.opacity = ''; ui.style.visibility = ''; if (typeof aplicarLayoutFestaDasCores === 'function') aplicarLayoutFestaDasCores(); }
+            folderLoadFinished = true;
             atualizarDiagnostico();
         }
 
@@ -4252,15 +3287,8 @@
             numeroContagem.classList.remove('rodando');
 
             pararCrossfade();
-                timerScreen.classList.remove('active');
-                if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }
-                if (_logoUrlObrigatorio) {
-                    await new Promise(resLogo => {
-                        exibirLogoPosContagem(1800, resLogo);
-                    });
-                }
-                document.body.classList.remove('countdown-ativo');
-                if (mainBg) { mainBg.style.opacity = '0'; mainBg.style.visibility = 'hidden'; }
+            timerScreen.classList.remove('active');
+            document.body.classList.remove('countdown-ativo');
 
             const fileUrl = current.file.isUrl ? current.file.url : (current.file.contentUri || URL.createObjectURL(current.file));
             player.src = fileUrl;
@@ -4356,243 +3384,7 @@
             toggleFullscreenUI();
         }
 
-        
-    function aplicarLayoutFestaDasCores() {
-        try {
-            // 1. Remove qualquer botão sair antigo que tenha ficado em local incorreto
-            const botoes = Array.from(document.querySelectorAll('button'));
-            botoes.forEach(b => {
-                if (b.textContent.trim() === 'SAIR' || b.className.includes('btn-sair-topo')) {
-                    b.remove();
-                }
-            });
-
-            // 2. Ajusta os botões PARAR e LIMPAR para 50% cada
-            const btnParar = document.querySelector('.btn-parar') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('PARAR'));
-            const btnLimpar = document.querySelector('.btn-limpar') || Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('LIMPAR'));
-
-            if (btnParar && btnLimpar) {
-                const pai = btnParar.parentElement;
-                if (pai) {
-                    pai.style.width = '100%';
-                    pai.style.maxWidth = '100%';
-                    pai.style.display = 'flex';
-                    pai.style.flexDirection = 'row';
-                    pai.style.gap = '14px';
-                    pai.style.boxSizing = 'border-box';
-                    pai.style.padding = '0';
-                    pai.style.marginTop = 'auto';
-                }
-                [btnParar, btnLimpar].forEach(b => {
-                    b.style.flex = '1 1 0%';
-                    b.style.width = '50%';
-                    b.style.minWidth = '0';
-                    b.style.height = '68px';
-                    b.style.borderRadius = '22px';
-                    b.style.fontWeight = '900';
-                    b.style.fontSize = '16px';
-                    b.style.letterSpacing = '2px';
-                    b.style.textTransform = 'uppercase';
-                    b.style.border = 'none';
-                    b.style.display = 'flex';
-                    b.style.alignItems = 'center';
-                    b.style.justifyContent = 'center';
-                    b.style.color = '#ffffff';
-                    b.setAttribute('tabindex', '0');
-                });
-                // PARAR: Laranja 3D Glossy
-                btnParar.style.background = 'linear-gradient(180deg, #ff9e1b 0%, #f97316 55%, #c2410c 100%)';
-                btnParar.style.boxShadow = '0 8px 25px rgba(249, 115, 22, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35)';
-                
-                // LIMPAR: Vermelho 3D Glossy
-                btnLimpar.style.background = 'linear-gradient(180deg, #ff2e51 0%, #ef4444 55%, #b91c1c 100%)';
-                btnLimpar.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.45), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 4px rgba(0,0,0,0.35)';
-            }
-
-            // 3. INJETA O BOTÃO SAIR FIXO NO CANTO SUPERIOR ESQUERDO (ONDE PASSA O LETREIRO)
-            if (!document.getElementById('btn-sair-app-fixo')) {
-                const btnSair = document.createElement('button');
-                btnSair.id = 'btn-sair-app-fixo';
-                btnSair.className = 'btn-sair-topo-fixo';
-                btnSair.setAttribute('tabindex', '0');
-                btnSair.setAttribute('title', 'Sair do Karaokê');
-                btnSair.innerHTML = '<svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>';
-                btnSair.onclick = pedirConfirmacaoSair;
-                
-                // Insere no ui-wrapper para aparecer junto com a tela do palco
-                const wrapper = document.getElementById('ui-wrapper') || document.body;
-                wrapper.appendChild(btnSair);
-            }
-        } catch(e) { console.error('Erro ao ajustar layout:', e); }
-    }
-
-    window.addEventListener('DOMContentLoaded', aplicarLayoutFestaDasCores);
-    window.addEventListener('load', () => {
-        aplicarLayoutFestaDasCores();
-        setTimeout(aplicarLayoutFestaDasCores, 800);
-    });
-
-    // SUPORTE A CONTROLE REMOTO TV / TECLADO BLUETOOTH / TECLADO USB
-    window.addEventListener('keydown', (e) => {
-        if (/^[0-9]$/.test(e.key)) {
-            if (typeof digitarNumero === 'function') digitarNumero(e.key);
-            else if (typeof handleKeypad === 'function') handleKeypad(e.key);
-        }
-        if (e.key === 'Escape' || e.key === 'GoBack' || e.keyCode === 27 || e.keyCode === 4) {
-            const modSair = document.getElementById('modal-sair-overlay');
-            const modDup = document.getElementById('modal-duplicados-overlay');
-            if (modDup && modDup.classList.contains('active')) fecharModalDuplicados();
-            else if (modSair && modSair.classList.contains('active')) fecharModalSair();
-            else pedirConfirmacaoSair();
-        }
-    });
-
-    let _logoUrlObrigatorio = null;
-    let _bgOficialUrl = null;
-    let _duplicadosEncontrados = [];
-
-    function pedirConfirmacaoSair() {
-        const modal = document.getElementById('modal-sair-overlay');
-        if (modal) modal.classList.add('active');
-        else if (confirm('Deseja realmente fechar o Karaokê?')) confirmarSairApp();
-    }
-    function fecharModalSair() {
-        const modal = document.getElementById('modal-sair-overlay');
-        if (modal) modal.classList.remove('active');
-    }
-    function confirmarSairApp() {
-        fecharModalSair();
-        if (window.AndroidHost && AndroidHost.exitApp) {
-            AndroidHost.exitApp();
-        } else {
-            window.close();
-        }
-    }
-
-    function identificarLogoMestra(files) {
-        _logoUrlObrigatorio = null;
-        _bgOficialUrl = null;
-        for (let f of (files || [])) {
-            const nome = (f.name || '').toLowerCase();
-            const path = (f.webkitRelativePath || f.name).replace(/\\/g, '/');
-            const partes = path.split('/').filter(Boolean);
-
-            if (nome === 'logo.png' && partes.length <= 2) {
-                _logoUrlObrigatorio = f.contentUri || URL.createObjectURL(f);
-            }
-            if (nome === 'bgoficial.png') {
-                _bgOficialUrl = f.contentUri || URL.createObjectURL(f);
-            }
-        }
-        if (!_logoUrlObrigatorio) {
-            for (let f of (files || [])) {
-                if ((f.name || '').toLowerCase() === 'logo.png') {
-                    _logoUrlObrigatorio = f.contentUri || URL.createObjectURL(f);
-                    break;
-                }
-            }
-        }
-    }
-
-    function exibirLogoPosContagem(duracaoMs, callbackFim) {
-        const overlay = document.getElementById('logo-tela-overlay');
-        const img = document.getElementById('logo-tela-img');
-
-        if (!overlay || !_logoUrlObrigatorio) {
-            if (callbackFim) callbackFim();
-            return;
-        }
-
-        img.src = _logoUrlObrigatorio;
-        overlay.classList.add('ativo');
-
-        setTimeout(() => {
-            overlay.style.opacity = '0';
-            setTimeout(() => {
-                overlay.classList.remove('ativo');
-                overlay.style.opacity = '1';
-                if (callbackFim) callbackFim();
-            }, 250);
-        }, duracaoMs);
-    }
-
-    let _termoBuscaCatalogo = '';
-    function filtrarBuscaCatalogo(val) {
-        _termoBuscaCatalogo = (val || '').trim().toLowerCase();
-        const barraLetras = document.getElementById('cat-letras');
-        if (barraLetras) barraLetras.style.display = _termoBuscaCatalogo ? 'none' : 'flex';
-        renderCatalogo();
-    }
-    function limparBuscaCatalogo() {
-        const campo = document.getElementById('cat-campo-busca');
-        if (campo) campo.value = '';
-        filtrarBuscaCatalogo('');
-    }
-
-    function checarDuplicadosCodigo0000(todosArquivos) {
-        _duplicadosEncontrados = [];
-        const mapTitulos = new Map();
-        const listaArquivos = todosArquivos || [];
-
-        for (let f of listaArquivos) {
-            const nome = f.name || '';
-            if (!/\\.mp4$/i.test(nome) || nome.toLowerCase().startsWith('intro')) continue;
-            const chave = normalizarNome(descricaoDoArquivo(nome) || nome.replace(/\\.mp4$/i, ''));
-            if (!chave) continue;
-
-            if (mapTitulos.has(chave)) {
-                _duplicadosEncontrados.push({ original: mapTitulos.get(chave), duplicado: f, chave: chave });
-            } else {
-                mapTitulos.set(chave, f);
-            }
-        }
-
-        const modal = document.getElementById('modal-duplicados-overlay');
-        const sub = document.getElementById('modal-duplicados-sub');
-        const containerLista = document.getElementById('modal-duplicados-lista');
-        const btnRemover = document.getElementById('btn-remover-dup');
-
-        if (_duplicadosEncontrados.length === 0) {
-            sub.innerHTML = '<span style="color:#00ff88; font-weight:bold;">PARABÉNS! Nenhum vídeo duplicado encontrado.</span><br>Sua lista está 100% limpa e otimizada.';
-            containerLista.innerHTML = '';
-            btnRemover.style.display = 'none';
-            modal.classList.add('active');
-            return;
-        }
-
-        sub.innerHTML = 'Encontrados <b style="color:#ff4444;">' + _duplicadosEncontrados.length + '</b> vídeo(s) duplicado(s). Deseja excluí-los?';
-        btnRemover.style.display = 'block';
-        containerLista.innerHTML = _duplicadosEncontrados.map(d => `
-            <div class="item-dup">
-                <b>⚠️ MÚSICA REPETIDA:</b>
-                <div>Cópia: ${escHtml(d.duplicado.webkitRelativePath || d.duplicado.name)}</div>
-                <small>Mantendo: ${escHtml(d.original.webkitRelativePath || d.original.name)}</small>
-            </div>
-        `).join('');
-        modal.classList.add('active');
-    }
-    function fecharModalDuplicados() { document.getElementById('modal-duplicados-overlay').classList.remove('active'); }
-    async function confirmarRemoverDuplicados() {
-        const sub = document.getElementById('modal-duplicados-sub');
-        sub.innerHTML = '<span style="color:#ffdd00;">Excluindo duplicados e reiniciando karaokê...</span>';
-        let removidos = 0;
-        for (let item of _duplicadosEncontrados) {
-            if (item.duplicado.contentUri && window.AndroidHost && AndroidHost.deleteFile) {
-                try { if (AndroidHost.deleteFile(item.duplicado.contentUri)) removidos++; } catch(e) {}
-            }
-        }
-        fecharModalDuplicados();
-        mostrarAviso('✔ ' + removidos + ' vídeo(s) duplicado(s) eliminado(s)! Reiniciando...', false);
-        setTimeout(async () => {
-            if (window.AndroidHost && AndroidHost.refreshFolder) AndroidHost.refreshFolder();
-            await reproduzirCicloIntro();
-        }, 800);
-    }
-    
-    function processarCodigo(val) {
-        const codStr = String(val).trim();
-        if (codStr === '0000') { checarDuplicadosCodigo0000(window._arquivosCarregadosCache || []); return; }
-    
+        function processarCodigo(val) {
             if (!val) return;
             const codigoDigitado = String(val).trim();
 
@@ -5004,12 +3796,7 @@
                 const p = document.querySelector('#cat-lista .cat-item');
                 if (p) p.focus();
             };
-            
-        let itens = catFiltro === 'TODAS' ? todos : todos.filter(i => inicialDaMusica(i.nome) === catFiltro);
-        if (_termoBuscaCatalogo) {
-            itens = todos.filter(i => (i.nome || '').toLowerCase().includes(_termoBuscaCatalogo) || (i.code || '').includes(_termoBuscaCatalogo));
-        }
-    
+            const itens = catFiltro === 'TODAS' ? todos : todos.filter(i => inicialDaMusica(i.nome) === catFiltro);
             const lista = document.getElementById('cat-lista');
             lista.innerHTML = itens.length
                 ? itens.map(i => `<button type="button" class="cat-item" data-code="${escHtml(i.code)}"><span class="cod">${escHtml(i.code)}</span><span class="nome">${escHtml(i.nome)}</span></button>`).join('')
@@ -5055,427 +3842,5 @@
             else fileInput.click();
         }
     </script>
-
-    <!-- TELA DE LOGO EXCLUSIVA POS-CONTAGEM (APENAS LOGO.PNG) -->
-    <div id="logo-tela-overlay">
-        <img id="logo-tela-img" alt="Logo">
-    </div>
-
-    <!-- MODAL GERENCIADOR DE DUPLICADOS (CODIGO 0000) -->
-    <div id="modal-duplicados-overlay">
-        <div id="modal-duplicados-box">
-            <div id="modal-duplicados-titulo">🔍 VERIFICADOR DE DUPLICADOS</div>
-            <p id="modal-duplicados-sub" style="text-align:center; font-size: 14px; color: #bbb;"></p>
-            <div id="modal-duplicados-lista"></div>
-            <div class="modal-dup-acoes">
-                <button type="button" id="btn-fechar-dup" onclick="fecharModalDuplicados()">CANCELAR</button>
-                <button type="button" id="btn-remover-dup" onclick="confirmarRemoverDuplicados()">ELIMINAR DUPLICADOS</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL DE CONFIRMAÇÃO PARA FECHAR O APK -->
-    <div id="modal-sair-overlay">
-        <div id="modal-sair-box">
-            <div id="modal-sair-titulo">🚪 SAIR DO KARAOKÊ</div>
-            <p id="modal-sair-sub">Tem certeza de que deseja fechar o aplicativo?</p>
-            <div class="modal-sair-acoes">
-                <button type="button" id="btn-cancelar-sair" onclick="fecharModalSair()">CONTINUAR</button>
-                <button type="button" id="btn-confirmar-sair" onclick="confirmarSairApp()">SIM, SAIR</button>
-            </div>
-        </div>
-    </div>
-    
-
-<script id="karaoke-ajustes-festa-js">
-(function() {
-  // #15: Suporte a pasta mestra KARAOKÊ / KARAOKE e subpastas/arquivos
-  window.capasArtistasMap = window.capasArtistasMap || {};
-  window.introsPlaylistList = window.introsPlaylistList || [];
-  window.qrListaOcultoPorCodigo = false;
-  window.qrListaUriDetectado = null;
-
-  function normalizarChaveArtista(str) {
-    return String(str || '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, ' ')
-      .trim();
-  }
-
-  function extrairNomeArtistaDaMusica(lineOrCode) {
-    var raw = String(lineOrCode || '').replace(/\.mp4$/i, '').trim();
-    // Exemplos: "0000-bang-anitta", "0001 - Bang - Anitta", "0002 - Evidências - Chitãozinho e Xororó"
-    var partes = raw.split(/\s*-\s*/);
-    if (partes.length >= 3) {
-      return partes[partes.length - 1].trim();
-    }
-    if (partes.length === 2) {
-      var cand = partes[1].trim();
-      var subHifen = cand.split(/[-_]+/);
-      if (subHifen.length >= 2) return subHifen[subHifen.length - 1].trim();
-      return cand;
-    }
-    var hifens = raw.split(/[-_]+/);
-    if (hifens.length >= 3) return hifens[hifens.length - 1].trim();
-    return '';
-  }
-
-  function resolverImagemArtistaContagem(currentItem) {
-    var artista = extrairNomeArtistaDaMusica(currentItem && currentItem.line ? currentItem.line : '');
-    var chave = normalizarChaveArtista(artista);
-    if (chave && window.capasArtistasMap[chave]) {
-      return window.capasArtistasMap[chave];
-    }
-    // Tenta casar pelo último token do nome do artista (ex.: "anitta")
-    if (chave) {
-      var tokens = chave.split(' ').filter(Boolean);
-      var ultimo = tokens[tokens.length - 1];
-      if (ultimo && window.capasArtistasMap[ultimo]) {
-        return window.capasArtistasMap[ultimo];
-      }
-      for (var k in window.capasArtistasMap) {
-        if (window.capasArtistasMap.hasOwnProperty(k)) {
-          if (chave.indexOf(k) !== -1 || k.indexOf(chave) !== -1) {
-            return window.capasArtistasMap[k];
-          }
-        }
-      }
-    }
-    return null;
-  }
-
-  function obterBgPadraoAtual() {
-    var mainBgEl = document.getElementById('main-bg');
-    if (mainBgEl && mainBgEl.style && mainBgEl.style.backgroundImage) {
-      var m = mainBgEl.style.backgroundImage.match(/url\(["']?(.*?)["']?\)/i);
-      if (m && m[1]) return m[1];
-    }
-    if (typeof bgPadraoList !== 'undefined' && Array.isArray(bgPadraoList) && bgPadraoList.length > 0) {
-      return bgPadraoList[0];
-    }
-    return 'bgpadrao.jpg';
-  }
-
-  window.mostrarBgContagemArtista = function(currentItem) {
-    var box = document.getElementById('countdown-artist-bg');
-    var photo = document.getElementById('countdown-artist-photo');
-    var glass = document.getElementById('countdown-artist-glass');
-    if (!box || !photo || !glass) return;
-
-    var imgUrl = resolverImagemArtistaContagem(currentItem);
-    if (!imgUrl) {
-      imgUrl = obterBgPadraoAtual();
-    }
-
-    photo.onload = function() {
-      box.classList.add('ativo');
-    };
-    photo.onerror = function() {
-      var fallback = obterBgPadraoAtual();
-      if (photo.src !== fallback) {
-        photo.src = fallback;
-        glass.style.backgroundImage = 'url("' + fallback + '")';
-      }
-      box.classList.add('ativo');
-    };
-    glass.style.backgroundImage = 'url("' + imgUrl + '")';
-    photo.src = imgUrl;
-    box.classList.add('ativo');
-  };
-
-  window.ocultarBgContagemArtista = function() {
-    var box = document.getElementById('countdown-artist-bg');
-    if (box) box.classList.remove('ativo');
-  };
-
-  // #9 & #10: Atualizar visibilidade do qrlista.png e botão SAIR na área direita da fila
-  window.atualizarPainelDireitoKaraoke = function() {
-    var qrBox = document.getElementById('qrlista-fila-box');
-    var qrImg = document.getElementById('qrlista-fila-img');
-    var btnSairDir = document.getElementById('btn-sair-fila-direito');
-    var qLen = (typeof queue !== 'undefined' && Array.isArray(queue)) ? queue.length : 0;
-
-    if (qrBox) {
-      if (qrImg && window.qrListaUriDetectado && qrImg.getAttribute('src') !== window.qrListaUriDetectado) {
-        qrImg.src = window.qrListaUriDetectado;
-      }
-      if (!window.qrListaOcultoPorCodigo) {
-        qrBox.classList.add('visivel');
-      } else {
-        qrBox.classList.remove('visivel');
-      }
-    }
-
-    if (btnSairDir) {
-      if (qLen > 0) {
-        btnSairDir.classList.remove('visivel-fila');
-      } else {
-        btnSairDir.classList.add('visivel-fila');
-      }
-    }
-  };
-
-  // #3 & #11: Coletar intros intro.mp4 até intro5.mp4, capas/ e qrlista.png ao carregar pasta
-  document.addEventListener('change', function(ev) {
-    if (!ev || !ev.target || ev.target.id !== 'f-folder') return;
-    var files = Array.from(ev.target.files || []);
-    if (!files.length) return;
-
-    window.capasArtistasMap = {};
-    var introsMap = {};
-    window.qrListaUriDetectado = null;
-
-    files.forEach(function(f) {
-      var rel = String(f.webkitRelativePath || f.name || '').replace(/\\/g, '/');
-      var lowRel = rel.toLowerCase();
-      var nome = String(f.name || '');
-      var lowNome = nome.toLowerCase();
-      var uri = f.contentUri || (typeof URL !== 'undefined' ? URL.createObjectURL(f) : '');
-
-      var mIntro = lowNome.match(/^intro([1-5])?\.mp4$/);
-      if (mIntro && uri) {
-        var ordem = mIntro[1] ? parseInt(mIntro[1], 10) : 1;
-        introsMap[ordem] = uri;
-      }
-
-      if (lowNome === 'qrlista.png' && uri) {
-        window.qrListaUriDetectado = uri;
-      }
-
-      if (lowRel.indexOf('/capas/') !== -1 || lowRel.indexOf('capas/') === 0) {
-        var semExt = nome.replace(/\.[^.]+$/, '');
-        var chave = normalizarChaveArtista(semExt);
-        if (chave && uri) {
-          window.capasArtistasMap[chave] = uri;
-        }
-      }
-    });
-
-    var listaIntros = [];
-    for (var n = 1; n <= 5; n++) {
-      if (introsMap[n]) listaIntros.push(introsMap[n]);
-    }
-    window.introsPlaylistList = listaIntros;
-    window.atualizarPainelDireitoKaraoke();
-  }, true);
-
-  // Reproduzir sequência de intros (intro.mp4 até intro5.mp4) do início com fallback de play
-  window.reproduzirSequenciaIntrosCompleta = async function(options) {
-    var opts = options || {};
-    var introScreen = document.getElementById('intro-screen');
-    var introVideo = document.getElementById('intro-video');
-    var introCurtain = document.getElementById('intro-curtain');
-    var introErro = document.getElementById('intro-error');
-    if (!introScreen || !introVideo) return false;
-
-    var lista = (window.introsPlaylistList && window.introsPlaylistList.length > 0)
-      ? window.introsPlaylistList.slice()
-      : ['intro.mp4', 'intro2.mp4', 'intro3.mp4', 'intro4.mp4', 'intro5.mp4'];
-
-    if (typeof forcarPaisagem === 'function') {
-      try { await forcarPaisagem(); } catch (_) {}
-    }
-
-    introScreen.classList.add('active');
-    if (introCurtain) introCurtain.classList.add('hidden');
-    if (introErro) introErro.classList.remove('active');
-    introVideo.style.display = 'block';
-
-    for (var i = 0; i < lista.length; i++) {
-      var srcIntro = lista[i];
-      introVideo.pause();
-      introVideo.removeAttribute('src');
-      introVideo.src = srcIntro;
-      introVideo.currentTime = 0;
-      introVideo.loop = false;
-      introVideo.muted = false;
-      try { introVideo.load(); } catch (_) {}
-
-      var podeTocar = await new Promise(function(resolve) {
-        var resolvido = false;
-        var timer = setTimeout(function() {
-          if (!resolvido) { resolvido = true; resolve(false); }
-        }, 2500);
-        introVideo.onloadedmetadata = function() {
-          if (!resolvido) { resolvido = true; clearTimeout(timer); resolve(true); }
-        };
-        introVideo.onerror = function() {
-          if (!resolvido) { resolvido = true; clearTimeout(timer); resolve(false); }
-        };
-      });
-
-      if (!podeTocar) {
-        if (i === 0 && !opts.silenciosoSeAusente) {
-          // tenta direto caso seja URI local sem metadata imediata
-        } else {
-          continue;
-        }
-      }
-
-      try {
-        introVideo.currentTime = 0;
-        await introVideo.play();
-      } catch (_) {
-        try {
-          introVideo.muted = true;
-          introVideo.currentTime = 0;
-          await introVideo.play();
-        } catch (__) {
-          continue;
-        }
-      }
-
-      await new Promise(function(resolve) {
-        var done = function() { resolve(); };
-        introVideo.onended = done;
-        introVideo.onerror = done;
-      });
-    }
-
-    introVideo.pause();
-    introVideo.currentTime = 0;
-    introScreen.classList.remove('active');
-
-    var ui = document.getElementById('ui-wrapper');
-    if (ui) {
-      ui.classList.remove('oculto-inicio');
-      ui.classList.add('liberado');
-      ui.style.display = '';
-      ui.style.opacity = '';
-      ui.style.visibility = '';
-    }
-    if (typeof forcarPaisagem === 'function') {
-      try { await forcarPaisagem(); } catch (_) {}
-    }
-    document.body.classList.add('fullscreen-mode');
-    if (typeof atualizarPainelDireitoKaraoke === 'function') {
-      atualizarPainelDireitoKaraoke();
-    }
-    return true;
-  };
-
-  // #6: Aumentar frequência de raios cinematográficos realistas (branco / azulado)
-  var origDispararRaioMultiplo = window.dispararRaioMultiplo;
-  if (typeof origDispararRaioMultiplo === 'function') {
-    window.dispararRaioMultiplo = function() {
-      origDispararRaioMultiplo.apply(this, arguments);
-      var grupo = document.getElementById('grupo-raios');
-      var flash = document.getElementById('raio-flash');
-      if (grupo && grupo.lastChild) {
-        var azulado = Math.random() < 0.55;
-        grupo.lastChild.setAttribute('stroke', azulado ? '#7dd3fc' : '#ffffff');
-      }
-      if (flash) {
-        flash.style.background = (Math.random() < 0.55)
-          ? 'radial-gradient(ellipse at 50% 20%, rgba(125,211,252,0.52) 0%, rgba(56,189,248,0.28) 45%, transparent 80%)'
-          : 'radial-gradient(ellipse at 50% 20%, rgba(255,255,255,0.58) 0%, rgba(219,234,254,0.32) 45%, transparent 80%)';
-      }
-    };
-  }
-
-  // #7: Remover efeito/fallback de BG por inicial do cantor mantendo nome normal
-  if (typeof startPlaylist === 'function') {
-    var origStartPlaylist = startPlaylist;
-    startPlaylist = async function() {
-      var atual = (typeof queue !== 'undefined' && Array.isArray(queue) && queue.length > 0) ? queue[0] : null;
-      if (atual && typeof window.mostrarBgContagemArtista === 'function') {
-        window.mostrarBgContagemArtista(atual);
-      }
-      if (typeof pararCrossfade === 'function') {
-        pararCrossfade();
-      }
-      var res = await origStartPlaylist.apply(this, arguments);
-      window.ocultarBgContagemArtista();
-      return res;
-    };
-  }
-
-  // #10: Alternar qrlista.png ao digitar 999999999
-  if (typeof processarCodigo === 'function') {
-    var origProcessarCodigo = processarCodigo;
-    processarCodigo = function(val) {
-      var limpo = String(val || '').trim();
-      if (limpo === '999999999') {
-        window.qrListaOcultoPorCodigo = !window.qrListaOcultoPorCodigo;
-        window.atualizarPainelDireitoKaraoke();
-        if (typeof mostrarAviso === 'function') {
-          mostrarAviso(window.qrListaOcultoPorCodigo ? 'QR da lista ocultado (999999999)' : 'QR da lista exibido (999999999)', false);
-        }
-        return;
-      }
-      return origProcessarCodigo.apply(this, arguments);
-    };
-  }
-
-  // Sincronizar botão SAIR da área direita sempre que a fila atualizar
-  if (typeof renderQueue === 'function') {
-    var origRenderQueue = renderQueue;
-    renderQueue = function() {
-      var r = origRenderQueue.apply(this, arguments);
-      window.atualizarPainelDireitoKaraoke();
-      return r;
-    };
-  }
-
-  // #13: Barra de progresso interativa (clique/toque para avançar ou retroceder)
-  document.addEventListener('DOMContentLoaded', function() {
-    var progContainer = document.getElementById('stage-progress-container');
-    var vidEl = document.getElementById('video-player');
-    if (progContainer && vidEl) {
-      var buscarPosicao = function(clientX) {
-        if (!vidEl.duration || isNaN(vidEl.duration) || vidEl.duration <= 0) return;
-        var rect = progContainer.getBoundingClientRect();
-        if (!rect.width) return;
-        var ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-        vidEl.currentTime = ratio * vidEl.duration;
-        if (typeof updateStageProgressBar === 'function') updateStageProgressBar();
-      };
-      progContainer.addEventListener('click', function(e) {
-        buscarPosicao(e.clientX);
-      });
-      progContainer.addEventListener('touchstart', function(e) {
-        if (e.touches && e.touches.length > 0) {
-          buscarPosicao(e.touches[0].clientX);
-        }
-      }, { passive: true });
-      progContainer.addEventListener('touchmove', function(e) {
-        if (e.touches && e.touches.length > 0) {
-          buscarPosicao(e.touches[0].clientX);
-        }
-      }, { passive: true });
-    }
-    window.atualizarPainelDireitoKaraoke();
-  });
-
-  // #11: Ao tocar na tela/botões durante descanso de tela, volta direto ao palco em tela cheia
-  ['touchstart', 'pointerdown', 'click', 'keydown'].forEach(function(evName) {
-    document.addEventListener(evName, function() {
-      var introScreen = document.getElementById('intro-screen');
-      var introVideo = document.getElementById('intro-video');
-      if (introScreen && introScreen.classList.contains('active') && typeof introScreensaverActive !== 'undefined' && introScreensaverActive) {
-        if (introVideo) {
-          try { introVideo.pause(); introVideo.currentTime = 0; } catch (_) {}
-        }
-        introScreen.classList.remove('active');
-        var ui = document.getElementById('ui-wrapper');
-        if (ui) {
-          ui.classList.remove('oculto-inicio');
-          ui.classList.add('liberado');
-          ui.style.display = '';
-          ui.style.opacity = '';
-          ui.style.visibility = '';
-        }
-        document.body.classList.add('fullscreen-mode');
-        if (typeof forcarPaisagem === 'function') {
-          forcarPaisagem();
-        }
-      }
-    }, true);
-  });
-})();
-</script>
-
 </body>
 </html>
