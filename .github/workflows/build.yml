@@ -1,240 +1,219 @@
 name: Build Karaokê Festa das Cores APK
-
-on:
-  push:
-    branches: [ "main", "master" ]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repositório
-        uses: actions/checkout@v4
-
-      - name: Preparar pasta www do aplicativo
-        run: |
-          mkdir -p www
-          if [ -d "KARAOKÊ" ]; then
-            cp -r "KARAOKÊ/." www/
-          elif [ -d "KARAOKE" ]; then
-            cp -r "KARAOKE/." www/
-          fi
-          if [ -f "index.html" ]; then
-            cp index.html www/index.html
-          elif [ -f "www/index.html" ]; then
-            echo "index.html já presente em www/"
-          else
-            echo "<h1>Karaoke Festa das Cores</h1>" > www/index.html
-          fi
-
-      - name: Configurar Java 21 e Android SDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Instalar Node.js e Capacitor CLI
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Inicializar projeto Android com Capacitor
-        run: |
-          npm init -y
-          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
-          npx cap init "Karaoke Festa das Cores" "com.ursoplayer.karaokefestadascores" --web-dir www
-          npx cap add android
-          npx cap copy android
-
-      - name: Configurar permissões de pasta/armazenamento, modo paisagem e ic-launcher
-        run: |
-          MANIFEST="android/app/src/main/AndroidManifest.xml"
-          if [ -f "$MANIFEST" ]; then
-            sed -i 's/android:screenOrientation="[^"]*"/android:screenOrientation="landscape"/g' "$MANIFEST"
-            python3 - << 'PYEOF'
-with open("android/app/src/main/AndroidManifest.xml", "r", encoding="utf-8") as f:
-    xml = f.read()
-
+​on:
+push:
+branches: [ "main", "master" ]
+workflow_dispatch:
+​jobs:
+build:
+runs-on: ubuntu-latest
+​steps:
+- name: Checkout repositório
+uses: actions/checkout@v4
+​- name: Preparar pasta www do aplicativo
+run: |
+mkdir -p www
+if [ -d "KARAOKÊ" ]; then
+cp -r "KARAOKÊ/." www/
+elif [ -d "KARAOKE" ]; then
+cp -r "KARAOKE/." www/
+fi
+if [ -f "index.html" ]; then
+cp index.html www/index.html
+elif [ -f "www/index.html" ]; then
+echo "index.html já presente em www/"
+else
+echo "<h1>Karaoke Festa das Cores</h1>" > www/index.html
+fi
+​- name: Configurar Java 21 e Android SDK
+uses: actions/setup-java@v4
+with:
+distribution: 'temurin'
+java-version: '21'
+​- name: Instalar Node.js e Capacitor CLI
+uses: actions/setup-node@v4
+with:
+node-version: '20'
+​- name: Inicializar projeto Android com Capacitor
+run: |
+npm init -y
+npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+npx cap init "Karaoke Festa das Cores" "com.ursoplayer.karaokefestadascores" --web-dir www
+npx cap add android
+npx cap copy android
+​- name: Configurar AndroidManifest, ícone e MainActivity
+run: |
+cat << 'SCRIPT' > configure_android.py
+import os
+import shutil
+​manifest_path = "android/app/src/main/AndroidManifest.xml"
+if os.path.exists(manifest_path):
+with open(manifest_path, "r", encoding="utf-8") as f:
+xml = f.read()
+xml = xml.replace('android:screenOrientation="portrait"', 'android:screenOrientation="landscape"')
+xml = xml.replace('android:screenOrientation="unspecified"', 'android:screenOrientation="landscape"')
+if 'android:screenOrientation="landscape"' not in xml:
+xml = xml.replace('<activity', '<activity android:screenOrientation="landscape"', 1)
 perms = [
-    '<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />',
-    '<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />',
-    '<uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />',
-    '<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />',
-    '<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />',
+'<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />',
+'<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />',
+'<uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />',
+'<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />',
+'<uses-permission android:name="android:name" />'.replace('android:name="android:name"', 'android:name="android.permission.READ_MEDIA_IMAGES"'),
 ]
 for p in perms:
-    if p not in xml:
-        xml = xml.replace("<application", p + "\n    <application", 1)
-
-with open("android/app/src/main/AndroidManifest.xml", "w", encoding="utf-8") as f:
-    f.write(xml)
-PYEOF
-          fi
-
-          python3 - << 'PYEOF'
-import os, shutil
-
-candidates = []
-for root_dir, _, files in os.walk("."):
-    if ".git" in root_dir or "android" in root_dir or "node_modules" in root_dir:
-        continue
-    for fn in files:
-        low = fn.lower().replace("_", "-")
-        if low.startswith("ic-launcher") and fn.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
-            candidates.append(os.path.join(root_dir, fn))
-
-res_root = "android/app/src/main/res"
+if p not in xml:
+xml = xml.replace("<application", p + "\n    <application", 1)
+with open(manifest_path, "w", encoding="utf-8") as f:
+f.write(xml)
+​candidates = []
+for root_dir, , files in os.walk("."):
+if any(skip in root_dir for skip in [".git", "android", "node_modules"]):
+continue
+for fn in files:
+norm = fn.lower().replace("", "-")
+if norm.startswith("ic-launcher") and fn.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
+candidates.append(os.path.join(root_dir, fn))
+​res_root = "android/app/src/main/res"
 if candidates:
-    src_icon = candidates[0]
-    for folder in ["mipmap-mdpi", "mipmap-hdpi", "mipmap-xhdpi", "mipmap-xxhdpi", "mipmap-xxxhdpi"]:
-        out_dir = os.path.join(res_root, folder)
-        os.makedirs(out_dir, exist_ok=True)
-        for target in ["ic_launcher.png", "ic_launcher_round.png", "ic_launcher_foreground.png"]:
-            shutil.copyfile(src_icon, os.path.join(out_dir, target))
-    for xml_name in ["ic_launcher.xml", "ic_launcher_round.xml"]:
-        for any_dir in [os.path.join(res_root, "mipmap-anydpi-v26"), os.path.join(res_root, "mipmap-anydpi")]:
-            p = os.path.join(any_dir, xml_name)
-            if os.path.exists(p):
-                os.remove(p)
-PYEOF
-
-          MAIN_ACTIVITY=$(find android/app/src/main -name "MainActivity.java" -o -name "MainActivity.kt" | head -n 1)
-          if [ -n "$MAIN_ACTIVITY" ]; then
-            cat << 'EOF' > "$MAIN_ACTIVITY"
-            package com.ursoplayer.karaokefestadascores;
-
-            import android.Manifest;
-            import android.content.pm.ActivityInfo;
-            import android.content.pm.PackageManager;
-            import android.os.Build;
-            import android.os.Bundle;
-            import android.view.KeyEvent;
-            import android.view.View;
-            import android.view.WindowManager;
-            import android.webkit.JavascriptInterface;
-            import androidx.core.app.ActivityCompat;
-            import androidx.core.content.ContextCompat;
-            import com.getcapacitor.BridgeActivity;
-            import java.util.ArrayList;
-            import java.util.List;
-
-            public class MainActivity extends BridgeActivity {
-                private static final int REQ_STORAGE_PERMS = 1001;
-
-                @Override
-                protected void onCreate(Bundle savedInstanceState) {
-                    super.onCreate(savedInstanceState);
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                    solicitarPermissoesArmazenamento();
-                    if (getBridge() != null && getBridge().getWebView() != null) {
-                        getBridge().getWebView().addJavascriptInterface(new AndroidHostBridge(), "AndroidHost");
-                    }
-                }
-
-                private void solicitarPermissoesArmazenamento() {
-                    List<String> needed = new ArrayList<>();
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO) != PackageManager.PERMISSION_GRANTED) {
-                            needed.add(Manifest.permission.READ_MEDIA_VIDEO);
-                        }
-                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                            needed.add(Manifest.permission.READ_MEDIA_AUDIO);
-                        }
-                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
-                            needed.add(Manifest.permission.READ_MEDIA_IMAGES);
-                        }
-                    } else {
-                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                            needed.add(Manifest.permission.READ_EXTERNAL_STORAGE);
-                        }
-                    }
-                    if (!needed.isEmpty()) {
-                        ActivityCompat.requestPermissions(this, needed.toArray(new String[0]), REQ_STORAGE_PERMS);
-                    }
-                }
-
-                @Override
-                public void onWindowFocusChanged(boolean hasFocus) {
-                    super.onWindowFocusChanged(hasFocus);
-                    if (hasFocus) {
-                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                    }
-                }
-
-                @Override
-                public boolean dispatchKeyEvent(KeyEvent event) {
-                    if (getBridge() != null && getBridge().getWebView() != null) {
-                        int code = event.getKeyCode();
-                        if (code >= KeyEvent.KEYCODE_0 && code <= KeyEvent.KEYCODE_9) {
-                            char digit = (char) ('0' + (code - KeyEvent.KEYCODE_0));
-                            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                                String js = "if (window.receberTeclaNativa) window.receberTeclaNativa('" + digit + "');";
-                                getBridge().getWebView().post(() -> getBridge().getWebView().evaluateJavascript(js, null));
-                            }
-                        }
-                    }
-                    return super.dispatchKeyEvent(event);
-                }
-
-                public class AndroidHostBridge {
-                    @JavascriptInterface
-                    public String getDeviceKind() {
-                        boolean isTv = getPackageManager().hasSystemFeature("android.software.leanback")
-                                    || getPackageManager().hasSystemFeature("android.hardware.type.television");
-                        if (isTv) return "tv";
-                        int smallestWidth = getResources().getConfiguration().smallestScreenWidthDp;
-                        return smallestWidth >= 600 ? "tvbox" : "phone";
-                    }
-
-                    @JavascriptInterface
-                    public void setOrientation(int mode) {
-                        runOnUiThread(() -> {
-                            if (mode == 1) {
-                                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
-                            } else {
-                                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                            }
-                        });
-                    }
-
-                    @JavascriptInterface
-                    public void exitApp() {
-                        runOnUiThread(() -> {
-                            finishAffinity();
-                            System.exit(0);
-                        });
-                    }
-                }
-            }
-          EOF
-          fi
-
-      - name: Resolver conflito de versões do Kotlin stdlib no Gradle
-        run: |
-          cat << 'EOF' >> android/build.gradle
-
-allprojects {
-    configurations.all {
-        resolutionStrategy {
-            force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-            force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
-            force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
-        }
-    }
+src_icon = candidates[0]
+for folder in ["mipmap-mdpi", "mipmap-hdpi", "mipmap-xhdpi", "mipmap-xxhdpi", "mipmap-xxxhdpi"]:
+out_dir = os.path.join(res_root, folder)
+os.makedirs(out_dir, exist_ok=True)
+for target in ["ic_launcher.png", "ic_launcher_round.png", "ic_launcher_foreground.png"]:
+shutil.copyfile(src_icon, os.path.join(out_dir, target))
+for xml_name in ["ic_launcher.xml", "ic_launcher_round.xml"]:
+for any_dir in [os.path.join(res_root, "mipmap-anydpi-v26"), os.path.join(res_root, "mipmap-anydpi")]:
+p = os.path.join(any_dir, xml_name)
+if os.path.exists(p):
+os.remove(p)
+​main_java = "android/app/src/main/java/com/ursoplayer/karaokefestadascores/MainActivity.java"
+os.makedirs(os.path.dirname(main_java), exist_ok=True)
+java_code = """package com.ursoplayer.karaokefestadascores;
+​import android.Manifest;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.WindowManager;
+import android.webkit.JavascriptInterface;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import com.getcapacitor.BridgeActivity;
+import java.util.ArrayList;
+import java.util.List;
+​public class MainActivity extends BridgeActivity {
+private static final int REQ_STORAGE_PERMS = 1001;
+​@Override
+protected void onCreate(Bundle savedInstanceState) {
+super.onCreate(savedInstanceState);
+setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+solicitarPermissoesArmazenamento();
+if (getBridge() != null && getBridge().getWebView() != null) {
+getBridge().getWebView().addJavascriptInterface(new AndroidHostBridge(), "AndroidHost");
 }
-EOF
-
-      - name: Compilar APK Debug
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
-
-      - name: Enviar APK como artefato
-        uses: actions/upload-artifact@v4
-        with:
-          name: karaoke-festa-das-cores-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+}
+​private void solicitarPermissoesArmazenamento() {
+List<String> needed = new ArrayList<>();
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO) != PackageManager.PERMISSION_GRANTED) {
+needed.add(Manifest.permission.READ_MEDIA_VIDEO);
+}
+if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+needed.add(Manifest.permission.READ_MEDIA_AUDIO);
+}
+if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+needed.add(Manifest.permission.READ_MEDIA_IMAGES);
+}
+} else {
+if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+needed.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+}
+}
+if (!needed.isEmpty()) {
+ActivityCompat.requestPermissions(this, needed.toArray(new String[0]), REQ_STORAGE_PERMS);
+}
+}
+​@Override
+public void onWindowFocusChanged(boolean hasFocus) {
+super.onWindowFocusChanged(hasFocus);
+if (hasFocus) {
+setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+}
+}
+​@Override
+public boolean dispatchKeyEvent(KeyEvent event) {
+if (getBridge() != null && getBridge().getWebView() != null) {
+int code = event.getKeyCode();
+if (code >= KeyEvent.KEYCODE_0 && code <= KeyEvent.KEYCODE_9) {
+char digit = (char) ('0' + (code - KeyEvent.KEYCODE_0));
+if (event.getAction() == KeyEvent.ACTION_DOWN) {
+String js = "if (window.receberTeclaNativa) window.receberTeclaNativa('" + digit + "');";
+getBridge().getWebView().post(() -> getBridge().getWebView().evaluateJavascript(js, null));
+}
+}
+}
+return super.dispatchKeyEvent(event);
+}
+​public class AndroidHostBridge {
+@JavascriptInterface
+public String getDeviceKind() {
+boolean isTv = getPackageManager().hasSystemFeature("android.software.leanback")
+|| getPackageManager().hasSystemFeature("android.hardware.type.television");
+if (isTv) return "tv";
+int smallestWidth = getResources().getConfiguration().smallestScreenWidthDp;
+return smallestWidth >= 600 ? "tvbox" : "phone";
+}
+​@JavascriptInterface
+public void setOrientation(int mode) {
+runOnUiThread(() -> {
+if (mode == 1) {
+setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+} else {
+setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+}
+});
+}
+​@JavascriptInterface
+public void exitApp() {
+runOnUiThread(() -> {
+finishAffinity();
+System.exit(0);
+});
+}
+}
+}
+"""
+with open(main_java, "w", encoding="utf-8") as f:
+f.write(java_code)
+​gradle_path = "android/build.gradle"
+if os.path.exists(gradle_path):
+with open(gradle_path, "r", encoding="utf-8") as f:
+gradle = f.read()
+force_block = """
+allprojects {
+configurations.all {
+resolutionStrategy {
+force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+}
+}
+}
+"""
+if "force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'" not in gradle:
+with open(gradle_path, "w", encoding="utf-8") as f:
+f.write(gradle + force_block)
+SCRIPT
+python3 configure_android.py
+​- name: Compilar APK Debug
+run: |
+cd android
+chmod +x gradlew
+./gradlew assembleDebug
+​- name: Enviar APK como artefato
+uses: actions/upload-artifact@v4
+with:
+name: karaoke-festa-das-cores-apk
+path: android/app/build/outputs/apk/debug/app-debug.apk
