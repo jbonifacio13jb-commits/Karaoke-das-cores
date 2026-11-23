@@ -58,51 +58,51 @@ jobs:
           if [ -f "$MANIFEST" ]; then
             sed -i 's/android:screenOrientation="[^"]*"/android:screenOrientation="landscape"/g' "$MANIFEST"
             python3 - << 'PYEOF'
-with open("android/app/src/main/AndroidManifest.xml", "r", encoding="utf-8") as f:
-    xml = f.read()
+          with open("android/app/src/main/AndroidManifest.xml", "r", encoding="utf-8") as f:
+              xml = f.read()
 
-perms = [
-    '<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />',
-    '<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />',
-    '<uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />',
-    '<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />',
-    '<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />',
-]
-for p in perms:
-    if p not in xml:
-        xml = xml.replace("<application", p + "\n    <application", 1)
+          perms = [
+              '<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />',
+              '<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />',
+              '<uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />',
+              '<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />',
+              '<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />',
+          ]
+          for p in perms:
+              if p not in xml:
+                  xml = xml.replace("<application", p + "\n    <application", 1)
 
-with open("android/app/src/main/AndroidManifest.xml", "w", encoding="utf-8") as f:
-    f.write(xml)
-PYEOF
+          with open("android/app/src/main/AndroidManifest.xml", "w", encoding="utf-8") as f:
+              f.write(xml)
+          PYEOF
           fi
 
           python3 - << 'PYEOF'
-import os, shutil
+          import os, shutil
 
-candidates = []
-for root_dir, _, files in os.walk("."):
-    if ".git" in root_dir or "android" in root_dir or "node_modules" in root_dir:
-        continue
-    for fn in files:
-        low = fn.lower().replace("_", "-")
-        if low.startswith("ic-launcher") and fn.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
-            candidates.append(os.path.join(root_dir, fn))
+          candidates = []
+          for root_dir, _, files in os.walk("."):
+              if ".git" in root_dir or "android" in root_dir or "node_modules" in root_dir:
+                  continue
+              for fn in files:
+                  low = fn.lower().replace("_", "-")
+                  if low.startswith("ic-launcher") and fn.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
+                      candidates.append(os.path.join(root_dir, fn))
 
-res_root = "android/app/src/main/res"
-if candidates:
-    src_icon = candidates[0]
-    for folder in ["mipmap-mdpi", "mipmap-hdpi", "mipmap-xhdpi", "mipmap-xxhdpi", "mipmap-xxxhdpi"]:
-        out_dir = os.path.join(res_root, folder)
-        os.makedirs(out_dir, exist_ok=True)
-        for target in ["ic_launcher.png", "ic_launcher_round.png", "ic_launcher_foreground.png"]:
-            shutil.copyfile(src_icon, os.path.join(out_dir, target))
-    for xml_name in ["ic_launcher.xml", "ic_launcher_round.xml"]:
-        for any_dir in [os.path.join(res_root, "mipmap-anydpi-v26"), os.path.join(res_root, "mipmap-anydpi")]:
-            p = os.path.join(any_dir, xml_name)
-            if os.path.exists(p):
-                os.remove(p)
-PYEOF
+          res_root = "android/app/src/main/res"
+          if candidates:
+              src_icon = candidates[0]
+              for folder in ["mipmap-mdpi", "mipmap-hdpi", "mipmap-xhdpi", "mipmap-xxhdpi", "mipmap-xxxhdpi"]:
+                  out_dir = os.path.join(res_root, folder)
+                  os.makedirs(out_dir, exist_ok=True)
+                  for target in ["ic_launcher.png", "ic_launcher_round.png", "ic_launcher_foreground.png"]:
+                      shutil.copyfile(src_icon, os.path.join(out_dir, target))
+              for xml_name in ["ic_launcher.xml", "ic_launcher_round.xml"]:
+                  for any_dir in [os.path.join(res_root, "mipmap-anydpi-v26"), os.path.join(res_root, "mipmap-anydpi")]:
+                      p = os.path.join(any_dir, xml_name)
+                      if os.path.exists(p):
+                          os.remove(p)
+          PYEOF
 
           MAIN_ACTIVITY=$(find android/app/src/main -name "MainActivity.java" -o -name "MainActivity.kt" | head -n 1)
           if [ -n "$MAIN_ACTIVITY" ]; then
