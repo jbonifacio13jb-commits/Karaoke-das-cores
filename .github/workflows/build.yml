@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repositório
         uses: actions/checkout@v4
 
-      - name: Preparar pasta www do aplicativo
+      - name: Preparar pasta www do aplicativo e injetar fluxo mestre direto
         run: |
           mkdir -p www
           if [ -d "KARAOKÊ" ]; then
@@ -32,6 +32,173 @@ jobs:
           else
             echo "<h1>Karaoke Festa das Cores</h1>" > www/index.html
           fi
+          
+          python3 - << 'PYEOF'
+          import os
+          
+          target_html = "www/index.html"
+          if os.path.exists(target_html):
+              with open(target_html, "r", encoding="utf-8", errors="ignore") as f:
+                  html = f.read()
+          
+              master_patch = """
+<style id="karaoke-mestre-clean-intro">
+  /* Oculta ícones/botões centrais ou overlays de play durante a intro */
+  .play-icon, .btn-play, .play-button, .intro-play, [class*="play-icon"], [class*="play-overlay"],
+  video::-webkit-media-controls-play-button,
+  video::-webkit-media-controls-start-playback-button {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+  }
+</style>
+<script id="karaoke-mestre-boot">
+(function() {
+  const INTRO_SUBFOLDERS = ["INTROS", "INTRO", "intros", "intro"];
+
+  window.KARAOKEMestre = {
+    masterFolderName: "KARAOKÊ",
+    masterHandle: null,
+    subfolders: {
+      intros: null,
+      videos: null,
+      cantores: null
+    },
+    autoStartDone: false
+  };
+
+  function isStartConfirmElement(el) {
+    if (!el) return false;
+    const txt = (el.innerText || el.textContent || "").trim().toLowerCase();
+    const aria = (el.getAttribute("aria-label") || "").toLowerCase();
+    const idCls = ((el.id || "") + " " + (el.className || "")).toLowerCase();
+    return (
+      (txt === "ok" || txt === "iniciar" || txt === "começar" || txt === "ok para iniciar" || txt.includes("aperte ok") || txt.includes("clique para iniciar") || txt.includes("toque para iniciar")) &&
+      (idCls.includes("start") || idCls.includes("init") || idCls.includes("modal") || idCls.includes("overlay") || idCls.includes("intro") || idCls.includes("ok") || aria.includes("start") || aria.includes("ok") || el.tagName === "BUTTON")
+    );
+  }
+
+  function isIntroFolderPrompt(el) {
+    if (!el) return false;
+    const txt = (el.innerText || el.textContent || "").trim().toLowerCase();
+    return (txt.includes("pasta das intros") || txt.includes("pasta de intros") || txt.includes("selecionar pasta intro") || txt.includes("escolher pasta das intros"));
+  }
+
+  function cleanIntroPlayIcons() {
+    document.querySelectorAll("video").forEach(v => {
+      v.controls = false;
+      v.removeAttribute("controls");
+      v.playsInline = true;
+      v.autoplay = true;
+      v.muted = false;
+      const p = v.play();
+      if (p && typeof p.catch === "function") {
+        p.catch(() => {
+          v.muted = true;
+          v.play().catch(() => {});
+        });
+      }
+    });
+
+    const candidates = document.querySelectorAll("button, div, span, i, svg, a");
+    candidates.forEach(el => {
+      if (el.id === "karaoke-mestre-boot" || el.id === "karaoke-mestre-clean-intro") return;
+      const cls = (typeof el.className === "string" ? el.className : "").toLowerCase();
+      const txt = (el.innerText || el.textContent || "").trim();
+      const isPlaySymbol = txt === "▶" || txt === "►" || txt === "▷" || txt.toLowerCase() === "play";
+      const isPlayClass = cls.includes("play-btn") || cls.includes("play-icon") || cls.includes("icon-play") || cls.includes("btn-play");
+      if ((isPlaySymbol || isPlayClass) && !txt.toLowerCase().includes("pasta")) {
+        el.style.setProperty("display", "none", "important");
+        el.style.setProperty("opacity", "0", "important");
+        el.style.setProperty("visibility", "hidden", "important");
+      }
+    });
+  }
+
+  function dismissOkPromptsAndRouteMasterFolder() {
+    const all = Array.from(document.querySelectorAll("button, [role='button'], .modal, .dialog, .overlay, div, p, label"));
+    for (const el of all) {
+      if (isStartConfirmElement(el)) {
+        el.style.setProperty("display", "none", "important");
+        if (el.tagName === "BUTTON" && !window.KARAOKEMestre.autoStartDone) {
+          window.KARAOKEMestre.autoStartDone = true;
+          try { el.click(); } catch (e) {}
+        }
+      }
+      if (isIntroFolderPrompt(el)) {
+        const t = (el.textContent || "");
+        if (t.includes("intros") || t.includes("INTROS")) {
+          el.textContent = t
+            .replace(/pasta das intros/gi, "pasta mestra KARAOKÊ")
+            .replace(/pasta de intros/gi, "pasta mestra KARAOKÊ")
+            .replace(/intros/gi, "pasta mestra KARAOKÊ");
+        }
+      }
+    }
+    cleanIntroPlayIcons();
+  }
+
+  if (typeof window.showDirectoryPicker === "function") {
+    const origPicker = window.showDirectoryPicker.bind(window);
+    window.showDirectoryPicker = async function(options) {
+      const mergedOpts = Object.assign({}, options || {}, { id: "karaoke-mestre-root" });
+      const handle = await origPicker(mergedOpts);
+      window.KARAOKEMestre.masterHandle = handle;
+      window.KARAOKEMestre.masterFolderName = handle && handle.name ? handle.name : "KARAOKÊ";
+      try {
+        for await (const [entryName, entryHandle] of handle.entries()) {
+          if (entryHandle && entryHandle.kind === "directory") {
+            const low = entryName.toLowerCase();
+            if (INTRO_SUBFOLDERS.includes(entryName) || low === "intros" || low === "intro") {
+              window.KARAOKEMestre.subfolders.intros = entryHandle;
+            } else if (low.includes("video") || low.includes("clip") || low.includes("musica") || low.includes("música")) {
+              window.KARAOKEMestre.subfolders.videos = entryHandle;
+            } else if (low.includes("cantor") || low.includes("slide") || low.includes("foto")) {
+              window.KARAOKEMestre.subfolders.cantores = entryHandle;
+            }
+          }
+        }
+      } catch (e) {}
+      setTimeout(cleanIntroPlayIcons, 120);
+      return handle;
+    };
+  }
+
+  const observer = new MutationObserver(() => {
+    dismissOkPromptsAndRouteMasterFolder();
+  });
+
+  function initMestreFlow() {
+    dismissOkPromptsAndRouteMasterFolder();
+    cleanIntroPlayIcons();
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initMestreFlow);
+  } else {
+    initMestreFlow();
+  }
+  window.addEventListener("load", () => {
+    dismissOkPromptsAndRouteMasterFolder();
+    cleanIntroPlayIcons();
+  });
+})();
+</script>
+"""
+
+              if "</body>" in html:
+                  html = html.replace("</body>", master_patch + "\n</body>", 1)
+              else:
+                  html = html + "\n" + master_patch
+
+              with open(target_html, "w", encoding="utf-8") as f:
+                  f.write(html)
+              print("Patch mestre aplicado com sucesso em www/index.html")
+PYEOF
 
       - name: Configurar Java 21 e Android SDK
         uses: actions/setup-java@v4
@@ -51,7 +218,7 @@ jobs:
           npx cap init "Karaoke Festa das Cores" "com.ursoplayer.karaokefestadascores" --web-dir www
           npx cap add android
           npx cap copy android
-
+          
       - name: Configurar permissões, paisagem, ícone e MainActivity
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
@@ -60,7 +227,7 @@ jobs:
             python3 - << 'PYEOF'
           with open("android/app/src/main/AndroidManifest.xml", "r", encoding="utf-8") as f:
               xml = f.read()
-
+          
           perms = [
               '<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />',
               '<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />',
@@ -71,15 +238,15 @@ jobs:
           for p in perms:
               if p not in xml:
                   xml = xml.replace("<application", p + "\n    <application", 1)
-
+          
           with open("android/app/src/main/AndroidManifest.xml", "w", encoding="utf-8") as f:
               f.write(xml)
           PYEOF
           fi
-
+          
           python3 - << 'PYEOF'
           import os, shutil
-
+          
           candidates = []
           for root_dir, _, files in os.walk("."):
               if ".git" in root_dir or "android" in root_dir or "node_modules" in root_dir:
@@ -88,7 +255,7 @@ jobs:
                   low = fn.lower().replace("_", "-")
                   if low.startswith("ic-launcher") and fn.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
                       candidates.append(os.path.join(root_dir, fn))
-
+          
           res_root = "android/app/src/main/res"
           if candidates:
               src_icon = candidates[0]
@@ -103,12 +270,12 @@ jobs:
                       if os.path.exists(p):
                           os.remove(p)
           PYEOF
-
+          
           MAIN_ACTIVITY=$(find android/app/src/main -name "MainActivity.java" -o -name "MainActivity.kt" | head -n 1)
           if [ -n "$MAIN_ACTIVITY" ]; then
             cat << 'EOF' > "$MAIN_ACTIVITY"
           package com.ursoplayer.karaokefestadascores;
-
+          
           import android.Manifest;
           import android.content.pm.ActivityInfo;
           import android.content.pm.PackageManager;
@@ -122,10 +289,10 @@ jobs:
           import com.getcapacitor.BridgeActivity;
           import java.util.ArrayList;
           import java.util.List;
-
+          
           public class MainActivity extends BridgeActivity {
               private static final int REQ_STORAGE_PERMS = 1001;
-
+          
               @Override
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
@@ -136,7 +303,7 @@ jobs:
                       getBridge().getWebView().addJavascriptInterface(new AndroidHostBridge(), "AndroidHost");
                   }
               }
-
+          
               private void solicitarPermissoesArmazenamento() {
                   List<String> needed = new ArrayList<>();
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -158,7 +325,7 @@ jobs:
                       ActivityCompat.requestPermissions(this, needed.toArray(new String[0]), REQ_STORAGE_PERMS);
                   }
               }
-
+          
               @Override
               public void onWindowFocusChanged(boolean hasFocus) {
                   super.onWindowFocusChanged(hasFocus);
@@ -166,7 +333,7 @@ jobs:
                       setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                   }
               }
-
+          
               @Override
               public boolean dispatchKeyEvent(KeyEvent event) {
                   if (getBridge() != null && getBridge().getWebView() != null) {
@@ -181,7 +348,7 @@ jobs:
                   }
                   return super.dispatchKeyEvent(event);
               }
-
+          
               public class AndroidHostBridge {
                   @JavascriptInterface
                   public String getDeviceKind() {
@@ -191,7 +358,7 @@ jobs:
                       int smallestWidth = getResources().getConfiguration().smallestScreenWidthDp;
                       return smallestWidth >= 600 ? "tvbox" : "phone";
                   }
-
+          
                   @JavascriptInterface
                   public void setOrientation(int mode) {
                       runOnUiThread(() -> {
@@ -202,7 +369,7 @@ jobs:
                           }
                       });
                   }
-
+          
                   @JavascriptInterface
                   public void exitApp() {
                       runOnUiThread(() -> {
@@ -214,11 +381,11 @@ jobs:
           }
           EOF
           fi
-
+          
       - name: Resolver conflito de versões do Kotlin stdlib no Gradle
         run: |
           cat << 'EOF' >> android/build.gradle
-
+          
           allprojects {
               configurations.all {
                   resolutionStrategy {
@@ -229,13 +396,13 @@ jobs:
               }
           }
           EOF
-
+          
       - name: Compilar APK Debug
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
-
+          
       - name: Enviar APK como artefato
         uses: actions/upload-artifact@v4
         with:
