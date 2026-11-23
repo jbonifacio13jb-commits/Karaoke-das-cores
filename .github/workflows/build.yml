@@ -41,165 +41,164 @@ jobs:
               with open(target_html, "r", encoding="utf-8", errors="ignore") as f:
                   html = f.read()
           
-              master_patch = """
-<style id="karaoke-mestre-clean-intro">
-  /* Oculta ícones/botões centrais ou overlays de play durante a intro */
-  .play-icon, .btn-play, .play-button, .intro-play, [class*="play-icon"], [class*="play-overlay"],
-  video::-webkit-media-controls-play-button,
-  video::-webkit-media-controls-start-playback-button {
-    display: none !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    visibility: hidden !important;
-  }
-</style>
-<script id="karaoke-mestre-boot">
-(function() {
-  const INTRO_SUBFOLDERS = ["INTROS", "INTRO", "intros", "intro"];
-
-  window.KARAOKEMestre = {
-    masterFolderName: "KARAOKÊ",
-    masterHandle: null,
-    subfolders: {
-      intros: null,
-      videos: null,
-      cantores: null
-    },
-    autoStartDone: false
-  };
-
-  function isStartConfirmElement(el) {
-    if (!el) return false;
-    const txt = (el.innerText || el.textContent || "").trim().toLowerCase();
-    const aria = (el.getAttribute("aria-label") || "").toLowerCase();
-    const idCls = ((el.id || "") + " " + (el.className || "")).toLowerCase();
-    return (
-      (txt === "ok" || txt === "iniciar" || txt === "começar" || txt === "ok para iniciar" || txt.includes("aperte ok") || txt.includes("clique para iniciar") || txt.includes("toque para iniciar")) &&
-      (idCls.includes("start") || idCls.includes("init") || idCls.includes("modal") || idCls.includes("overlay") || idCls.includes("intro") || idCls.includes("ok") || aria.includes("start") || aria.includes("ok") || el.tagName === "BUTTON")
-    );
-  }
-
-  function isIntroFolderPrompt(el) {
-    if (!el) return false;
-    const txt = (el.innerText || el.textContent || "").trim().toLowerCase();
-    return (txt.includes("pasta das intros") || txt.includes("pasta de intros") || txt.includes("selecionar pasta intro") || txt.includes("escolher pasta das intros"));
-  }
-
-  function cleanIntroPlayIcons() {
-    document.querySelectorAll("video").forEach(v => {
-      v.controls = false;
-      v.removeAttribute("controls");
-      v.playsInline = true;
-      v.autoplay = true;
-      v.muted = false;
-      const p = v.play();
-      if (p && typeof p.catch === "function") {
-        p.catch(() => {
-          v.muted = true;
-          v.play().catch(() => {});
-        });
-      }
-    });
-
-    const candidates = document.querySelectorAll("button, div, span, i, svg, a");
-    candidates.forEach(el => {
-      if (el.id === "karaoke-mestre-boot" || el.id === "karaoke-mestre-clean-intro") return;
-      const cls = (typeof el.className === "string" ? el.className : "").toLowerCase();
-      const txt = (el.innerText || el.textContent || "").trim();
-      const isPlaySymbol = txt === "▶" || txt === "►" || txt === "▷" || txt.toLowerCase() === "play";
-      const isPlayClass = cls.includes("play-btn") || cls.includes("play-icon") || cls.includes("icon-play") || cls.includes("btn-play");
-      if ((isPlaySymbol || isPlayClass) && !txt.toLowerCase().includes("pasta")) {
-        el.style.setProperty("display", "none", "important");
-        el.style.setProperty("opacity", "0", "important");
-        el.style.setProperty("visibility", "hidden", "important");
-      }
-    });
-  }
-
-  function dismissOkPromptsAndRouteMasterFolder() {
-    const all = Array.from(document.querySelectorAll("button, [role='button'], .modal, .dialog, .overlay, div, p, label"));
-    for (const el of all) {
-      if (isStartConfirmElement(el)) {
-        el.style.setProperty("display", "none", "important");
-        if (el.tagName === "BUTTON" && !window.KARAOKEMestre.autoStartDone) {
-          window.KARAOKEMestre.autoStartDone = true;
-          try { el.click(); } catch (e) {}
-        }
-      }
-      if (isIntroFolderPrompt(el)) {
-        const t = (el.textContent || "");
-        if (t.includes("intros") || t.includes("INTROS")) {
-          el.textContent = t
-            .replace(/pasta das intros/gi, "pasta mestra KARAOKÊ")
-            .replace(/pasta de intros/gi, "pasta mestra KARAOKÊ")
-            .replace(/intros/gi, "pasta mestra KARAOKÊ");
-        }
-      }
-    }
-    cleanIntroPlayIcons();
-  }
-
-  if (typeof window.showDirectoryPicker === "function") {
-    const origPicker = window.showDirectoryPicker.bind(window);
-    window.showDirectoryPicker = async function(options) {
-      const mergedOpts = Object.assign({}, options || {}, { id: "karaoke-mestre-root" });
-      const handle = await origPicker(mergedOpts);
-      window.KARAOKEMestre.masterHandle = handle;
-      window.KARAOKEMestre.masterFolderName = handle && handle.name ? handle.name : "KARAOKÊ";
-      try {
-        for await (const [entryName, entryHandle] of handle.entries()) {
-          if (entryHandle && entryHandle.kind === "directory") {
-            const low = entryName.toLowerCase();
-            if (INTRO_SUBFOLDERS.includes(entryName) || low === "intros" || low === "intro") {
-              window.KARAOKEMestre.subfolders.intros = entryHandle;
-            } else if (low.includes("video") || low.includes("clip") || low.includes("musica") || low.includes("música")) {
-              window.KARAOKEMestre.subfolders.videos = entryHandle;
-            } else if (low.includes("cantor") || low.includes("slide") || low.includes("foto")) {
-              window.KARAOKEMestre.subfolders.cantores = entryHandle;
+              master_patch = '''
+          <style id="karaoke-mestre-clean-intro">
+            .play-icon, .btn-play, .play-button, .intro-play, [class*="play-icon"], [class*="play-overlay"],
+            video::-webkit-media-controls-play-button,
+            video::-webkit-media-controls-start-playback-button {
+              display: none !important;
+              opacity: 0 !important;
+              pointer-events: none !important;
+              visibility: hidden !important;
             }
-          }
-        }
-      } catch (e) {}
-      setTimeout(cleanIntroPlayIcons, 120);
-      return handle;
-    };
-  }
-
-  const observer = new MutationObserver(() => {
-    dismissOkPromptsAndRouteMasterFolder();
-  });
-
-  function initMestreFlow() {
-    dismissOkPromptsAndRouteMasterFolder();
-    cleanIntroPlayIcons();
-    if (document.body) {
-      observer.observe(document.body, { childList: true, subtree: true, attributes: true });
-    }
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initMestreFlow);
-  } else {
-    initMestreFlow();
-  }
-  window.addEventListener("load", () => {
-    dismissOkPromptsAndRouteMasterFolder();
-    cleanIntroPlayIcons();
-  });
-})();
-</script>
-"""
-
+          </style>
+          <script id="karaoke-mestre-boot">
+          (function() {
+            const INTRO_SUBFOLDERS = ["INTROS", "INTRO", "intros", "intro"];
+          
+            window.KARAOKEMestre = {
+              masterFolderName: "KARAOKÊ",
+              masterHandle: null,
+              subfolders: {
+                intros: null,
+                videos: null,
+                cantores: null
+              },
+              autoStartDone: false
+            };
+          
+            function isStartConfirmElement(el) {
+              if (!el) return false;
+              const txt = (el.innerText || el.textContent || "").trim().toLowerCase();
+              const aria = (el.getAttribute("aria-label") || "").toLowerCase();
+              const idCls = ((el.id || "") + " " + (el.className || "")).toLowerCase();
+              return (
+                (txt === "ok" || txt === "iniciar" || txt === "começar" || txt === "ok para iniciar" || txt.includes("aperte ok") || txt.includes("clique para iniciar") || txt.includes("toque para iniciar")) &&
+                (idCls.includes("start") || idCls.includes("init") || idCls.includes("modal") || idCls.includes("overlay") || idCls.includes("intro") || idCls.includes("ok") || aria.includes("start") || aria.includes("ok") || el.tagName === "BUTTON")
+              );
+            }
+          
+            function isIntroFolderPrompt(el) {
+              if (!el) return false;
+              const txt = (el.innerText || el.textContent || "").trim().toLowerCase();
+              return (txt.includes("pasta das intros") || txt.includes("pasta de intros") || txt.includes("selecionar pasta intro") || txt.includes("escolher pasta das intros"));
+            }
+          
+            function cleanIntroPlayIcons() {
+              document.querySelectorAll("video").forEach(v => {
+                v.controls = false;
+                v.removeAttribute("controls");
+                v.playsInline = true;
+                v.autoplay = true;
+                v.muted = false;
+                const p = v.play();
+                if (p && typeof p.catch === "function") {
+                  p.catch(() => {
+                    v.muted = true;
+                    v.play().catch(() => {});
+                  });
+                }
+              });
+          
+              const candidates = document.querySelectorAll("button, div, span, i, svg, a");
+              candidates.forEach(el => {
+                if (el.id === "karaoke-mestre-boot" || el.id === "karaoke-mestre-clean-intro") return;
+                const cls = (typeof el.className === "string" ? el.className : "").toLowerCase();
+                const txt = (el.innerText || el.textContent || "").trim();
+                const isPlaySymbol = txt === "▶" || txt === "►" || txt === "▷" || txt.toLowerCase() === "play";
+                const isPlayClass = cls.includes("play-btn") || cls.includes("play-icon") || cls.includes("icon-play") || cls.includes("btn-play");
+                if ((isPlaySymbol || isPlayClass) && !txt.toLowerCase().includes("pasta")) {
+                  el.style.setProperty("display", "none", "important");
+                  el.style.setProperty("opacity", "0", "important");
+                  el.style.setProperty("visibility", "hidden", "important");
+                }
+              });
+            }
+          
+            function dismissOkPromptsAndRouteMasterFolder() {
+              const all = Array.from(document.querySelectorAll("button, [role='button'], .modal, .dialog, .overlay, div, p, label"));
+              for (const el of all) {
+                if (isStartConfirmElement(el)) {
+                  el.style.setProperty("display", "none", "important");
+                  if (el.tagName === "BUTTON" && !window.KARAOKEMestre.autoStartDone) {
+                    window.KARAOKEMestre.autoStartDone = true;
+                    try { el.click(); } catch (e) {}
+                  }
+                }
+                if (isIntroFolderPrompt(el)) {
+                  const t = (el.textContent || "");
+                  if (t.includes("intros") || t.includes("INTROS")) {
+                    el.textContent = t
+                      .replace(/pasta das intros/gi, "pasta mestra KARAOKÊ")
+                      .replace(/pasta de intros/gi, "pasta mestra KARAOKÊ")
+                      .replace(/intros/gi, "pasta mestra KARAOKÊ");
+                  }
+                }
+              }
+              cleanIntroPlayIcons();
+            }
+          
+            if (typeof window.showDirectoryPicker === "function") {
+              const origPicker = window.showDirectoryPicker.bind(window);
+              window.showDirectoryPicker = async function(options) {
+                const mergedOpts = Object.assign({}, options || {}, { id: "karaoke-mestre-root" });
+                const handle = await origPicker(mergedOpts);
+                window.KARAOKEMestre.masterHandle = handle;
+                window.KARAOKEMestre.masterFolderName = handle && handle.name ? handle.name : "KARAOKÊ";
+                try {
+                  for await (const [entryName, entryHandle] of handle.entries()) {
+                    if (entryHandle && entryHandle.kind === "directory") {
+                      const low = entryName.toLowerCase();
+                      if (INTRO_SUBFOLDERS.includes(entryName) || low === "intros" || low === "intro") {
+                        window.KARAOKEMestre.subfolders.intros = entryHandle;
+                      } else if (low.includes("video") || low.includes("clip") || low.includes("musica") || low.includes("música")) {
+                        window.KARAOKEMestre.subfolders.videos = entryHandle;
+                      } else if (low.includes("cantor") || low.includes("slide") || low.includes("foto")) {
+                        window.KARAOKEMestre.subfolders.cantores = entryHandle;
+                      }
+                    }
+                  }
+                } catch (e) {}
+                setTimeout(cleanIntroPlayIcons, 120);
+                return handle;
+              };
+            }
+          
+            const observer = new MutationObserver(() => {
+              dismissOkPromptsAndRouteMasterFolder();
+            });
+          
+            function initMestreFlow() {
+              dismissOkPromptsAndRouteMasterFolder();
+              cleanIntroPlayIcons();
+              if (document.body) {
+                observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+              }
+            }
+          
+            if (document.readyState === "loading") {
+              document.addEventListener("DOMContentLoaded", initMestreFlow);
+            } else {
+              initMestreFlow();
+            }
+            window.addEventListener("load", () => {
+              dismissOkPromptsAndRouteMasterFolder();
+              cleanIntroPlayIcons();
+            });
+          })();
+          </script>
+          '''
+          
               if "</body>" in html:
                   html = html.replace("</body>", master_patch + "\n</body>", 1)
               else:
                   html = html + "\n" + master_patch
-
+          
               with open(target_html, "w", encoding="utf-8") as f:
                   f.write(html)
               print("Patch mestre aplicado com sucesso em www/index.html")
-PYEOF
-
+          PYEOF
+          
       - name: Configurar Java 21 e Android SDK
         uses: actions/setup-java@v4
         with:
