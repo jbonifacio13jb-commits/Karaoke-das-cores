@@ -48,34 +48,111 @@ jobs:
           npx cap add android
           npx cap copy android
 
-      - name: Configurar modo paisagem e ponte nativa Android
+      - name: Configurar permissões de pasta/armazenamento, modo paisagem e ic-launcher
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           if [ -f "$MANIFEST" ]; then
             sed -i 's/android:screenOrientation="[^"]*"/android:screenOrientation="landscape"/g' "$MANIFEST"
+            python3 - << 'PYEOF'
+with open("android/app/src/main/AndroidManifest.xml", "r", encoding="utf-8") as f:
+    xml = f.read()
+
+perms = [
+    '<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />',
+    '<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />',
+    '<uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />',
+    '<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />',
+    '<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />',
+]
+for p in perms:
+    if p not in xml:
+        xml = xml.replace("<application", p + "\n    <application", 1)
+
+with open("android/app/src/main/AndroidManifest.xml", "w", encoding="utf-8") as f:
+    f.write(xml)
+PYEOF
           fi
+
+          python3 - << 'PYEOF'
+import os, shutil
+
+candidates = []
+for root_dir, _, files in os.walk("."):
+    if ".git" in root_dir or "android" in root_dir or "node_modules" in root_dir:
+        continue
+    for fn in files:
+        low = fn.lower().replace("_", "-")
+        if low.startswith("ic-launcher") and fn.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
+            candidates.append(os.path.join(root_dir, fn))
+
+res_root = "android/app/src/main/res"
+if candidates:
+    src_icon = candidates[0]
+    for folder in ["mipmap-mdpi", "mipmap-hdpi", "mipmap-xhdpi", "mipmap-xxhdpi", "mipmap-xxxhdpi"]:
+        out_dir = os.path.join(res_root, folder)
+        os.makedirs(out_dir, exist_ok=True)
+        for target in ["ic_launcher.png", "ic_launcher_round.png", "ic_launcher_foreground.png"]:
+            shutil.copyfile(src_icon, os.path.join(out_dir, target))
+    for xml_name in ["ic_launcher.xml", "ic_launcher_round.xml"]:
+        for any_dir in [os.path.join(res_root, "mipmap-anydpi-v26"), os.path.join(res_root, "mipmap-anydpi")]:
+            p = os.path.join(any_dir, xml_name)
+            if os.path.exists(p):
+                os.remove(p)
+PYEOF
+
           MAIN_ACTIVITY=$(find android/app/src/main -name "MainActivity.java" -o -name "MainActivity.kt" | head -n 1)
           if [ -n "$MAIN_ACTIVITY" ]; then
             cat << 'EOF' > "$MAIN_ACTIVITY"
             package com.ursoplayer.karaokefestadascores;
 
+            import android.Manifest;
             import android.content.pm.ActivityInfo;
+            import android.content.pm.PackageManager;
+            import android.os.Build;
             import android.os.Bundle;
             import android.view.KeyEvent;
             import android.view.View;
             import android.view.WindowManager;
             import android.webkit.JavascriptInterface;
+            import androidx.core.app.ActivityCompat;
+            import androidx.core.content.ContextCompat;
             import com.getcapacitor.BridgeActivity;
+            import java.util.ArrayList;
+            import java.util.List;
 
             public class MainActivity extends BridgeActivity {
+                private static final int REQ_STORAGE_PERMS = 1001;
+
                 @Override
                 protected void onCreate(Bundle savedInstanceState) {
                     super.onCreate(savedInstanceState);
                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                    hideSystemBars();
+                    solicitarPermissoesArmazenamento();
                     if (getBridge() != null && getBridge().getWebView() != null) {
                         getBridge().getWebView().addJavascriptInterface(new AndroidHostBridge(), "AndroidHost");
+                    }
+                }
+
+                private void solicitarPermissoesArmazenamento() {
+                    List<String> needed = new ArrayList<>();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO) != PackageManager.PERMISSION_GRANTED) {
+                            needed.add(Manifest.permission.READ_MEDIA_VIDEO);
+                        }
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                            needed.add(Manifest.permission.READ_MEDIA_AUDIO);
+                        }
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+                            needed.add(Manifest.permission.READ_MEDIA_IMAGES);
+                        }
+                    } else {
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                            needed.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+                        }
+                    }
+                    if (!needed.isEmpty()) {
+                        ActivityCompat.requestPermissions(this, needed.toArray(new String[0]), REQ_STORAGE_PERMS);
                     }
                 }
 
@@ -84,20 +161,7 @@ jobs:
                     super.onWindowFocusChanged(hasFocus);
                     if (hasFocus) {
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                        hideSystemBars();
                     }
-                }
-
-                private void hideSystemBars() {
-                    View decorView = getWindow().getDecorView();
-                    decorView.setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    );
                 }
 
                 @Override
@@ -152,16 +216,16 @@ jobs:
         run: |
           cat << 'EOF' >> android/build.gradle
 
-          allprojects {
-              configurations.all {
-                  resolutionStrategy {
-                      force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-                      force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
-                      force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
-                  }
-              }
-          }
-          EOF
+allprojects {
+    configurations.all {
+        resolutionStrategy {
+            force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+            force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+            force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+        }
+    }
+}
+EOF
 
       - name: Compilar APK Debug
         run: |
