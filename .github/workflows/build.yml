@@ -23,6 +23,10 @@ jobs:
           fi
           if [ -f "index.html" ]; then
             cp index.html www/index.html
+          elif [ -f "www/index.html" ]; then
+            echo "index.html já presente em www/"
+          else
+            echo "<h1>Karaoke Festa das Cores</h1>" > www/index.html
           fi
 
       - name: Configurar Java 17 e Android SDK
@@ -42,6 +46,7 @@ jobs:
           npm install @capacitor/core @capacitor/cli @capacitor/android
           npx cap init "Karaoke Festa das Cores" "com.ursoplayer.karaokefestadascores" --web-dir www
           npx cap add android
+          npx cap copy android
 
       - name: Configurar modo paisagem e permissões para TV Box, Smart TV e Celular
         run: |
@@ -54,9 +59,7 @@ jobs:
             cat << 'EOF' > "$MAIN_ACTIVITY"
 package com.ursoplayer.karaokefestadascores;
 
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -148,6 +151,7 @@ EOF
       - name: Compilar APK Debug
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleDebug
 
       - name: Enviar APK como artefato
