@@ -7,7 +7,7 @@
   <style>
     :root {
       --bg-dark: #070913;
-      --panel-bg: rgba(12, 16, 32, 0.88);
+      --panel-bg: rgba(12, 16, 32, 0.9);
       --gold: #ffd43b;
       --cyan: #38bdf8;
       --green: #22c55e;
@@ -62,7 +62,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 14px;
+      padding: 10px 12px;
     }
 
     .hud-interactive {
@@ -71,71 +71,30 @@
 
     .top-bar {
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-    }
-
-    #vsk-osd-box {
-      background: var(--panel-bg);
-      border: 2px solid var(--gold);
-      border-radius: 12px;
-      padding: 10px 16px;
-      min-width: 260px;
-      max-width: 480px;
-      box-shadow: 0 0 20px rgba(255, 212, 59, 0.22);
-      transition: opacity 0.2s ease;
-    }
-
-    #vsk-osd-box.hidden-playing {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    #osd-code {
-      font-size: 32px;
-      font-weight: bold;
-      color: var(--gold);
-      letter-spacing: 3px;
-      line-height: 1.1;
-    }
-
-    #osd-song {
-      font-size: 15px;
-      font-weight: bold;
-      color: var(--text);
-      margin-top: 4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    #osd-artist {
-      font-size: 12px;
-      color: var(--cyan);
-      margin-top: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .controls-top {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: flex-end;
+      gap: 6px;
+      width: 100%;
+      position: relative;
     }
 
     .btn {
       background: var(--panel-bg);
       color: var(--text);
-      border: 1px solid rgba(255, 255, 255, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.24);
       border-radius: 8px;
-      padding: 8px 12px;
+      height: 36px;
+      padding: 0 10px;
       font-family: inherit;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: bold;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      flex: 1 1 0;
+      min-width: 0;
     }
 
     .btn:hover, .btn:focus {
@@ -145,60 +104,79 @@
 
     .btn-gold { border-color: var(--gold); color: var(--gold); }
     .btn-green { border-color: var(--green); color: var(--green); }
+    .btn-cyan { border-color: var(--cyan); color: var(--cyan); }
     .btn-red { border-color: var(--red); color: var(--red); }
-    .btn.hidden { display: none; }
 
-    #vsk-queue-panel {
-      align-self: flex-end;
-      width: 280px;
-      max-height: 46vh;
-      overflow-y: auto;
-      background: var(--panel-bg);
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      border-radius: 12px;
-      padding: 10px;
+    .btn-queue {
+      flex: 1.6 1 0;
     }
 
-    .q-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      color: var(--cyan);
-      font-weight: bold;
-      margin-bottom: 8px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-      padding-bottom: 4px;
+    .btn-exit-icon {
+      flex: 0 0 36px;
+      width: 36px;
+      padding: 0;
+      font-size: 15px;
+    }
+
+    #vsk-queue-dropdown {
+      display: none;
+      position: absolute;
+      top: 42px;
+      right: 42px;
+      width: 360px;
+      max-width: 75vw;
+      max-height: 55vh;
+      overflow-y: auto;
+      background: var(--panel-bg);
+      border: 1px solid var(--cyan);
+      border-radius: 10px;
+      padding: 8px;
+      z-index: 25;
+      pointer-events: auto;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+    }
+
+    #vsk-queue-dropdown.open {
+      display: block;
     }
 
     .q-item {
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.05);
       border-left: 3px solid var(--cyan);
       border-radius: 6px;
       padding: 6px 8px;
-      margin-bottom: 6px;
-      font-size: 12px;
+      margin-bottom: 5px;
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .q-item.playing {
       border-left-color: var(--gold);
-      background: rgba(255, 212, 59, 0.12);
+      background: rgba(255, 212, 59, 0.14);
+      color: var(--gold);
+      font-weight: bold;
     }
 
-    .q-code { color: var(--gold); font-weight: bold; }
-    .q-title { font-weight: bold; color: var(--text); }
-    .q-singer { color: var(--cyan); font-size: 11px; }
+    .q-empty {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      padding: 8px 4px;
+    }
 
     #vsk-qr-box {
       display: none;
       text-align: center;
-      padding: 6px 0;
+      padding: 6px 0 2px;
     }
 
     #vsk-qr-box.visible { display: block; }
 
     #vsk-qr-img {
-      width: 112px;
-      height: 112px;
+      width: 96px;
+      height: 96px;
       object-fit: contain;
       border-radius: 8px;
       background: #fff;
@@ -253,7 +231,7 @@
 
     #vsk-marquee {
       display: inline-block;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: bold;
       color: var(--gold);
     }
@@ -266,33 +244,41 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: rgba(5, 8, 18, 0.86);
+      background: rgba(5, 8, 18, 0.9);
       text-align: center;
       padding: 20px;
     }
 
     #vsk-countdown.active, #vsk-score-overlay.active { display: flex; }
 
+    #vsk-default-logo {
+      max-width: 240px;
+      max-height: 120px;
+      object-fit: contain;
+      margin-bottom: 12px;
+      display: none;
+    }
+
     #vsk-artist-cover {
-      width: 150px;
-      height: 150px;
+      width: 130px;
+      height: 130px;
       object-fit: cover;
-      border-radius: 14px;
+      border-radius: 12px;
       border: 2px solid var(--gold);
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       display: none;
     }
 
     #vsk-count-num, #score-number {
-      font-size: 84px;
+      font-size: 76px;
       font-weight: bold;
       color: var(--gold);
       line-height: 1;
     }
 
     #vsk-count-info, #score-msg {
-      font-size: 20px;
-      margin-top: 12px;
+      font-size: 18px;
+      margin-top: 10px;
       color: var(--text);
     }
 
@@ -303,7 +289,7 @@
       display: none;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.78);
+      background: rgba(0, 0, 0, 0.8);
       padding: 16px;
     }
 
@@ -311,8 +297,8 @@
 
     .modal-card {
       width: 100%;
-      max-width: 560px;
-      max-height: 82vh;
+      max-width: 540px;
+      max-height: 86vh;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -324,9 +310,59 @@
     }
 
     .modal-title {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
       color: var(--gold);
+    }
+
+    .numpad-display {
+      background: #060913;
+      border: 1px solid var(--gold);
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .numpad-code {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--gold);
+      letter-spacing: 3px;
+    }
+
+    .numpad-preview {
+      font-size: 12px;
+      color: var(--cyan);
+      min-height: 16px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .numpad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .numpad-key {
+      height: 46px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: #121b34;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .numpad-key:hover, .numpad-key:focus {
+      border-color: var(--gold);
+      color: var(--gold);
+      outline: 2px solid var(--gold);
     }
 
     .input {
@@ -390,31 +426,21 @@
   <video id="vsk-video" playsinline></video>
 
   <div id="vsk-hud">
-    <div class="top-bar">
-      <div id="vsk-osd-box">
-        <div id="osd-code">----</div>
-        <div id="osd-song">VIDEOKE SHOW</div>
-        <div id="osd-artist">Selecione a pasta KARAOK </div>
-      </div>
+    <div class="top-bar hud-interactive">
+      <button class="btn btn-gold" onclick="abrirTecladoCodigo()">CODIGO</button>
+      <button class="btn" onclick="abrirCatalogoVsk()">CAT√ÅLOGO</button>
+      <button class="btn btn-green" onclick="vskStart()">INICIAR</button>
+      <button class="btn" onclick="vskSkip()">PULAR</button>
+      <button class="btn" onclick="vskStop()">PARAR</button>
+      <button class="btn" onclick="vskClear()">LIMPAR FILA</button>
+      <button id="vsk-btn-queue" class="btn btn-cyan btn-queue" onclick="alternarFilaDropdown()">FILA DE M√öSICAS (<span id="vsk-q-count">0</span>)</button>
+      <button id="vsk-btn-exit" class="btn btn-red btn-exit-icon" title="SAIR" aria-label="SAIR">‚èª</button>
 
-      <div class="controls-top hud-interactive">
-        <button class="btn btn-gold" onclick="abrirPastaVsk()">PASTA</button>
-        <button class="btn" onclick="abrirCatalogoVsk()">CAT¡LOGO</button>
-        <button class="btn btn-green" onclick="vskStart()">INICIAR</button>
-        <button class="btn" onclick="vskSkip()">PULAR</button>
-        <button class="btn" onclick="vskStop()">PARAR</button>
-        <button class="btn" onclick="vskClear()">LIMPAR FILA</button>
-        <button id="vsk-btn-exit" class="btn btn-red">SAIR</button>
-      </div>
-    </div>
-
-    <div id="vsk-queue-panel" class="hud-interactive">
-      <div class="q-header">
-        <span>FILA DE M⁄SICAS</span>
-        <span id="vsk-q-count">0</span>
-      </div>
-      <div id="vsk-qr-box">
-        <img id="vsk-qr-img" alt="QR Lista" />
+      <div id="vsk-queue-dropdown">
+        <div id="vsk-queue-items"></div>
+        <div id="vsk-qr-box">
+          <img id="vsk-qr-img" alt="QR Lista" />
+        </div>
       </div>
     </div>
 
@@ -426,12 +452,13 @@
         <div id="vsk-time">-00:00</div>
       </div>
       <div class="marquee-wrap">
-        <div id="vsk-marquee"> VIDEOKE SHOW  AGUARDANDO SELE«√O DE M⁄SICAS </div>
+        <div id="vsk-marquee">‚òÖ VIDEOKE SHOW ‚òÖ AGUARDANDO SELE√á√ÉO DE M√öSICAS ‚òÖ</div>
       </div>
     </div>
   </div>
 
   <div id="vsk-countdown">
+    <img id="vsk-default-logo" src="logo.png" alt="Logo" />
     <img id="vsk-artist-cover" alt="Capa do Artista" />
     <div id="vsk-count-num">5</div>
     <div id="vsk-count-info"></div>
@@ -439,7 +466,34 @@
 
   <div id="vsk-score-overlay">
     <div id="score-number">95</div>
-    <div id="score-msg">MUITO BOM! PARAB…NS PELA APRESENTA«√O!</div>
+    <div id="score-msg">MUITO BOM! PARAB√âNS PELA APRESENTA√á√ÉO!</div>
+  </div>
+
+  <div id="modal-numpad" class="modal">
+    <div class="modal-card">
+      <div class="modal-title">DIGITAR C√ìDIGO</div>
+      <div class="numpad-display">
+        <div id="numpad-code" class="numpad-code">----</div>
+        <div id="numpad-preview" class="numpad-preview">Digite os n√∫meros do c√≥digo</div>
+      </div>
+      <div class="numpad-grid">
+        <button class="numpad-key" onclick="teclaNumpad('1')">1</button>
+        <button class="numpad-key" onclick="teclaNumpad('2')">2</button>
+        <button class="numpad-key" onclick="teclaNumpad('3')">3</button>
+        <button class="numpad-key" onclick="teclaNumpad('4')">4</button>
+        <button class="numpad-key" onclick="teclaNumpad('5')">5</button>
+        <button class="numpad-key" onclick="teclaNumpad('6')">6</button>
+        <button class="numpad-key" onclick="teclaNumpad('7')">7</button>
+        <button class="numpad-key" onclick="teclaNumpad('8')">8</button>
+        <button class="numpad-key" onclick="teclaNumpad('9')">9</button>
+        <button class="numpad-key" onclick="limparNumpad()">LIMPAR</button>
+        <button class="numpad-key" onclick="teclaNumpad('0')">0</button>
+        <button class="numpad-key" style="color:var(--green);border-color:var(--green)" onclick="confirmarNumpad()">OK</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="fecharTecladoCodigo()">FECHAR</button>
+      </div>
+    </div>
   </div>
 
   <div id="modal-singer" class="modal">
@@ -456,8 +510,8 @@
 
   <div id="modal-cat" class="modal">
     <div class="modal-card">
-      <div class="modal-title">CAT¡LOGO DE M⁄SICAS</div>
-      <input id="cat-search" class="input" type="text" placeholder="Buscar por cÛdigo, m˙sica ou cantor..." oninput="filtrarCatalogoVsk(this.value)" />
+      <div class="modal-title">CAT√ÅLOGO DE M√öSICAS</div>
+      <input id="cat-search" class="input" type="text" placeholder="Buscar por c√≥digo, m√∫sica ou cantor..." oninput="filtrarCatalogoVsk(this.value)" />
       <div id="cat-results"></div>
       <div class="modal-actions">
         <button class="btn" onclick="fecharCatalogoVsk()">FECHAR</button>
@@ -470,22 +524,11 @@
   <script>
     const state = {
       songs: {}, list: [], queue: [], covers: {}, intros: [],
-      qrUrl: null, qrHidden: false, buffer: '', bufTimer: null, pendingSong: null,
-      introPlayed: false, folderPicking: false
+      logoUrl: 'logo.png', qrUrl: null, qrHidden: false,
+      buffer: '', numpadBuffer: '', bufTimer: null, pendingSong: null,
+      introRunning: false, introDone: false, folderPicking: false, loadingSongs: false
     };
     const video = document.getElementById('vsk-video');
-    const osdBox = document.getElementById('vsk-osd-box');
-
-    function ocultarTelaCodigo() {
-      osdBox.classList.add('hidden-playing');
-    }
-
-    function mostrarTelaCodigo() {
-      osdBox.classList.remove('hidden-playing');
-    }
-
-    video.addEventListener('play', ocultarTelaCodigo);
-    video.addEventListener('playing', ocultarTelaCodigo);
 
     function abrirPastaVsk() {
       if (state.folderPicking) return;
@@ -500,8 +543,29 @@
 
     document.getElementById('vsk-folder-input').addEventListener('change', (e) => {
       state.folderPicking = false;
-      carregarArquivosVsk(Array.from(e.target.files || []));
+      const files = Array.from(e.target.files || []);
+      const introsAchadas = files
+        .filter(f => /^intro[1-5]?\.mp4$/i.test(f.name || ''))
+        .sort((a, b) => (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase()))
+        .map(f => ({ name: (f.name || '').toLowerCase(), url: URL.createObjectURL(f) }));
+      if (introsAchadas.length) {
+        state.intros = introsAchadas;
+        tocarSequenciaIntros();
+      }
+      carregarArquivosVsk(files);
     });
+
+    window.onIntroFoundDuringScan = function(introUri) {
+      if (!introUri) return;
+      const exists = state.intros.some(it => it.url === introUri);
+      if (!exists) {
+        state.intros.push({ name: 'intro.mp4', url: introUri });
+        state.intros.sort((a, b) => a.name.localeCompare(b.name));
+      }
+      if (!state.introRunning && !state.introDone && state.queue.length === 0) {
+        tocarSequenciaIntros();
+      }
+    };
 
     window.onNativeFolderLoaded = function(entries) {
       state.folderPicking = false;
@@ -523,16 +587,22 @@
     }
 
     function carregarArquivosVsk(files) {
-      state.songs = {};
-      state.list = [];
-      state.covers = {};
-      state.intros = [];
+      state.loadingSongs = true;
+      const novosSongs = {};
+      const novaLista = [];
+      const novasCapas = {};
+      const novasIntros = [];
 
       for (const f of files) {
         const name = f.name || '';
         const low = name.toLowerCase();
         const pathUpper = (f.webkitRelativePath || name).toUpperCase().replace(/\\/g, '/');
         const srcUrl = f.contentUri || URL.createObjectURL(f);
+
+        if (low === 'logo.png' || low === 'logo.jpg') {
+          state.logoUrl = srcUrl;
+          document.getElementById('vsk-default-logo').src = srcUrl;
+        }
 
         if (low === 'qrlista.png') {
           state.qrUrl = srcUrl;
@@ -543,41 +613,47 @@
         }
 
         if (pathUpper.includes('/CAPAS/') && /\.(png|jpg|jpeg|webp)$/i.test(low)) {
-          state.covers[normalizarChave(name)] = srcUrl;
+          novasCapas[normalizarChave(name)] = srcUrl;
         }
 
         if (/^intro[1-5]?\.mp4$/i.test(low)) {
-          state.intros.push({ name: low, url: srcUrl });
+          novasIntros.push({ name: low, url: srcUrl });
           continue;
         }
 
         if (low.endsWith('.mp4')) {
-          const m = name.match(/^(\d{1,6})\s*[-ñó]?\s*(.+)\.mp4$/i);
+          const m = name.match(/^(\d{1,6})\s*[-‚Äì‚Äî]?\s*(.+)\.mp4$/i);
           if (m) {
             const code = m[1].padStart(4, '0');
-            const parts = m[2].split(/\s*[-ñó]\s*/);
+            const parts = m[2].split(/\s*[-‚Äì‚Äî]\s*/);
             const title = (parts[0] || '').trim().toUpperCase();
             const artist = (parts[1] || '').trim().toUpperCase();
             const item = { code, title, artist, file: f, url: srcUrl };
-            state.songs[code] = item;
-            state.list.push(item);
+            novosSongs[code] = item;
+            novaLista.push(item);
           }
         }
       }
 
-      state.intros.sort((a, b) => a.name.localeCompare(b.name));
-      state.list.sort((a, b) => a.title.localeCompare(b.title));
+      novasIntros.sort((a, b) => a.name.localeCompare(b.name));
+      novaLista.sort((a, b) => a.title.localeCompare(b.title));
+
+      state.songs = novosSongs;
+      state.list = novaLista;
+      state.covers = novasCapas;
+      if (novasIntros.length) state.intros = novasIntros;
+      state.loadingSongs = false;
+
       atualizarFilaVsk();
 
-      if (!state.introPlayed && state.intros.length > 0 && state.queue.length === 0) {
+      if (!state.introRunning && !state.introDone && state.intros.length > 0 && state.queue.length === 0) {
         tocarSequenciaIntros();
       }
     }
 
     async function tocarSequenciaIntros() {
-      if (state.introPlayed || !state.intros.length) return;
-      state.introPlayed = true;
-      ocultarTelaCodigo();
+      if (state.introRunning || state.introDone || !state.intros.length) return;
+      state.introRunning = true;
 
       for (const item of state.intros) {
         if (state.queue.length > 0) break;
@@ -595,21 +671,75 @@
         });
       }
 
+      state.introRunning = false;
+      state.introDone = true;
+
       if (state.queue.length === 0) {
         video.pause();
         video.style.display = 'none';
         video.src = '';
-        mostrarTelaCodigo();
+      }
+    }
+
+    function alternarFilaDropdown() {
+      document.getElementById('vsk-queue-dropdown').classList.toggle('open');
+    }
+
+    function abrirTecladoCodigo() {
+      state.numpadBuffer = '';
+      atualizarNumpadDisplay();
+      document.getElementById('modal-numpad').classList.add('active');
+    }
+
+    function fecharTecladoCodigo() {
+      document.getElementById('modal-numpad').classList.remove('active');
+    }
+
+    function limparNumpad() {
+      state.numpadBuffer = '';
+      atualizarNumpadDisplay();
+    }
+
+    function teclaNumpad(digito) {
+      if (state.numpadBuffer.length >= 6) return;
+      state.numpadBuffer += digito;
+      atualizarNumpadDisplay();
+    }
+
+    function atualizarNumpadDisplay() {
+      const digits = state.numpadBuffer;
+      document.getElementById('numpad-code').textContent = digits ? digits.padEnd(4, '-') : '----';
+      const code = digits.padStart(4, '0');
+      const s = state.songs[code];
+      document.getElementById('numpad-preview').textContent = s
+        ? `#${s.code} - ${s.title}${s.artist ? ' - ' + s.artist : ''}`
+        : (digits ? 'C√≥digo n√£o encontrado' : 'Digite os n√∫meros do c√≥digo');
+    }
+
+    function confirmarNumpad() {
+      const val = state.numpadBuffer.trim();
+      if (!val) return;
+      if (val === '999999999') {
+        state.qrHidden = !state.qrHidden;
+        fecharTecladoCodigo();
+        atualizarFilaVsk();
+        return;
+      }
+      const code = val.padStart(4, '0');
+      if (state.songs[code]) {
+        fecharTecladoCodigo();
+        abrirModalCantorVsk(state.songs[code]);
+      } else {
+        document.getElementById('numpad-preview').textContent = `C√≥digo ${code} n√£o encontrado`;
       }
     }
 
     function atualizarOsd(digits) {
-      mostrarTelaCodigo();
-      document.getElementById('osd-code').textContent = digits.padEnd(4, '-');
       const code = digits.padStart(4, '0');
       const s = state.songs[code];
-      document.getElementById('osd-song').textContent = s ? s.title : (digits.length === 4 ? 'CÛdigo n„o encontrado' : 'Digitando cÛdigo...');
-      document.getElementById('osd-artist').textContent = s ? s.artist : '';
+      document.getElementById('vsk-marquee').textContent = s
+        ? `C√ìDIGO ${digits}: ${s.code} - ${s.title}${s.artist ? ' - ' + s.artist : ''}`
+        : `DIGITANDO C√ìDIGO: ${digits}`;
     }
 
     function moverSelecaoCatalogo(delta) {
@@ -630,8 +760,16 @@
     document.addEventListener('keydown', (e) => {
       const key = e.key;
       const codeKey = e.code;
+      const numpadOpen = document.getElementById('modal-numpad').classList.contains('active');
       const catOpen = document.getElementById('modal-cat').classList.contains('active');
       const singerOpen = document.getElementById('modal-singer').classList.contains('active');
+
+      if (numpadOpen) {
+        if (key >= '0' && key <= '9') { e.preventDefault(); teclaNumpad(key); return; }
+        if (key === 'Backspace') { e.preventDefault(); state.numpadBuffer = state.numpadBuffer.slice(0, -1); atualizarNumpadDisplay(); return; }
+        if (key === 'Enter' || codeKey === 'NumpadEnter') { e.preventDefault(); confirmarNumpad(); return; }
+        if (key === 'Escape') { e.preventDefault(); fecharTecladoCodigo(); return; }
+      }
 
       if (document.activeElement && document.activeElement.tagName === 'INPUT') {
         if (key === 'Enter' && singerOpen) {
@@ -711,8 +849,10 @@
         abrirCatalogoVsk();
       } else if (key === 'Escape' || key === 'Backspace') {
         e.preventDefault();
+        fecharTecladoCodigo();
         fecharCatalogoVsk();
         fecharModalCantorVsk();
+        document.getElementById('vsk-queue-dropdown').classList.remove('open');
       }
     });
 
@@ -727,65 +867,74 @@
     function fecharModalCantorVsk() { document.getElementById('modal-singer').classList.remove('active'); }
     function confirmarCantorVsk() {
       if (!state.pendingSong) return;
-      const singer = (document.getElementById('singer-name-input').value || 'CONVIDADO').trim().toUpperCase();
+      const singer = (document.getElementById('singer-name-input').value || '').trim().toUpperCase();
       state.queue.push({ ...state.pendingSong, singer });
       fecharModalCantorVsk();
       atualizarFilaVsk();
       if (video.style.display !== 'block' && state.queue.length === 1) vskStart();
     }
 
-    function atualizarFilaVsk() {
-      const box = document.getElementById('vsk-queue-list');
-      const qrBox = document.getElementById('vsk-qr-box');
-      const exitBtn = document.getElementById('vsk-btn-exit');
-      document.getElementById('vsk-q-count').textContent = state.queue.length;
-      exitBtn.classList.toggle('hidden', state.queue.length > 0);
+    function formatarLinhaFila(item) {
+      const base = `${item.code} - ${item.title}${item.artist ? ' - ' + item.artist : ''}`;
+      return item.singer ? `${base} (${item.singer})` : base;
+    }
 
-      box.querySelectorAll('.q-item').forEach(el => el.remove());
+    function atualizarFilaVsk() {
+      const itemsBox = document.getElementById('vsk-queue-items');
+      const qrBox = document.getElementById('vsk-qr-box');
+      document.getElementById('vsk-q-count').textContent = state.queue.length;
+
+      itemsBox.innerHTML = '';
       if (state.queue.length === 0) {
+        itemsBox.innerHTML = '<div class="q-empty">Fila vazia</div>';
         if (state.qrUrl && !state.qrHidden) {
           document.getElementById('vsk-qr-img').src = state.qrUrl;
           qrBox.classList.add('visible');
         } else qrBox.classList.remove('visible');
-        document.getElementById('vsk-marquee').textContent = ' VIDEOKE SHOW  AGUARDANDO SELE«√O DE M⁄SICAS ';
+        document.getElementById('vsk-marquee').textContent = '‚òÖ VIDEOKE SHOW ‚òÖ AGUARDANDO SELE√á√ÉO DE M√öSICAS ‚òÖ';
         return;
       }
       qrBox.classList.remove('visible');
       state.queue.forEach((item, i) => {
         const div = document.createElement('div');
         div.className = 'q-item' + (i === 0 && video.style.display === 'block' ? ' playing' : '');
-        div.innerHTML = `<div class="q-code">#${item.code} ${i === 0 && video.style.display === 'block' ? ' CANTANDO' : ''}</div>
-                         <div class="q-title">${item.title}</div>
-                         <div class="q-singer"> ${item.singer}</div>`;
-        box.appendChild(div);
+        div.textContent = formatarLinhaFila(item);
+        itemsBox.appendChild(div);
       });
       const cur = state.queue[0];
-      document.getElementById('vsk-marquee').textContent = ` TOCANDO AGORA: #${cur.code} ${cur.title} (${cur.artist}) ó CANTOR: ${cur.singer}`;
+      document.getElementById('vsk-marquee').textContent = `‚ñ∂ TOCANDO AGORA: ${formatarLinhaFila(cur)}`;
     }
 
     async function vskStart() {
       if (!state.queue.length || video.style.display === 'block') return;
-      ocultarTelaCodigo();
+      state.introDone = true;
       const cur = state.queue[0];
       const cd = document.getElementById('vsk-countdown');
+      const logoImg = document.getElementById('vsk-default-logo');
       const coverImg = document.getElementById('vsk-artist-cover');
+
+      if (state.logoUrl) {
+        logoImg.src = state.logoUrl;
+        logoImg.style.display = 'block';
+        logoImg.onerror = () => { logoImg.style.display = 'none'; };
+      }
+
       const coverUrl = state.covers[normalizarChave(cur.artist)];
       if (coverUrl) { coverImg.src = coverUrl; coverImg.style.display = 'block'; }
       else coverImg.style.display = 'none';
 
-      document.getElementById('vsk-count-info').textContent = `${cur.title} ó  ${cur.singer}`;
+      document.getElementById('vsk-count-info').textContent = formatarLinhaFila(cur);
       cd.classList.add('active');
       for (let i = 5; i >= 1; i--) {
         document.getElementById('vsk-count-num').textContent = i;
         await new Promise(r => setTimeout(r, 1000));
       }
       cd.classList.remove('active');
+      logoImg.style.display = 'none';
 
       video.src = cur.url || cur.file.contentUri || URL.createObjectURL(cur.file);
       video.style.display = 'block';
-      ocultarTelaCodigo();
       await video.play().catch(() => {});
-      ocultarTelaCodigo();
       atualizarFilaVsk();
     }
 
@@ -805,11 +954,10 @@
     video.onended = async () => {
       video.style.display = 'none';
       video.src = '';
-      mostrarTelaCodigo();
       const score = Math.floor(86 + Math.random() * 15);
       const scOverlay = document.getElementById('vsk-score-overlay');
       document.getElementById('score-number').textContent = score;
-      document.getElementById('score-msg').textContent = score >= 95 ? 'ESPETACULAR! NOTA M¡XIMA NO PALCO!' : 'MUITO BOM! PARAB…NS PELA APRESENTA«√O!';
+      document.getElementById('score-msg').textContent = score >= 95 ? 'ESPETACULAR! NOTA M√ÅXIMA NO PALCO!' : 'MUITO BOM! PARAB√âNS PELA APRESENTA√á√ÉO!';
       scOverlay.classList.add('active');
       await new Promise(r => setTimeout(r, 4000));
       scOverlay.classList.remove('active');
@@ -819,7 +967,7 @@
       if (state.queue.length > 0) vskStart();
     };
 
-    function vskStop() { video.pause(); video.style.display = 'none'; video.src = ''; mostrarTelaCodigo(); atualizarFilaVsk(); }
+    function vskStop() { video.pause(); video.style.display = 'none'; video.src = ''; atualizarFilaVsk(); }
     function vskSkip() { if (state.queue.length) video.dispatchEvent(new Event('ended')); }
     function vskClear() { state.queue = video.style.display === 'block' ? state.queue.slice(0, 1) : []; atualizarFilaVsk(); }
 
