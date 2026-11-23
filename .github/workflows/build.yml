@@ -1,4 +1,4 @@
-name: Build APK Karaokê Festa das Cores
+name: Build APK Videoke Show
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Gerar Projeto Android Nativo com Ponte SAF & TV Box
+      - name: Gerar APK Debug (VIDEOKE SHOW)
         run: |
           set -e
           export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
@@ -39,13 +39,21 @@ jobs:
 
           mkdir -p app/src/main/java/br/com/ursoplayer/karaoke
           mkdir -p app/src/main/assets
-          mkdir -p app/src/main/res/values
-          cp -r index.html app/src/main/assets/index.html
+          mkdir -p app/src/main/res/mipmap-xxxhdpi
+
+          cp index.html app/src/main/assets/index.html
           [ -d fontes ] && cp -r fontes app/src/main/assets/ || true
           [ -f bgpadrao.jpg ] && cp bgpadrao.jpg app/src/main/assets/ || true
 
+          [ -d res ] && cp -r res/* app/src/main/res/ || true
+          for d in mipmap mipmap-mdpi mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
+            [ -d "$d" ] && mkdir -p "app/src/main/res/$d" && cp -r "$d"/* "app/src/main/res/$d/" || true
+          done
+          [ -f ic_launcher.png ] && cp ic_launcher.png app/src/main/res/mipmap-xxxhdpi/ic_launcher.png || true
+          [ -f ic-launcher.png ] && cp ic-launcher.png app/src/main/res/mipmap-xxxhdpi/ic_launcher.png || true
+
           cat << 'EOF' > settings.gradle
-          rootProject.name = "KaraokeFestaDasCores"
+          rootProject.name = "VideokeShow"
           include ':app'
           EOF
 
@@ -77,8 +85,8 @@ jobs:
                   versionName "3.0"
               }
               buildTypes {
-                  release {
-                      minifyEnabled false
+                  debug {
+                      signingConfig signingConfigs.debug
                   }
               }
               compileOptions {
@@ -100,7 +108,8 @@ jobs:
               <application
                   android:allowBackup="true"
                   android:hardwareAccelerated="true"
-                  android:label="Karaokê Festa das Cores"
+                  android:label="VIDEOKE SHOW"
+                  android:icon="@mipmap/ic_launcher"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
                   <activity
                       android:name=".MainActivity"
@@ -365,10 +374,10 @@ jobs:
             chmod +x gradlew
           fi
 
-          ./gradlew assembleRelease
+          ./gradlew assembleDebug
 
-      - name: Publicar APK como Artefato
+      - name: Publicar APK Debug como Artefato
         uses: actions/upload-artifact@v4
         with:
-          name: Karaoke-Festa-Das-Cores-APK
-          path: app/build/outputs/apk/release/*.apk
+          name: Videoke-Show-Debug-APK
+          path: app/build/outputs/apk/debug/*.apk
