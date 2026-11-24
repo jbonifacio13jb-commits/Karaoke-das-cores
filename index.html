@@ -186,56 +186,50 @@
     }
 
     .bottom-bar {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .progress-row {
+      position: relative;
       display: flex;
       align-items: center;
-      gap: 10px;
-      background: var(--panel-bg);
-      padding: 6px 12px;
-      border-radius: 8px;
-    }
-
-    #vsk-progress-bar {
-      flex: 1;
-      height: 8px;
-      background: rgba(255, 255, 255, 0.16);
-      border-radius: 999px;
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    #vsk-progress-fill {
-      width: 0%;
-      height: 100%;
-      background: linear-gradient(90deg, var(--cyan), var(--gold));
-    }
-
-    #vsk-time {
-      font-size: 12px;
-      color: var(--gold);
-      min-width: 52px;
-      text-align: right;
+      width: 100%;
+      min-height: 30px;
+      background: transparent;
+      border: none;
+      padding: 2px 4px;
     }
 
     .marquee-wrap {
+      flex: 1;
       overflow: hidden;
       white-space: nowrap;
-      background: var(--panel-bg);
-      border-radius: 8px;
-      padding: 6px 12px;
-      border: 1px solid rgba(255, 212, 59, 0.25);
+      background: transparent;
+      border: none;
+      padding: 4px 8px;
     }
 
     #vsk-marquee {
       display: inline-block;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: bold;
       color: var(--gold);
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
+    }
+
+    #vsk-mini-count {
+      display: none;
+      position: relative;
+      z-index: 2;
+      margin-left: 10px;
+      font-family: "Segoe UI", Roboto, "Arial Black", sans-serif;
+      font-size: 15px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      color: var(--cyan);
+      text-shadow: 0 1px 5px rgba(0, 0, 0, 0.95);
+      pointer-events: none;
+    }
+
+    #vsk-mini-count.visible {
+      display: inline-flex;
+      align-items: center;
     }
 
     #vsk-countdown, #vsk-logo-splash {
@@ -244,39 +238,79 @@
       z-index: 20;
       display: none;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-end;
       justify-content: center;
-      background: rgba(5, 8, 18, 0.94);
+      background: transparent;
+      text-align: right;
+      padding: 16px 6vw 16px 16px;
+    }
+
+    #vsk-logo-splash {
+      align-items: center;
       text-align: center;
-      padding: 16px;
+      background: rgba(5, 8, 18, 0.92);
     }
 
     #vsk-countdown.active, #vsk-logo-splash.active {
       display: flex;
     }
 
+    @keyframes vskCountPulse {
+      0% {
+        transform: scale(0.72) translateX(14px);
+        opacity: 0;
+        filter: drop-shadow(0 0 0 rgba(56, 189, 248, 0));
+      }
+      35% {
+        transform: scale(1.06) translateX(0);
+        opacity: 1;
+        filter: drop-shadow(0 0 18px rgba(56, 189, 248, 0.65));
+      }
+      80% {
+        transform: scale(1) translateX(0);
+        opacity: 1;
+        filter: drop-shadow(0 0 10px rgba(255, 212, 59, 0.45));
+      }
+      100% {
+        transform: scale(0.92) translateX(-6px);
+        opacity: 0.15;
+        filter: drop-shadow(0 0 0 rgba(56, 189, 248, 0));
+      }
+    }
+
     #vsk-artist-cover {
-      width: 130px;
-      height: 130px;
+      width: 118px;
+      height: 118px;
       object-fit: cover;
-      border-radius: 12px;
+      border-radius: 14px;
       border: 2px solid var(--gold);
-      margin-bottom: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75);
+      margin-bottom: 10px;
       display: none;
     }
 
     #vsk-count-num {
-      font-size: 76px;
-      font-weight: bold;
-      color: var(--gold);
+      font-family: "Segoe UI", Roboto, "Arial Black", sans-serif;
+      font-size: clamp(38px, 6.5vw, 58px);
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      color: var(--cyan);
       line-height: 1;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9), 0 0 18px rgba(56, 189, 248, 0.45);
+    }
+
+    #vsk-count-num.ticking {
+      animation: vskCountPulse 0.96s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     #vsk-count-info {
-      font-size: 16px;
-      margin-top: 10px;
+      font-family: "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 8px;
       color: var(--text);
-      max-width: 90vw;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
+      max-width: 46vw;
     }
 
     @keyframes vskLogoZoomIn {
@@ -507,15 +541,10 @@
     </div>
 
     <div class="bottom-bar hud-interactive">
-      <div class="progress-row">
-        <div id="vsk-progress-bar">
-          <div id="vsk-progress-fill"></div>
-        </div>
-        <div id="vsk-time">-00:00</div>
-      </div>
       <div class="marquee-wrap">
         <div id="vsk-marquee">★ VIDEOKE SHOW ★ AGUARDANDO SELEÇÃO DE MÚSICAS ★</div>
       </div>
+      <div id="vsk-mini-count"></div>
     </div>
   </div>
 
@@ -528,7 +557,7 @@
   <div id="vsk-logo-splash">
     <div id="vsk-logo-wrap" class="logo-wrap">
       <div id="logo-target">
-        <img id="vsk-splash-logo" src="logo.png" alt="Logo" crossorigin="anonymous" />
+        <img id="vsk-splash-logo" alt="" crossorigin="anonymous" />
       </div>
     </div>
   </div>
@@ -562,18 +591,6 @@
     </div>
   </div>
 
-  <div id="modal-singer" class="modal">
-    <div class="modal-card">
-      <div class="modal-title">NOME DO CANTOR</div>
-      <div id="singer-song-title" style="color: var(--cyan); font-size: 13px;"></div>
-      <input id="singer-name-input" class="input" type="text" placeholder="Digite o nome do cantor (ou deixe em branco)" maxlength="40" />
-      <div class="modal-actions">
-        <button class="btn btn-stop" style="flex:0 0 auto;padding:0 14px;" onclick="fecharModalCantorVsk()">CANCELAR</button>
-        <button class="btn btn-code" style="flex:0 0 auto;padding:0 14px;" onclick="confirmarCantorVsk()">CONFIRMAR</button>
-      </div>
-    </div>
-  </div>
-
   <div id="modal-cat" class="modal">
     <div class="modal-card">
       <div class="modal-title">CATÁLOGO DE MÚSICAS</div>
@@ -591,14 +608,21 @@
     const state = {
       songs: {}, list: [], queue: [], covers: {}, intros: [], txtMeta: {},
       defaultIntroUrl: 'intro.mp4',
-      logoUrl: 'logo.png', qrUrl: null, qrHidden: false,
-      buffer: '', numpadBuffer: '', bufTimer: null, pendingSong: null,
+      logoUrl: '', qrUrl: null, qrHidden: false,
+      buffer: '', numpadBuffer: '', bufTimer: null,
       introRunning: false, introDone: false, folderPicking: false, loadingSongs: false,
       songActive: false
     };
     const video = document.getElementById('vsk-video');
     const dustCanvas = document.getElementById('vsk-dust-canvas');
     const dustCtx = dustCanvas.getContext('2d');
+
+    function resolverLogoPadrao() {
+      if (window.AndroidHost) {
+        return 'file:///android_asset/logo.png';
+      }
+      return 'logo.png';
+    }
 
     function resolverUrlIntroPadrao() {
       if (window.AndroidHost) {
@@ -727,6 +751,19 @@
         .trim();
     }
 
+    function buscarCapaArtista(artist) {
+      const chave = normalizarChave(artist);
+      if (!chave) return null;
+      if (state.covers[chave]) return state.covers[chave];
+      const keys = Object.keys(state.covers);
+      for (const k of keys) {
+        if (k.includes(chave) || chave.includes(k)) {
+          return state.covers[k];
+        }
+      }
+      return null;
+    }
+
     function limparTextoExibicao(str) {
       return (str || '')
         .replace(/_/g, ' ')
@@ -786,6 +823,7 @@
       const novaLista = [];
       const novasCapas = {};
       const novasIntros = [];
+      let pastaLogoUrl = '';
       state.txtMeta = {};
 
       for (const f of files) {
@@ -811,8 +849,7 @@
         const srcUrl = f.contentUri || (f instanceof File ? URL.createObjectURL(f) : '');
 
         if (low === 'logo.png' || low === 'logo.jpg') {
-          state.logoUrl = srcUrl;
-          document.getElementById('vsk-splash-logo').src = srcUrl;
+          pastaLogoUrl = srcUrl;
         }
 
         if (low === 'qrlista.png') {
@@ -855,8 +892,14 @@
       state.list = novaLista;
       state.covers = novasCapas;
       if (novasIntros.length) state.intros = novasIntros;
-      state.loadingSongs = false;
 
+      state.logoUrl = pastaLogoUrl || resolverLogoPadrao();
+      const splashImg = document.getElementById('vsk-splash-logo');
+      if (splashImg && state.logoUrl) {
+        splashImg.src = state.logoUrl;
+      }
+
+      state.loadingSongs = false;
       atualizarFilaVsk();
 
       if (state.introRunning && !state.songActive && state.queue.length === 0) {
@@ -1058,7 +1101,26 @@
       const clean = (rawDigits || '').trim();
       if (!clean) return null;
       const padded = clean.padStart(4, '0');
-      return state.songs[padded] || state.songs[clean] || null;
+      const base = state.songs[padded] || state.songs[clean] || null;
+      const txtInfo = state.txtMeta[padded] || state.txtMeta[clean] || null;
+
+      if (!base && !txtInfo) return null;
+      const code = (txtInfo && txtInfo.code) || (base && base.code) || padded;
+      const title = (txtInfo && txtInfo.title) || (base && base.title) || code;
+      const artist = (txtInfo && txtInfo.artist) || (base && base.artist) || '';
+
+      return {
+        ...(base || {}),
+        code,
+        title,
+        artist
+      };
+    }
+
+    function adicionarMusicaNaFila(song) {
+      if (!song) return;
+      state.queue.push({ ...song });
+      atualizarFilaVsk();
     }
 
     function atualizarNumpadDisplay() {
@@ -1082,7 +1144,7 @@
       const s = buscarMusicaPorCodigo(val);
       if (s) {
         fecharTecladoCodigo();
-        abrirModalCantorVsk(s);
+        adicionarMusicaNaFila(s);
       } else {
         document.getElementById('numpad-preview').textContent = `Código ${val.padStart(4, '0')} não encontrado`;
       }
@@ -1115,7 +1177,6 @@
       const codeKey = e.code;
       const numpadOpen = document.getElementById('modal-numpad').classList.contains('active');
       const catOpen = document.getElementById('modal-cat').classList.contains('active');
-      const singerOpen = document.getElementById('modal-singer').classList.contains('active');
 
       if (numpadOpen) {
         if (key >= '0' && key <= '9') { e.preventDefault(); teclaNumpad(key); return; }
@@ -1125,16 +1186,12 @@
       }
 
       if (document.activeElement && document.activeElement.tagName === 'INPUT') {
-        if (key === 'Enter' && singerOpen) {
-          e.preventDefault();
-          confirmarCantorVsk();
-        } else if (key === 'ArrowDown' && catOpen) {
+        if (key === 'ArrowDown' && catOpen) {
           e.preventDefault();
           moverSelecaoCatalogo(1);
         } else if (key === 'Escape') {
           e.preventDefault();
-          if (singerOpen) fecharModalCantorVsk();
-          else if (catOpen) fecharCatalogoVsk();
+          if (catOpen) fecharCatalogoVsk();
         }
         return;
       }
@@ -1155,19 +1212,6 @@
         }
       }
 
-      if (singerOpen) {
-        if (key === 'Enter' || codeKey === 'NumpadEnter') {
-          e.preventDefault();
-          confirmarCantorVsk();
-          return;
-        }
-        if (key === 'Escape' || key === 'Backspace') {
-          e.preventDefault();
-          fecharModalCantorVsk();
-          return;
-        }
-      }
-
       if (key >= '0' && key <= '9') {
         state.buffer += key;
         atualizarOsd(state.buffer);
@@ -1177,7 +1221,7 @@
           state.buffer = '';
           if (val === '999999999') { state.qrHidden = !state.qrHidden; atualizarFilaVsk(); return; }
           const s = buscarMusicaPorCodigo(val);
-          if (s) abrirModalCantorVsk(s);
+          if (s) adicionarMusicaNaFila(s);
         }, 1400);
         return;
       }
@@ -1204,32 +1248,24 @@
         e.preventDefault();
         fecharTecladoCodigo();
         fecharCatalogoVsk();
-        fecharModalCantorVsk();
         document.getElementById('vsk-queue-dropdown').classList.remove('open');
       }
     });
 
-    function abrirModalCantorVsk(song) {
-      state.pendingSong = song;
-      document.getElementById('singer-song-title').textContent = formatarLinhaFila(song);
-      const inp = document.getElementById('singer-name-input');
-      inp.value = '';
-      document.getElementById('modal-singer').classList.add('active');
-      setTimeout(() => inp.focus(), 60);
-    }
-    function fecharModalCantorVsk() { document.getElementById('modal-singer').classList.remove('active'); }
-    function confirmarCantorVsk() {
-      if (!state.pendingSong) return;
-      const singer = (document.getElementById('singer-name-input').value || '').trim().toUpperCase();
-      state.queue.push({ ...state.pendingSong, singer });
-      fecharModalCantorVsk();
-      atualizarFilaVsk();
-      if (!state.songActive && state.queue.length === 1) vskStart();
+    function formatarLinhaFila(item) {
+      return `${item.code} - ${item.title}${item.artist ? ' - ' + item.artist : ''}`;
     }
 
-    function formatarLinhaFila(item) {
-      const base = `${item.code} - ${item.title}${item.artist ? ' - ' + item.artist : ''}`;
-      return item.singer ? `${base} (${item.singer})` : base;
+    function atualizarMiniContagem(valorTexto) {
+      const mini = document.getElementById('vsk-mini-count');
+      if (!mini) return;
+      if (valorTexto) {
+        mini.textContent = valorTexto;
+        mini.classList.add('visible');
+      } else {
+        mini.textContent = '';
+        mini.classList.remove('visible');
+      }
     }
 
     function atualizarFilaVsk() {
@@ -1269,30 +1305,48 @@
 
       const cur = state.queue[0];
       const cd = document.getElementById('vsk-countdown');
+      const countNumEl = document.getElementById('vsk-count-num');
       const splash = document.getElementById('vsk-logo-splash');
       const wrap = document.getElementById('vsk-logo-wrap');
       const splashImg = document.getElementById('vsk-splash-logo');
       const coverImg = document.getElementById('vsk-artist-cover');
 
-      const coverUrl = state.covers[normalizarChave(cur.artist)];
+      const coverUrl = buscarCapaArtista(cur.artist);
       if (coverUrl) { coverImg.src = coverUrl; coverImg.style.display = 'block'; }
       else coverImg.style.display = 'none';
 
       document.getElementById('vsk-count-info').textContent = formatarLinhaFila(cur);
       cd.classList.add('active');
       for (let i = 5; i >= 1; i--) {
-        document.getElementById('vsk-count-num').textContent = i;
+        if (!state.songActive) {
+          cd.classList.remove('active');
+          atualizarMiniContagem('');
+          return;
+        }
+        countNumEl.textContent = i;
+        countNumEl.classList.remove('ticking');
+        void countNumEl.offsetWidth;
+        countNumEl.classList.add('ticking');
+        atualizarMiniContagem(String(i));
         await new Promise(r => setTimeout(r, 1000));
       }
+      countNumEl.classList.remove('ticking');
       cd.classList.remove('active');
+      atualizarMiniContagem('');
 
-      if (state.logoUrl) {
-        splashImg.src = state.logoUrl;
+      const logoSrc = state.logoUrl || resolverLogoPadrao();
+      if (logoSrc && splashImg) {
+        splashImg.src = logoSrc;
         await rodarZoomEPulverizarLogo(splash, wrap, splashImg);
       }
 
+      if (!state.songActive) return;
       video.muted = false;
-      video.src = cur.url || cur.file.contentUri || URL.createObjectURL(cur.file);
+      video.src = cur.url || (cur.file && (cur.file.contentUri || URL.createObjectURL(cur.file))) || '';
+      if (!video.src) {
+        video.dispatchEvent(new Event('ended'));
+        return;
+      }
       video.style.display = 'block';
       await video.play().catch(() => {});
       atualizarFilaVsk();
@@ -1300,20 +1354,14 @@
 
     video.ontimeupdate = () => {
       if (!video.duration || !state.songActive) return;
-      document.getElementById('vsk-progress-fill').style.width = ((video.currentTime / video.duration) * 100) + '%';
       const rem = Math.max(0, Math.floor(video.duration - video.currentTime));
-      document.getElementById('vsk-time').textContent = `-${String(Math.floor(rem / 60)).padStart(2,'0')}:${String(rem % 60).padStart(2,'0')}`;
+      atualizarMiniContagem(`-${String(Math.floor(rem / 60)).padStart(2,'0')}:${String(rem % 60).padStart(2,'0')}`);
     };
-
-    document.getElementById('vsk-progress-bar').addEventListener('click', (e) => {
-      if (!video.duration || !state.songActive) return;
-      const r = e.currentTarget.getBoundingClientRect();
-      video.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * video.duration;
-    });
 
     video.onended = () => {
       if (!state.songActive) return;
       state.songActive = false;
+      atualizarMiniContagem('');
       video.style.display = 'none';
       video.removeAttribute('src');
       video.load();
@@ -1324,11 +1372,16 @@
 
     function vskStop() {
       state.songActive = false;
+      atualizarMiniContagem('');
+      document.getElementById('vsk-countdown').classList.remove('active');
       video.pause();
       video.loop = false;
       video.style.display = 'none';
       video.removeAttribute('src');
       video.load();
+      if (state.queue.length > 0) {
+        state.queue.shift();
+      }
       atualizarFilaVsk();
     }
     function vskSkip() {
@@ -1358,7 +1411,7 @@
         `<button class="cat-row${i === 0 ? ' selected' : ''}" onclick='selecionarDoCat("${s.code}")'><span><b style="color:var(--gold)">${s.code}</b> - ${s.title}</span><small style="color:var(--cyan)">${s.artist}</small></button>`
       ).join('');
     }
-    function selecionarDoCat(code) { fecharCatalogoVsk(); if (state.songs[code]) abrirModalCantorVsk(state.songs[code]); }
+    function selecionarDoCat(code) { fecharCatalogoVsk(); const s = buscarMusicaPorCodigo(code); if (s) adicionarMusicaNaFila(s); }
     document.getElementById('vsk-btn-exit').onclick = () => { if (window.AndroidHost && AndroidHost.exitApp) AndroidHost.exitApp(); else window.close(); };
 
     window.addEventListener('resize', () => {
@@ -1367,6 +1420,11 @@
     });
 
     window.addEventListener('load', () => {
+      state.logoUrl = resolverLogoPadrao();
+      const splashImg = document.getElementById('vsk-splash-logo');
+      if (splashImg && state.logoUrl) {
+        splashImg.src = state.logoUrl;
+      }
       if (!window.AndroidHost) {
         abrirPastaVsk();
       }
