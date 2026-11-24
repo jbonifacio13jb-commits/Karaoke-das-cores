@@ -49,6 +49,7 @@
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
+      transition: background-image 0.35s ease-in-out;
       z-index: 1;
     }
 
@@ -940,7 +941,7 @@
 
   <div id="vsk-load-status" aria-hidden="true">
     <span id="vsk-load-spinner"></span>
-    <span id="vsk-load-label">LOAD</span>
+    <span id="vsk-load-label">CARREGANDO</span>
   </div>
 
   <div id="tornado-layer">
@@ -1077,6 +1078,7 @@
 
     const state = {
       songs: {}, list: [], queue: [], covers: {}, intros: [], txtMeta: {},
+      bgSlides: [], bgIndex: 0,
       rockSlides: [], rockAudioFile: null, rockAudioUrl: '',
       defaultIntroUrl: 'intro.mp4',
       logoUrl: '', qrUrl: null, qrHidden: false,
@@ -1087,17 +1089,45 @@
 
     const video = document.getElementById('vsk-video');
     let audioRockDoido = null;
+    let bgSlideInterval = null;
     let rockSlideInterval = null;
     let rockRaioInterval = null;
     let rockRaioMultiploInterval = null;
     let encerrarIntroAtual = null;
+
+    function aplicarFundoAtual() {
+      const bgEl = document.getElementById('vsk-bg');
+      if (!bgEl) return;
+      const lista = state.bgSlides || [];
+      if (!lista.length) return;
+      const idx = state.bgIndex % lista.length;
+      const url = lista[idx];
+      if (url) {
+        bgEl.style.backgroundImage = `url("${url}")`;
+      }
+    }
+
+    function iniciarRotacaoFundo() {
+      if (bgSlideInterval) {
+        clearInterval(bgSlideInterval);
+        bgSlideInterval = null;
+      }
+      state.bgIndex = 0;
+      aplicarFundoAtual();
+      if (state.bgSlides && state.bgSlides.length > 1) {
+        bgSlideInterval = setInterval(() => {
+          state.bgIndex = (state.bgIndex + 1) % state.bgSlides.length;
+          aplicarFundoAtual();
+        }, 2000);
+      }
+    }
 
     function atualizarIndicadorLoad(modo) {
       const box = document.getElementById('vsk-load-status');
       const label = document.getElementById('vsk-load-label');
       if (!box || !label) return;
       if (modo === 'load') {
-        label.textContent = 'LOAD';
+        label.textContent = 'CARREGANDO';
         box.classList.remove('ready');
         box.classList.add('visible');
       } else if (modo === 'ok') {
@@ -1598,7 +1628,7 @@
 
       video.classList.remove('song-mode');
       video.style.display = 'block';
-      video.loop = !state.loadingSongs ? false : true;
+      video.loop = false;
       video.src = srcUrl;
 
       let checkFinishInterval = null;
@@ -1634,6 +1664,9 @@
       const onEndedCycle = () => {
         if (!state.loadingSongs && !state.songActive && state.queue.length === 0) {
           encerrarIntro();
+        } else if (state.loadingSongs) {
+          video.currentTime = 0;
+          video.play().catch(() => {});
         }
       };
 
@@ -1651,14 +1684,13 @@
 
       checkFinishInterval = setInterval(() => {
         if (!state.loadingSongs && state.introRunning && !state.songActive && state.queue.length === 0) {
-          video.loop = false;
           atualizarIndicadorLoad('ok');
           if (video.ended || video.paused || video.readyState === 0) {
             encerrarIntro();
           } else if (!finishFallbackTimer) {
             const restanteMs = (Number.isFinite(video.duration) && Number.isFinite(video.currentTime))
-              ? Math.max(150, Math.min(8000, Math.ceil((video.duration - video.currentTime) * 1000) + 250))
-              : 1500;
+              ? Math.max(150, Math.min(4000, Math.ceil((video.duration - video.currentTime) * 1000) + 200))
+              : 1200;
             finishFallbackTimer = setTimeout(() => {
               if (!state.loadingSongs && state.introRunning && !state.songActive && state.queue.length === 0) {
                 encerrarIntro();
@@ -1728,7 +1760,7 @@
       return (str || '')
         .replace(/\.[^.]+$/, '')
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[̀-ͯ]/g, '')
         .replace(/[^A-Za-z0-9 ]/g, ' ')
         .replace(/\s+/g, ' ')
         .toUpperCase()
@@ -1824,9 +1856,11 @@
     }
 
     function processarTextoLista(texto) {
-      const linhas = (texto || '').split(/\r?\n/);
+      const linhas = (texto || '').split(/
+?
+/);
       for (const l of linhas) {
-        const clean = l.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+        const clean = l.replace(/[​-‍﻿]/g, '').trim();
         if (!clean || clean.startsWith('===') || /^LISTA DE M/i.test(clean)) continue;
         const parsed = parseLinhaCatalogo(clean);
         if (parsed) {
@@ -1845,6 +1879,8 @@
       const novasCapas = {};
       const novasIntros = [];
       const novosRockSlides = [];
+      const bgOficiaisMap = {};
+      let bgFallbackUrl = '';
       let novoRockAudioFile = null;
       let novoRockAudioUrl = '';
       let pastaLogoUrl = '';
@@ -1871,9 +1907,9 @@
         const low = name.toLowerCase();
         const relPathUpper = (f.webkitRelativePath || f.path || name)
           .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[̀-ͯ]/g, '')
           .toUpperCase()
-          .replace(/\\/g, '/');
+          .replace(/\/g, '/');
         const srcUrl = f.contentUri || (f instanceof File ? URL.createObjectURL(f) : '');
 
         if (low === 'logo.png' || low === 'logo.jpg') {
@@ -1884,8 +1920,14 @@
           state.qrUrl = srcUrl;
         }
 
-        if (low === 'bgpadrao.jpg' || low === 'bgpadrao.png') {
-          document.getElementById('vsk-bg').style.backgroundImage = `url("${srcUrl}")`;
+        if (low === 'bgoficial.png' || low === 'bgoficial.jpg') {
+          bgOficiaisMap[1] = srcUrl;
+        } else if (low === 'bgoficial2.png' || low === 'bgoficial2.jpg') {
+          bgOficiaisMap[2] = srcUrl;
+        } else if (low === 'bgoficial3.png' || low === 'bgoficial3.jpg') {
+          bgOficiaisMap[3] = srcUrl;
+        } else if (!bgFallbackUrl && (low === 'bgpadrao.jpg' || low === 'bgpadrao.png' || low === 'bgprincipal.png' || low === 'bgprincipal.jpg')) {
+          bgFallbackUrl = srcUrl;
         }
 
         const ehCapa = /(^|\/)CAPAS?(\/|$)/i.test(relPathUpper) && /\.(jpe?g|png|webp|gif)$/i.test(low);
@@ -1906,14 +1948,6 @@
         if (ehPastaRock && low.endsWith('.mp3') && !novoRockAudioFile) {
           novoRockAudioFile = f;
           novoRockAudioUrl = srcUrl;
-          if (f.contentUri && window.AndroidHost && AndroidHost.readDataUrl) {
-            try {
-              const inlineAudio = AndroidHost.readDataUrl(f.contentUri);
-              if (inlineAudio && inlineAudio.startsWith('data:')) {
-                novoRockAudioUrl = inlineAudio;
-              }
-            } catch (_) {}
-          }
         }
 
         if (/^intro[1-5]?\.mp4$/i.test(low)) {
@@ -1937,6 +1971,14 @@
         }
       }
 
+      const listaBgOficiais = [1, 2, 3].map(n => bgOficiaisMap[n]).filter(Boolean);
+      if (listaBgOficiais.length > 0) {
+        state.bgSlides = listaBgOficiais;
+      } else if (bgFallbackUrl) {
+        state.bgSlides = [bgFallbackUrl];
+      }
+      iniciarRotacaoFundo();
+
       novosIntros.sort((a, b) => a.name.localeCompare(b.name));
       novaLista.sort((a, b) => a.title.localeCompare(b.title));
       novosRockSlides.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
@@ -1953,8 +1995,7 @@
         audioRockDoido = new Audio(novoRockAudioUrl);
         audioRockDoido.loop = true;
         audioRockDoido.volume = 1.0;
-        audioRockDoido.preload = 'auto';
-        audioRockDoido.load();
+        audioRockDoido.preload = 'none';
       }
 
       state.logoUrl = pastaLogoUrl || resolverLogoPadrao();
@@ -1967,7 +2008,6 @@
       atualizarFilaVsk();
 
       if (state.introRunning && !state.songActive && state.queue.length === 0) {
-        video.loop = false;
         atualizarIndicadorLoad('ok');
         if (video.ended || video.paused || video.readyState === 0) {
           finalizarIntroQuandoPronto();
