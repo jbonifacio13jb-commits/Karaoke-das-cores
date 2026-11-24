@@ -10,6 +10,8 @@
       --panel-bg: rgba(12, 16, 32, 0.92);
       --gold: #ffd43b;
       --cyan: #38bdf8;
+      --neon: #00ffff;
+      --magenta: #ff00ff;
       --green: #22c55e;
       --orange: #f97316;
       --pink: #ec4899;
@@ -55,10 +57,23 @@
       inset: 0;
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: cover;
       background: #000;
       display: none;
       z-index: 5;
+    }
+
+    #vsk-video.song-mode {
+      object-fit: contain;
+    }
+
+    body.intro-fullscreen #vsk-hud,
+    body.intro-fullscreen #vsk-dots-btn,
+    body.intro-fullscreen #vsk-dots-menu,
+    body.intro-fullscreen #vsk-queue-dropdown {
+      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
     }
 
     #vsk-hud {
@@ -317,7 +332,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: rgba(5, 8, 18, 0.52);
+      background: rgba(5, 8, 18, 0.62);
       text-align: center;
       padding: 16px 24px;
     }
@@ -351,24 +366,24 @@
     @keyframes vskCoverPulse {
       0%, 100% {
         transform: scale(1);
-        filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.85));
+        filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.9));
       }
       50% {
         transform: scale(1.03);
-        filter: drop-shadow(0 14px 36px rgba(56, 189, 248, 0.45));
+        filter: drop-shadow(0 16px 40px rgba(56, 189, 248, 0.5));
       }
     }
 
     #vsk-artist-cover {
       width: auto;
       height: auto;
-      max-width: min(76vw, 540px);
-      max-height: min(46vh, 360px);
+      max-width: min(88vw, 760px);
+      max-height: min(60vh, 500px);
       object-fit: contain;
-      border-radius: 14px;
-      border: 2px solid var(--gold);
-      background: rgba(7, 9, 19, 0.85);
-      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.8);
+      border-radius: 16px;
+      border: 3px solid var(--gold);
+      background: rgba(7, 9, 19, 0.88);
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.85);
       margin-bottom: 14px;
       display: none;
       animation: vskCoverPulse 1.4s ease-in-out infinite;
@@ -376,7 +391,7 @@
 
     #vsk-count-num {
       font-family: "Segoe UI", Roboto, "Arial Black", sans-serif;
-      font-size: clamp(74px, 16vw, 148px);
+      font-size: clamp(64px, 13vw, 128px);
       font-weight: 900;
       font-variant-numeric: tabular-nums;
       color: var(--cyan);
@@ -391,13 +406,13 @@
 
     #vsk-count-info {
       font-family: "Segoe UI", Roboto, sans-serif;
-      font-size: clamp(15px, 2.4vw, 22px);
+      font-size: clamp(16px, 2.5vw, 24px);
       font-weight: 700;
-      margin-top: 12px;
+      margin-top: 10px;
       color: var(--text);
       text-align: center;
       text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
-      max-width: 85vw;
+      max-width: 88vw;
     }
 
     @keyframes vskLogoZoomIn {
@@ -587,47 +602,287 @@
       gap: 8px;
     }
 
-    #vsk-rockdoido {
-      position: fixed;
-      inset: 0;
-      z-index: 28;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(circle at center, rgba(168, 85, 247, 0.25), rgba(7, 9, 19, 0.94));
-      pointer-events: auto;
-      padding: 20px;
-      text-align: center;
+    /* ================= MODO ROCKDOIDO (EXTRAÍDO DO index_2.html) ================= */
+    .beat-impact {
+      transform: scale(1.05) translateZ(0) !important;
+      filter: none !important;
     }
 
-    #vsk-rockdoido.active {
+    #tornado-layer {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 28;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center,
+        rgba(30, 5, 50, 0.5) 0%,
+        rgba(10, 0, 20, 0.85) 50%,
+        rgba(0, 0, 0, 0.95) 100%);
+      will-change: transform;
+    }
+
+    body.modo-jb #tornado-layer {
       display: flex;
     }
 
-    @keyframes rockStrobe {
-      0%, 100% { box-shadow: inset 0 0 40px rgba(236, 72, 153, 0.45); border-color: var(--pink); color: var(--gold); transform: scale(1) rotate(-1deg); }
-      33% { box-shadow: inset 0 0 60px rgba(56, 189, 248, 0.55); border-color: var(--cyan); color: var(--cyan); transform: scale(1.04) rotate(1deg); }
-      66% { box-shadow: inset 0 0 60px rgba(34, 197, 94, 0.55); border-color: var(--green); color: var(--green); transform: scale(1.02) rotate(-0.5deg); }
+    body.modo-jb #vsk-hud {
+      opacity: 0;
+      pointer-events: none;
     }
 
-    .rock-badge {
-      padding: 10px 22px;
-      border-radius: 999px;
-      border: 3px solid var(--pink);
-      font-size: clamp(20px, 4vw, 34px);
+    #ceu-rockdoido {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(180deg,
+        rgba(10, 0, 20, 0.85) 0%,
+        rgba(21, 0, 37, 0.75) 25%,
+        rgba(32, 0, 48, 0.7) 50%,
+        rgba(21, 0, 37, 0.75) 75%,
+        rgba(10, 0, 20, 0.85) 100%);
+      z-index: 1001;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    body.modo-jb.tem-slide #ceu-rockdoido {
+      opacity: 0.15;
+    }
+
+    #bg-singer-layer-rock {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-size: contain;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-color: transparent !important;
+      z-index: 1005;
+      opacity: 0;
+      transition: opacity 0.25s ease-in-out;
+      will-change: opacity, background-image, transform;
+      pointer-events: none;
+      filter: none !important;
+      -webkit-filter: none !important;
+    }
+
+    #bg-singer-layer-rock.ativo {
+      opacity: 1 !important;
+    }
+
+    #raio-flash {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: radial-gradient(ellipse at 30% 20%,
+        rgba(255, 255, 255, 0.34) 0%,
+        rgba(220, 240, 255, 0.30) 20%,
+        rgba(180, 200, 255, 0.22) 40%,
+        rgba(100, 100, 200, 0.10) 70%,
+        rgba(0, 0, 0, 0) 100%);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 1100;
+      mix-blend-mode: screen;
+    }
+
+    #raio-flash.ativo { animation: flashRaio 0.6s ease-out; }
+
+    @keyframes flashRaio {
+      0% { opacity: 0; }
+      3% { opacity: 1; }
+      8% { opacity: 0.2; }
+      12% { opacity: 0.95; }
+      18% { opacity: 0.3; }
+      25% { opacity: 0.7; }
+      40% { opacity: 0.1; }
+      100% { opacity: 0; }
+    }
+
+    #raio-svg {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 1105;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #raio-svg.ativo { animation: relampago 0.5s ease-out; }
+
+    @keyframes relampago {
+      0% { opacity: 0; }
+      5% { opacity: 1; }
+      10% { opacity: 0.3; }
+      15% { opacity: 1; }
+      25% { opacity: 0.4; }
+      35% { opacity: 0.9; }
+      50% { opacity: 0.2; }
+      100% { opacity: 0; }
+    }
+
+    .relampago-fundo {
+      position: absolute;
+      width: 200%;
+      height: 100px;
+      background: radial-gradient(ellipse at center,
+        rgba(200, 220, 255, 0.4) 0%,
+        rgba(150, 180, 255, 0.2) 30%,
+        transparent 70%);
+      filter: blur(20px);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 1020;
+    }
+
+    .relampago-fundo.ativo {
+      animation: relampagoFundo 0.8s ease-out;
+    }
+
+    @keyframes relampagoFundo {
+      0% { opacity: 0; transform: scaleY(0.5); }
+      20% { opacity: 0.8; transform: scaleY(1.2); }
+      40% { opacity: 0.3; }
+      60% { opacity: 0.6; }
+      100% { opacity: 0; transform: scaleY(1); }
+    }
+
+    .chuva-zona {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .chuva-zona:nth-child(1) { z-index: 1040; }
+    .chuva-zona:nth-child(2) { z-index: 1045; }
+    .chuva-zona:nth-child(3) { z-index: 1050; }
+    .chuva-zona:nth-child(4) { z-index: 1055; }
+    .chuva-zona:nth-child(5) { z-index: 1060; }
+
+    .gota {
+      position: absolute;
+      top: -30px;
+      background: linear-gradient(180deg,
+        rgba(200, 220, 255, 0) 0%,
+        rgba(200, 220, 255, 0.5) 40%,
+        rgba(200, 220, 255, 0.8) 60%,
+        rgba(255, 255, 255, 0.95) 100%);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      animation: cairGota linear infinite;
+      will-change: transform;
+      filter: drop-shadow(0 0 2px rgba(200, 220, 255, 0.7));
+    }
+
+    @keyframes cairGota {
+      0% { transform: translateY(-30px) translateX(0) scaleY(1); opacity: 0; }
+      5% { opacity: 1; }
+      95% { opacity: 1; }
+      100% { transform: translateY(110vh) translateX(-40px) scaleY(1.8); opacity: 0.2; }
+    }
+
+    .gota.gigante {
+      width: 4px; height: 35px;
+      background: linear-gradient(180deg,
+        rgba(220, 235, 255, 0) 0%,
+        rgba(220, 235, 255, 0.9) 50%,
+        rgba(255, 255, 255, 1) 100%);
+      filter: drop-shadow(0 0 4px rgba(200, 220, 255, 1));
+      z-index: 1060;
+    }
+    .gota.grande {
+      width: 3px; height: 28px;
+      background: linear-gradient(180deg,
+        rgba(220, 235, 255, 0) 0%,
+        rgba(220, 235, 255, 0.85) 60%,
+        rgba(255, 255, 255, 1) 100%);
+      filter: drop-shadow(0 0 3px rgba(200, 220, 255, 0.9));
+      z-index: 1055;
+    }
+    .gota.media { width: 2px; height: 20px; z-index: 1050; }
+    .gota.fina { width: 1px; height: 14px; opacity: 0.6; z-index: 1045; }
+    .gota.ultra-fina { width: 1px; height: 10px; opacity: 0.4; z-index: 1040; }
+
+    @keyframes tremorTela {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      10% { transform: translate(-3px, 2px) rotate(-0.3deg); }
+      20% { transform: translate(3px, -2px) rotate(0.3deg); }
+      30% { transform: translate(-2px, -3px) rotate(-0.2deg); }
+      40% { transform: translate(2px, 3px) rotate(0.2deg); }
+      50% { transform: translate(-3px, -1px) rotate(-0.3deg); }
+      60% { transform: translate(3px, 1px) rotate(0.3deg); }
+      70% { transform: translate(-1px, 2px) rotate(-0.1deg); }
+      80% { transform: translate(1px, -2px) rotate(0.1deg); }
+      90% { transform: translate(-2px, 1px) rotate(-0.2deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+
+    #tornado-layer.tremendo {
+      animation: tremorTela 0.4s ease-out;
+    }
+
+    #tornado-layer::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 100%; height: 120px;
+      background: linear-gradient(0deg,
+        rgba(150, 180, 255, 0.25) 0%,
+        rgba(100, 130, 200, 0.1) 50%,
+        rgba(0, 0, 0, 0) 100%);
+      z-index: 1065;
+      pointer-events: none;
+      filter: blur(8px);
+    }
+
+    #jorge-voador {
+      position: absolute;
+      top: 9%; left: 0; width: 100%;
+      font-size: clamp(20px, 4vw, 42px);
       font-weight: 900;
-      letter-spacing: 2px;
-      background: rgba(10, 12, 24, 0.85);
-      animation: rockStrobe 0.65s infinite;
-      margin-bottom: 14px;
+      color: #fff;
+      text-align: center;
+      text-shadow:
+        0 0 20px var(--neon),
+        0 0 40px var(--magenta),
+        0 0 60px var(--neon),
+        0 0 80px var(--magenta),
+        0 0 100px var(--neon);
+      animation: twisterMove 4s infinite linear;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 1200;
+      letter-spacing: 4px;
     }
 
-    .rock-sub {
-      font-size: 14px;
-      color: var(--text);
-      margin-bottom: 18px;
-      max-width: 520px;
+    @keyframes twisterMove {
+      0% { transform: scale(0.1) rotate(0deg); opacity: 0; filter: blur(8px); }
+      50% { transform: scale(1.3) rotate(720deg); opacity: 1; filter: blur(0px); }
+      100% { transform: scale(0.1) rotate(1440deg); opacity: 0; filter: blur(8px); }
+    }
+
+    #clarao-geral {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #fff;
+      opacity: 0;
+      z-index: 1090;
+      pointer-events: none;
+      mix-blend-mode: overlay;
+    }
+
+    #clarao-geral.ativo { animation: claraoOnda 0.4s ease-out; }
+
+    @keyframes claraoOnda {
+      0% { opacity: 0; }
+      15% { opacity: 0.9; }
+      30% { opacity: 0.3; }
+      50% { opacity: 0.7; }
+      100% { opacity: 0; }
     }
 
     #vsk-folder-input { display: none; }
@@ -636,6 +891,44 @@
 <body>
   <div id="vsk-bg"></div>
   <video id="vsk-video" playsinline preload="auto" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></video>
+
+  <div id="tornado-layer">
+    <div id="bg-singer-layer-rock"></div>
+    <div id="ceu-rockdoido"></div>
+
+    <div class="relampago-fundo" id="relampago-fundo-1" style="top: 10%; left: -50%;"></div>
+    <div class="relampago-fundo" id="relampago-fundo-2" style="top: 25%; left: 0%;"></div>
+    <div class="relampago-fundo" id="relampago-fundo-3" style="top: 15%; left: -30%;"></div>
+
+    <div id="raio-flash"></div>
+    <div id="clarao-geral"></div>
+
+    <svg id="raio-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+      <defs>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        <filter id="glow-forte">
+          <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      <g id="grupo-raios"></g>
+    </svg>
+
+    <div class="chuva-zona" id="chuva-zona-1"></div>
+    <div class="chuva-zona" id="chuva-zona-2"></div>
+    <div class="chuva-zona" id="chuva-zona-3"></div>
+    <div class="chuva-zona" id="chuva-zona-4"></div>
+    <div class="chuva-zona" id="chuva-zona-5"></div>
+  </div>
 
   <div id="vsk-hud">
     <div class="top-bar hud-interactive">
@@ -688,12 +981,6 @@
     </div>
   </div>
 
-  <div id="vsk-rockdoido">
-    <div class="rock-badge">⚡ MODO ROCKDOIDO ATIVADO ⚡</div>
-    <div class="rock-sub">Código 1308801393 acionado! Luzes, batida e energia máxima no palco.</div>
-    <button class="btn btn-stop" type="button" style="flex:0 0 auto;padding:0 18px;" onclick="fecharModoRockdoido()">SAIR DO MODO ROCKDOIDO</button>
-  </div>
-
   <div id="modal-numpad" class="modal">
     <div class="modal-card">
       <div class="modal-title">
@@ -739,6 +1026,7 @@
 
     const state = {
       songs: {}, list: [], queue: [], covers: {}, intros: [], txtMeta: {},
+      rockSlides: [], rockAudioFile: null, rockAudioUrl: '',
       defaultIntroUrl: 'intro.mp4',
       logoUrl: '', qrUrl: null, qrHidden: false,
       buffer: '', numpadBuffer: '', bufTimer: null,
@@ -747,6 +1035,39 @@
     };
 
     const video = document.getElementById('vsk-video');
+    let audioRockDoido = null;
+    let rockSlideInterval = null;
+    let rockRaioInterval = null;
+    let rockRaioMultiploInterval = null;
+
+    async function forcarTelaCheiaPaisagemIntro() {
+      try { if (window.AndroidHost && AndroidHost.setOrientation) AndroidHost.setOrientation(0); } catch (_) {}
+      try {
+        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+          await Promise.race([
+            document.documentElement.requestFullscreen({ navigationUI: 'hide' }),
+            new Promise(resolve => setTimeout(resolve, 1000))
+          ]);
+        }
+      } catch (_) {}
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          await Promise.race([
+            screen.orientation.lock('landscape'),
+            new Promise(resolve => setTimeout(resolve, 1000))
+          ]);
+        }
+      } catch (_) {}
+    }
+
+    function aplicarEstadoTelaIntro() {
+      if (state.introRunning && !state.songActive && state.queue.length === 0) {
+        document.body.classList.add('intro-fullscreen');
+        video.classList.remove('song-mode');
+      } else {
+        document.body.classList.remove('intro-fullscreen');
+      }
+    }
 
     function resolverLogoPadrao() {
       if (window.AndroidHost) {
@@ -809,23 +1130,366 @@
       }
     }
 
-    function abrirModoRockdoido() {
-      state.rockdoidoActive = true;
-      document.getElementById('vsk-rockdoido').classList.add('active');
-      document.getElementById('vsk-marquee').textContent = '⚡ MODO ROCKDOIDO ATIVADO (1308801393) ⚡';
+    /* ================= MODO ROCKDOIDO (SEM AVISO NA TELA) ================= */
+    function gerarChuvaRockdoido() {
+      const zonas = [
+        { id: 'chuva-zona-1', qtd: 70, tipo: 'ultra-fina' },
+        { id: 'chuva-zona-2', qtd: 60, tipo: 'fina' },
+        { id: 'chuva-zona-3', qtd: 50, tipo: 'media' },
+        { id: 'chuva-zona-4', qtd: 35, tipo: 'grande' },
+        { id: 'chuva-zona-5', qtd: 20, tipo: 'gigante' }
+      ];
+
+      zonas.forEach(cfg => {
+        const zona = document.getElementById(cfg.id);
+        if (!zona) return;
+        zona.innerHTML = '';
+        for (let i = 0; i < cfg.qtd; i++) {
+          const gota = document.createElement('div');
+          gota.className = 'gota ' + cfg.tipo;
+          gota.style.left = (Math.random() * 120 - 10) + '%';
+          let velocidadeBase = 0.4;
+          if (cfg.tipo === 'fina') velocidadeBase = 0.5;
+          else if (cfg.tipo === 'media') velocidadeBase = 0.6;
+          else if (cfg.tipo === 'grande') velocidadeBase = 0.7;
+          else if (cfg.tipo === 'gigante') velocidadeBase = 0.85;
+          gota.style.animationDuration = (velocidadeBase + Math.random() * 0.3) + 's';
+          gota.style.animationDelay = (Math.random() * 2) + 's';
+          gota.style.opacity = (Math.random() * 0.3 + 0.5).toFixed(2);
+          zona.appendChild(gota);
+        }
+      });
     }
 
-    function fecharModoRockdoido() {
+    function gerarCaminhoRaio(startX, startY) {
+      let x = startX;
+      let y = startY;
+      let d = `M ${x} ${y}`;
+      const segmentos = 10 + Math.floor(Math.random() * 6);
+      for (let i = 0; i < segmentos; i++) {
+        x += (Math.random() - 0.5) * 180;
+        y += 1000 / segmentos;
+        d += ` L ${x.toFixed(0)} ${y.toFixed(0)}`;
+      }
+      return d;
+    }
+
+    function gerarRamoRaio(x, y) {
+      let px = x;
+      let py = y;
+      let d = `M ${px} ${py}`;
+      const segmentos = 3 + Math.floor(Math.random() * 4);
+      for (let i = 0; i < segmentos; i++) {
+        px += (Math.random() - 0.5) * 250;
+        py += 80 + Math.random() * 80;
+        d += ` L ${px.toFixed(0)} ${py.toFixed(0)}`;
+      }
+      return d;
+    }
+
+    function dispararRaioRockdoido() {
+      const flash = document.getElementById('raio-flash');
+      const svg = document.getElementById('raio-svg');
+      const grupo = document.getElementById('grupo-raios');
+      const clarao = document.getElementById('clarao-geral');
+      const tornado = document.getElementById('tornado-layer');
+      if (!grupo) return;
+
+      grupo.innerHTML = '';
+      const qtdRaios = 2 + Math.floor(Math.random() * 3);
+      const corRaio = Math.random() < 0.3 ? '#aaccff' : '#ffffff';
+      const espessuraBase = 2 + Math.random() * 3;
+
+      for (let i = 0; i < qtdRaios; i++) {
+        const startX = Math.random() * 1000;
+        const caminho = gerarCaminhoRaio(startX, -20);
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', caminho);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', corRaio);
+        path.setAttribute('stroke-width', espessuraBase + Math.random() * 2);
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('stroke-linejoin', 'round');
+        path.setAttribute('filter', 'url(#glow-forte)');
+        path.setAttribute('opacity', 0.9);
+        grupo.appendChild(path);
+
+        const qtdRamos = 1 + Math.floor(Math.random() * 2);
+        for (let j = 0; j < qtdRamos; j++) {
+          const ramoX = startX + (Math.random() - 0.5) * 200;
+          const ramoY = 200 + Math.random() * 400;
+          const ramo = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          ramo.setAttribute('d', gerarRamoRaio(ramoX, ramoY));
+          ramo.setAttribute('fill', 'none');
+          ramo.setAttribute('stroke', corRaio);
+          ramo.setAttribute('stroke-width', (espessuraBase * 0.5) + Math.random());
+          ramo.setAttribute('stroke-linecap', 'round');
+          ramo.setAttribute('filter', 'url(#glow)');
+          ramo.setAttribute('opacity', 0.6);
+          grupo.appendChild(ramo);
+        }
+      }
+
+      if (flash) {
+        flash.classList.remove('ativo');
+        void flash.offsetWidth;
+        flash.classList.add('ativo');
+      }
+      if (svg) {
+        svg.classList.remove('ativo');
+        void svg.offsetWidth;
+        svg.classList.add('ativo');
+      }
+      if (clarao && Math.random() < 0.6) {
+        clarao.classList.remove('ativo');
+        void clarao.offsetWidth;
+        clarao.classList.add('ativo');
+      }
+      if (tornado) {
+        tornado.classList.remove('tremendo');
+        void tornado.offsetWidth;
+        tornado.classList.add('tremendo');
+      }
+      if (Math.random() < 0.3) {
+        const fundos = ['relampago-fundo-1', 'relampago-fundo-2', 'relampago-fundo-3'];
+        const fundo = document.getElementById(fundos[Math.floor(Math.random() * fundos.length)]);
+        if (fundo) {
+          fundo.classList.remove('ativo');
+          void fundo.offsetWidth;
+          fundo.classList.add('ativo');
+        }
+      }
+    }
+
+    function iniciarRaiosRockdoido() {
+      pararRaiosRockdoido();
+      setTimeout(() => dispararRaioRockdoido(), 350);
+      rockRaioInterval = setInterval(() => dispararRaioRockdoido(), 450 + Math.random() * 450);
+      rockRaioMultiploInterval = setInterval(() => {
+        setTimeout(() => dispararRaioRockdoido(), 100);
+        setTimeout(() => dispararRaioRockdoido(), 250);
+        setTimeout(() => dispararRaioRockdoido(), 400);
+      }, 3000 + Math.random() * 2500);
+    }
+
+    function pararRaiosRockdoido() {
+      if (rockRaioInterval) { clearInterval(rockRaioInterval); rockRaioInterval = null; }
+      if (rockRaioMultiploInterval) { clearInterval(rockRaioMultiploInterval); rockRaioMultiploInterval = null; }
+      const grupo = document.getElementById('grupo-raios');
+      if (grupo) grupo.innerHTML = '';
+    }
+
+    async function tocarAudioRockdoido() {
+      pararAudioRockdoido();
+
+      if (audioRockDoido && audioRockDoido.src) {
+        try {
+          audioRockDoido.currentTime = 0;
+          audioRockDoido.volume = 1.0;
+          audioRockDoido.muted = false;
+          await audioRockDoido.play();
+          return true;
+        } catch (_) {}
+      }
+
+      if (state.rockAudioFile && state.rockAudioFile.contentUri && window.AndroidHost && AndroidHost.readDataUrl) {
+        try {
+          const dataUrl = AndroidHost.readDataUrl(state.rockAudioFile.contentUri);
+          if (dataUrl && dataUrl.startsWith('data:')) {
+            audioRockDoido = new Audio(dataUrl);
+            audioRockDoido.loop = true;
+            audioRockDoido.volume = 1.0;
+            state.rockAudioUrl = dataUrl;
+            await audioRockDoido.play();
+            return true;
+          }
+        } catch (_) {}
+      }
+
+      const candidatos = [];
+      if (state.rockAudioUrl) candidatos.push(state.rockAudioUrl);
+      candidatos.push(
+        'ROCKDOIDO/easteregg.mp3',
+        'ROCKDOIDO/audio.mp3',
+        'ROCKDOIDO/musica.mp3',
+        'ROCKDOIDO/som.mp3',
+        'MODO ROCKDOIDO/easteregg.mp3',
+        'MODO ROCKDOIDO/mp3/easteregg.mp3',
+        'easteregg.mp3'
+      );
+
+      for (const src of candidatos) {
+        try {
+          const el = new Audio(src);
+          el.loop = true;
+          el.volume = 1.0;
+          await el.play();
+          audioRockDoido = el;
+          return true;
+        } catch (_) {}
+      }
+      return false;
+    }
+
+    function pararAudioRockdoido() {
+      if (audioRockDoido) {
+        try {
+          audioRockDoido.pause();
+          audioRockDoido.currentTime = 0;
+          audioRockDoido.muted = false;
+        } catch (_) {}
+      }
+    }
+
+    function iniciarSlidesRockdoido() {
+      if (rockSlideInterval) {
+        clearInterval(rockSlideInterval);
+        rockSlideInterval = null;
+      }
+
+      const slideLayer = document.getElementById('bg-singer-layer-rock');
+      if (!slideLayer) return;
+
+      const lista = state.rockSlides || [];
+      if (!lista.length) {
+        document.body.classList.remove('tem-slide');
+        slideLayer.style.opacity = '0';
+        slideLayer.style.backgroundImage = '';
+        slideLayer.classList.remove('ativo');
+        return;
+      }
+
+      document.body.classList.add('tem-slide');
+      slideLayer.style.backgroundSize = 'contain';
+      slideLayer.style.backgroundPosition = 'center center';
+      slideLayer.style.backgroundRepeat = 'no-repeat';
+      slideLayer.style.backgroundColor = 'transparent';
+      slideLayer.style.zIndex = '1005';
+      slideLayer.style.opacity = '1';
+      slideLayer.classList.add('ativo');
+
+      const urls = lista.map(s => {
+        if (s.contentUri) return null;
+        if (s.dataUrl) return s.dataUrl;
+        try { return s.url || (s instanceof File ? URL.createObjectURL(s) : null); }
+        catch (_) { return null; }
+      });
+
+      let indicesRestantes = [];
+      let ultimoIndice = -1;
+
+      const sortearProximo = () => {
+        if (!indicesRestantes.length) {
+          indicesRestantes = Array.from({ length: lista.length }, (_, i) => i);
+          for (let i = indicesRestantes.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [indicesRestantes[i], indicesRestantes[j]] = [indicesRestantes[j], indicesRestantes[i]];
+          }
+          if (indicesRestantes.length > 1 && indicesRestantes[indicesRestantes.length - 1] === ultimoIndice) {
+            [indicesRestantes[0], indicesRestantes[indicesRestantes.length - 1]] = [indicesRestantes[indicesRestantes.length - 1], indicesRestantes[0]];
+          }
+        }
+        ultimoIndice = indicesRestantes.pop();
+        return ultimoIndice;
+      };
+
+      const trocarSlide = () => {
+        const idx = sortearProximo();
+        const item = lista[idx];
+        let url = urls[idx];
+        if (!url && item && item.contentUri && window.AndroidHost && AndroidHost.readDataUrl) {
+          try { url = AndroidHost.readDataUrl(item.contentUri) || item.contentUri; }
+          catch (_) { url = item.contentUri; }
+        }
+        if (!url && item) url = item.contentUri || item.url || '';
+        slideLayer.style.backgroundImage = url ? `url("${url}")` : 'none';
+        slideLayer.style.opacity = '1';
+        slideLayer.classList.add('beat-impact');
+        setTimeout(() => slideLayer.classList.remove('beat-impact'), 100);
+      };
+
+      trocarSlide();
+      rockSlideInterval = setInterval(trocarSlide, 500);
+    }
+
+    function ativarModoRockdoido() {
+      state.rockdoidoActive = true;
+      try { if (window.AndroidHost && AndroidHost.setRockDoidoActive) AndroidHost.setRockDoidoActive(true); } catch (_) {}
+
+      state.songActive = false;
+      state.introRunning = false;
+      state.introDone = true;
+      document.body.classList.remove('intro-fullscreen');
+      video.pause();
+      video.loop = false;
+      video.style.display = 'none';
+      document.getElementById('vsk-countdown').classList.remove('active');
+      document.getElementById('vsk-logo-splash').classList.remove('active');
+
+      forcarTelaCheiaPaisagemIntro();
+      document.body.classList.add('modo-jb');
+
+      const tornado = document.getElementById('tornado-layer');
+      if (tornado) {
+        tornado.style.display = 'flex';
+        const antigo = document.getElementById('jorge-voador');
+        if (antigo) antigo.remove();
+        const badge = document.createElement('div');
+        badge.id = 'jorge-voador';
+        badge.textContent = 'JORGE BONIFÁCIO';
+        tornado.appendChild(badge);
+      }
+
+      gerarChuvaRockdoido();
+      iniciarRaiosRockdoido();
+      iniciarSlidesRockdoido();
+      tocarAudioRockdoido();
+    }
+
+    function desativarModoRockdoido() {
       state.rockdoidoActive = false;
-      document.getElementById('vsk-rockdoido').classList.remove('active');
+      try { if (window.AndroidHost && AndroidHost.setRockDoidoActive) AndroidHost.setRockDoidoActive(false); } catch (_) {}
+
+      document.body.classList.remove('modo-jb');
+      document.body.classList.remove('tem-slide');
+
+      pararAudioRockdoido();
+      pararRaiosRockdoido();
+      if (rockSlideInterval) {
+        clearInterval(rockSlideInterval);
+        rockSlideInterval = null;
+      }
+
+      const slideLayer = document.getElementById('bg-singer-layer-rock');
+      if (slideLayer) {
+        slideLayer.style.opacity = '0';
+        slideLayer.style.backgroundImage = '';
+        slideLayer.classList.remove('ativo');
+      }
+
+      const tornado = document.getElementById('tornado-layer');
+      if (tornado) tornado.style.display = 'none';
+
+      const badge = document.getElementById('jorge-voador');
+      if (badge) badge.remove();
+
       atualizarFilaVsk();
+    }
+
+    function alternarModoRockdoido() {
+      if (state.rockdoidoActive || document.body.classList.contains('modo-jb')) {
+        desativarModoRockdoido();
+      } else {
+        ativarModoRockdoido();
+      }
     }
 
     function processarCodigoEspecial(digits) {
       const clean = (digits || '').trim();
       if (!clean) return false;
       if (clean === ROCKDOIDO_CODE) {
-        abrirModoRockdoido();
+        alternarModoRockdoido();
         return true;
       }
       if (clean === '999999999') {
@@ -837,27 +1501,36 @@
     }
 
     function iniciarLoopIntroCarregamento() {
-      if (state.introRunning || state.introDone || state.songActive || state.queue.length > 0) return;
+      if (state.rockdoidoActive || state.introRunning || state.introDone || state.songActive || state.queue.length > 0) return;
       state.introRunning = true;
+      aplicarEstadoTelaIntro();
+      forcarTelaCheiaPaisagemIntro();
 
       const srcUrl = (state.intros && state.intros.length > 0 && state.intros[0].url)
         ? state.intros[0].url
         : resolverUrlIntroPadrao();
 
+      video.classList.remove('song-mode');
       video.style.display = 'block';
       video.loop = true;
       video.src = srcUrl;
 
+      const encerrarIntro = () => {
+        state.introRunning = false;
+        state.introDone = true;
+        aplicarEstadoTelaIntro();
+        video.loop = false;
+        video.removeEventListener('ended', onEndedCycle);
+        video.removeEventListener('error', onErrorFallback);
+        video.pause();
+        video.style.display = 'none';
+        video.removeAttribute('src');
+        video.load();
+      };
+
       const onEndedCycle = () => {
         if (!state.loadingSongs && !state.songActive && state.queue.length === 0) {
-          state.introRunning = false;
-          state.introDone = true;
-          video.loop = false;
-          video.removeEventListener('ended', onEndedCycle);
-          video.pause();
-          video.style.display = 'none';
-          video.removeAttribute('src');
-          video.load();
+          encerrarIntro();
         }
       };
 
@@ -867,15 +1540,7 @@
           video.play().catch(() => {});
           return;
         }
-        state.introRunning = false;
-        state.introDone = true;
-        video.loop = false;
-        video.removeEventListener('ended', onEndedCycle);
-        video.removeEventListener('error', onErrorFallback);
-        video.pause();
-        video.style.display = 'none';
-        video.removeAttribute('src');
-        video.load();
+        encerrarIntro();
       };
 
       video.addEventListener('ended', onEndedCycle);
@@ -886,7 +1551,7 @@
           clearInterval(checkFinishInterval);
           video.loop = false;
           if (video.ended || video.paused || video.readyState === 0) {
-            onEndedCycle();
+            encerrarIntro();
           }
         }
       }, 250);
@@ -956,16 +1621,52 @@
         .trim();
     }
 
+    function contarMusicasArtista(artist) {
+      const chave = normalizarChave(artist);
+      if (!chave) return 0;
+      let total = 0;
+      for (const s of state.list) {
+        if (normalizarChave(s.artist) === chave) total++;
+      }
+      for (const q of state.queue) {
+        if (normalizarChave(q.artist) === chave) total++;
+      }
+      return Math.max(total, 1);
+    }
+
     function buscarCapaArtista(artist) {
       const chave = normalizarChave(artist);
       if (!chave) return null;
+
       if (state.covers[chave]) return state.covers[chave];
+
       const keys = Object.keys(state.covers);
       for (const k of keys) {
-        if (k.includes(chave) || chave.includes(k)) {
+        if (k === chave || k.includes(chave) || chave.includes(k)) {
           return state.covers[k];
         }
       }
+
+      const tokensArtista = chave.split(' ').filter(t => t.length >= 2);
+      if (tokensArtista.length > 0) {
+        let melhorChave = null;
+        let melhorScore = 0;
+        for (const k of keys) {
+          const tokensCapa = k.split(' ').filter(Boolean);
+          let score = 0;
+          for (const tk of tokensArtista) {
+            if (tokensCapa.includes(tk)) score++;
+          }
+          if (score > melhorScore) {
+            melhorScore = score;
+            melhorChave = k;
+          }
+        }
+        if (melhorChave && melhorScore >= Math.min(2, tokensArtista.length)) {
+          return state.covers[melhorChave];
+        }
+      }
+
       return null;
     }
 
@@ -1028,6 +1729,9 @@
       const novaLista = [];
       const novasCapas = {};
       const novasIntros = [];
+      const novosRockSlides = [];
+      let novoRockAudioFile = null;
+      let novoRockAudioUrl = '';
       let pastaLogoUrl = '';
       state.txtMeta = {};
 
@@ -1050,7 +1754,11 @@
       for (const f of files) {
         const name = f.name || '';
         const low = name.toLowerCase();
-        const relPathUpper = (f.webkitRelativePath || f.path || name).toUpperCase().replace(/\\/g, '/');
+        const relPathUpper = (f.webkitRelativePath || f.path || name)
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toUpperCase()
+          .replace(/\\/g, '/');
         const srcUrl = f.contentUri || (f instanceof File ? URL.createObjectURL(f) : '');
 
         if (low === 'logo.png' || low === 'logo.jpg') {
@@ -1065,8 +1773,32 @@
           document.getElementById('vsk-bg').style.backgroundImage = `url("${srcUrl}")`;
         }
 
-        if (/(^|\/)CAPAS?(\/|$)/i.test(relPathUpper) && /\.(jpe?g|png|webp)$/i.test(low)) {
-          novasCapas[normalizarChave(name)] = srcUrl;
+        const ehCapa = /(^|\/)CAPAS?(\/|$)/i.test(relPathUpper) && /\.(jpe?g|png|webp|gif)$/i.test(low);
+        if (ehCapa) {
+          const chaveCapa = normalizarChave(name);
+          if (chaveCapa) novasCapas[chaveCapa] = srcUrl;
+        }
+
+        const ehPastaRock = /(^|\/)(MODO\s*ROCKDOIDO|ROCKDOIDO|ROCK\s*DOIDO|SLIDES)(\/|$)/i.test(relPathUpper);
+        if (ehPastaRock && /\.(jpe?g|png|webp|gif|bmp)$/i.test(low)) {
+          novosRockSlides.push({
+            name,
+            url: srcUrl,
+            contentUri: f.contentUri || null
+          });
+        }
+
+        if (ehPastaRock && low.endsWith('.mp3') && !novoRockAudioFile) {
+          novoRockAudioFile = f;
+          novoRockAudioUrl = srcUrl;
+          if (f.contentUri && window.AndroidHost && AndroidHost.readDataUrl) {
+            try {
+              const inlineAudio = AndroidHost.readDataUrl(f.contentUri);
+              if (inlineAudio && inlineAudio.startsWith('data:')) {
+                novoRockAudioUrl = inlineAudio;
+              }
+            } catch (_) {}
+          }
         }
 
         if (/^intro[1-5]?\.mp4$/i.test(low)) {
@@ -1090,13 +1822,25 @@
         }
       }
 
-      novasIntros.sort((a, b) => a.name.localeCompare(b.name));
+      novosIntros.sort((a, b) => a.name.localeCompare(b.name));
       novaLista.sort((a, b) => a.title.localeCompare(b.title));
+      novosRockSlides.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
 
       state.songs = novosSongs;
       state.list = novaLista;
       state.covers = novasCapas;
+      state.rockSlides = novosRockSlides;
+      state.rockAudioFile = novoRockAudioFile;
+      state.rockAudioUrl = novoRockAudioUrl;
       if (novasIntros.length) state.intros = novasIntros;
+
+      if (novoRockAudioUrl) {
+        audioRockDoido = new Audio(novoRockAudioUrl);
+        audioRockDoido.loop = true;
+        audioRockDoido.volume = 1.0;
+        audioRockDoido.preload = 'auto';
+        audioRockDoido.load();
+      }
 
       state.logoUrl = pastaLogoUrl || resolverLogoPadrao();
       const splashImg = document.getElementById('vsk-splash-logo');
@@ -1193,17 +1937,11 @@
       const displayCode = document.getElementById('numpad-code');
       const previewEl = document.getElementById('numpad-preview');
 
-      if (digits === ROCKDOIDO_CODE) {
-        displayCode.textContent = digits;
-        previewEl.textContent = '⚡ CÓDIGO MODO ROCKDOIDO RECONHECIDO';
-        return;
-      }
-
       displayCode.textContent = digits ? (digits.length <= 4 ? digits.padEnd(4, '-') : digits) : '----';
       const s = buscarMusicaPorCodigo(digits);
       previewEl.textContent = s
         ? formatarLinhaFila(s)
-        : (digits ? `Código ${digits.padStart(4, '0')} não encontrado` : 'Digite os números do código');
+        : (digits ? `Código ${digits.padStart(4, '0')}` : 'Digite os números do código');
     }
 
     function confirmarNumpad() {
@@ -1220,10 +1958,6 @@
     }
 
     function atualizarOsd(digits) {
-      if (digits === ROCKDOIDO_CODE) {
-        document.getElementById('vsk-marquee').textContent = '⚡ MODO ROCKDOIDO (1308801393) ⚡';
-        return;
-      }
       const s = buscarMusicaPorCodigo(digits);
       document.getElementById('vsk-marquee').textContent = s
         ? `CÓDIGO: ${formatarLinhaFila(s)}`
@@ -1290,10 +2024,12 @@
         if (state.buffer === ROCKDOIDO_CODE) {
           clearTimeout(state.bufTimer);
           state.buffer = '';
-          abrirModoRockdoido();
+          alternarModoRockdoido();
           return;
         }
-        atualizarOsd(state.buffer);
+        if (!state.rockdoidoActive) {
+          atualizarOsd(state.buffer);
+        }
         clearTimeout(state.bufTimer);
         state.bufTimer = setTimeout(() => {
           const val = state.buffer;
@@ -1304,6 +2040,8 @@
         }, 1400);
         return;
       }
+
+      if (state.rockdoidoActive) return;
 
       if (key === 'MediaTrackNext' || key === 'n' || key === 'N') {
         e.preventDefault();
@@ -1394,12 +2132,14 @@
     }
 
     async function vskStart() {
-      if (!state.queue.length || state.songActive) return;
+      if (!state.queue.length || state.songActive || state.rockdoidoActive) return;
       state.songActive = true;
       state.introDone = true;
       state.introRunning = false;
+      aplicarEstadoTelaIntro();
       video.loop = false;
       video.pause();
+      video.classList.add('song-mode');
       video.style.display = 'none';
 
       recolherBotoesParaPontinhos();
@@ -1412,8 +2152,9 @@
       const splashImg = document.getElementById('vsk-splash-logo');
       const coverImg = document.getElementById('vsk-artist-cover');
 
+      const qtdCantor = contarMusicasArtista(cur.artist);
       const coverUrl = buscarCapaArtista(cur.artist);
-      if (coverUrl) {
+      if (coverUrl && qtdCantor >= 1) {
         coverImg.src = coverUrl;
         coverImg.style.display = 'block';
       } else {
@@ -1424,7 +2165,7 @@
       document.getElementById('vsk-count-info').textContent = formatarLinhaFila(cur);
       cd.classList.add('active');
       for (let i = 5; i >= 1; i--) {
-        if (!state.songActive) {
+        if (!state.songActive || state.rockdoidoActive) {
           cd.classList.remove('active');
           atualizarMiniContagem('');
           return;
@@ -1441,18 +2182,19 @@
       atualizarMiniContagem('');
 
       const logoSrc = state.logoUrl || resolverLogoPadrao();
-      if (logoSrc && splashImg) {
+      if (logoSrc && splashImg && !state.rockdoidoActive) {
         splashImg.src = logoSrc;
         await rodarZoomLogo(splash, wrap, splashImg);
       }
 
-      if (!state.songActive) return;
+      if (!state.songActive || state.rockdoidoActive) return;
       video.muted = false;
       video.src = cur.url || (cur.file && (cur.file.contentUri || URL.createObjectURL(cur.file))) || '';
       if (!video.src) {
         video.dispatchEvent(new Event('ended'));
         return;
       }
+      video.classList.add('song-mode');
       video.style.display = 'block';
       await video.play().catch(() => {});
       atualizarFilaVsk();
@@ -1473,7 +2215,7 @@
       video.load();
       state.queue.shift();
       atualizarFilaVsk();
-      if (state.queue.length > 0) {
+      if (state.queue.length > 0 && !state.rockdoidoActive) {
         vskStart();
       } else {
         restaurarBarraCompleta();
@@ -1496,6 +2238,7 @@
       atualizarFilaVsk();
       restaurarBarraCompleta();
     }
+
     function vskSkip() {
       if (state.songActive && state.queue.length) {
         video.dispatchEvent(new Event('ended'));
@@ -1504,6 +2247,7 @@
         atualizarFilaVsk();
       }
     }
+
     function vskClear() {
       state.queue = state.songActive ? state.queue.slice(0, 1) : [];
       atualizarFilaVsk();
@@ -1514,7 +2258,11 @@
       filtrarCatalogoVsk('');
       setTimeout(() => document.getElementById('cat-search').focus(), 60);
     }
-    function fecharCatalogoVsk() { document.getElementById('modal-cat').classList.remove('active'); }
+
+    function fecharCatalogoVsk() {
+      document.getElementById('modal-cat').classList.remove('active');
+    }
+
     function filtrarCatalogoVsk(q) {
       const term = q.trim().toLowerCase();
       const res = state.list.filter(s => !term || s.code.includes(term) || s.title.toLowerCase().includes(term) || s.artist.toLowerCase().includes(term));
@@ -1523,8 +2271,17 @@
         `<button class="cat-row${i === 0 ? ' selected' : ''}" onclick='selecionarDoCat("${s.code}")'><span><b style="color:var(--gold)">${s.code}</b> - ${s.title}</span><small style="color:var(--cyan)">${s.artist}</small></button>`
       ).join('');
     }
-    function selecionarDoCat(code) { fecharCatalogoVsk(); const s = buscarMusicaPorCodigo(code); if (s) adicionarMusicaNaFila(s); }
-    document.getElementById('vsk-btn-exit').onclick = () => { if (window.AndroidHost && AndroidHost.exitApp) AndroidHost.exitApp(); else window.close(); };
+
+    function selecionarDoCat(code) {
+      fecharCatalogoVsk();
+      const s = buscarMusicaPorCodigo(code);
+      if (s) adicionarMusicaNaFila(s);
+    }
+
+    document.getElementById('vsk-btn-exit').onclick = () => {
+      if (window.AndroidHost && AndroidHost.exitApp) AndroidHost.exitApp();
+      else window.close();
+    };
 
     window.addEventListener('load', () => {
       state.logoUrl = resolverLogoPadrao();
