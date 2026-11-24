@@ -602,7 +602,6 @@
       gap: 8px;
     }
 
-    /* ================= MODO ROCKDOIDO (EXTRAÍDO DO index_2.html) ================= */
     .beat-impact {
       transform: scale(1.05) translateZ(0) !important;
       filter: none !important;
@@ -1039,6 +1038,7 @@
     let rockSlideInterval = null;
     let rockRaioInterval = null;
     let rockRaioMultiploInterval = null;
+    let encerrarIntroAtual = null;
 
     async function forcarTelaCheiaPaisagemIntro() {
       try { if (window.AndroidHost && AndroidHost.setOrientation) AndroidHost.setOrientation(0); } catch (_) {}
@@ -1130,7 +1130,6 @@
       }
     }
 
-    /* ================= MODO ROCKDOIDO (SEM AVISO NA TELA) ================= */
     function gerarChuvaRockdoido() {
       const zonas = [
         { id: 'chuva-zona-1', qtd: 70, tipo: 'ultra-fina' },
@@ -1420,7 +1419,7 @@
       state.songActive = false;
       state.introRunning = false;
       state.introDone = true;
-      document.body.classList.remove('intro-fullscreen');
+      aplicarEstadoTelaIntro();
       video.pause();
       video.loop = false;
       video.style.display = 'none';
@@ -1500,6 +1499,21 @@
       return false;
     }
 
+    function finalizarIntroQuandoPronto() {
+      if (typeof encerrarIntroAtual === 'function') {
+        encerrarIntroAtual();
+      } else if (state.introRunning && !state.songActive && state.queue.length === 0) {
+        state.introRunning = false;
+        state.introDone = true;
+        aplicarEstadoTelaIntro();
+        video.loop = false;
+        video.pause();
+        video.style.display = 'none';
+        video.removeAttribute('src');
+        video.load();
+      }
+    }
+
     function iniciarLoopIntroCarregamento() {
       if (state.rockdoidoActive || state.introRunning || state.introDone || state.songActive || state.queue.length > 0) return;
       state.introRunning = true;
@@ -1515,7 +1529,21 @@
       video.loop = true;
       video.src = srcUrl;
 
+      let checkFinishInterval = null;
+      let finishFallbackTimer = null;
+
       const encerrarIntro = () => {
+        if (checkFinishInterval) {
+          clearInterval(checkFinishInterval);
+          checkFinishInterval = null;
+        }
+        if (finishFallbackTimer) {
+          clearTimeout(finishFallbackTimer);
+          finishFallbackTimer = null;
+        }
+        if (encerrarIntroAtual === encerrarIntro) {
+          encerrarIntroAtual = null;
+        }
         state.introRunning = false;
         state.introDone = true;
         aplicarEstadoTelaIntro();
@@ -1527,6 +1555,8 @@
         video.removeAttribute('src');
         video.load();
       };
+
+      encerrarIntroAtual = encerrarIntro;
 
       const onEndedCycle = () => {
         if (!state.loadingSongs && !state.songActive && state.queue.length === 0) {
@@ -1546,15 +1576,23 @@
       video.addEventListener('ended', onEndedCycle);
       video.addEventListener('error', onErrorFallback);
 
-      const checkFinishInterval = setInterval(() => {
+      checkFinishInterval = setInterval(() => {
         if (!state.loadingSongs && state.introRunning && !state.songActive && state.queue.length === 0) {
-          clearInterval(checkFinishInterval);
           video.loop = false;
           if (video.ended || video.paused || video.readyState === 0) {
             encerrarIntro();
+          } else if (!finishFallbackTimer) {
+            const restanteMs = (Number.isFinite(video.duration) && Number.isFinite(video.currentTime))
+              ? Math.max(150, Math.min(1200, Math.ceil((video.duration - video.currentTime) * 1000) + 150))
+              : 400;
+            finishFallbackTimer = setTimeout(() => {
+              if (!state.loadingSongs && state.introRunning && !state.songActive && state.queue.length === 0) {
+                encerrarIntro();
+              }
+            }, restanteMs);
           }
         }
-      }, 250);
+      }, 150);
 
       video.play().catch(() => {
         video.muted = true;
@@ -1853,6 +1891,7 @@
 
       if (state.introRunning && !state.songActive && state.queue.length === 0) {
         video.loop = false;
+        finalizarIntroQuandoPronto();
       }
     }
 
