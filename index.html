@@ -1622,13 +1622,13 @@
       aplicarEstadoTelaIntro();
       forcarTelaCheiaPaisagemIntro();
 
-      const srcUrl = (state.intros && state.intros.length > 0 && state.intros[0].url)
-        ? state.intros[0].url
-        : resolverUrlIntroPadrao();
+      // A intro é fixa no repositório/app; a pasta selecionada serve apenas para carregar os conteúdos.
+      const srcUrl = resolverUrlIntroPadrao();
 
       video.classList.remove('song-mode');
       video.style.display = 'block';
       video.loop = false;
+      video.preload = 'auto';
       video.src = srcUrl;
 
       let checkFinishInterval = null;
@@ -1671,9 +1671,11 @@
       };
 
       const onErrorFallback = () => {
-        if (video.src !== state.defaultIntroUrl && state.defaultIntroUrl) {
-          video.src = state.defaultIntroUrl;
-          video.play().catch(() => {});
+        // Mantém a tela de espera até a pasta terminar; só então libera o palco.
+        if (state.loadingSongs) {
+          video.pause();
+          video.style.display = 'none';
+          atualizarIndicadorLoad('load');
           return;
         }
         encerrarIntro();
@@ -1733,15 +1735,9 @@
     };
 
     window.onIntroFoundDuringScan = function(introUri) {
+      // Intros da pasta selecionada não substituem a intro fixa usada como tela de espera.
+      // Mantém o callback para compatibilidade com a ponte Android.
       if (!introUri) return;
-      const exists = state.intros.some(it => it.url === introUri);
-      if (!exists) {
-        state.intros.push({ name: 'intro.mp4', url: introUri });
-        state.intros.sort((a, b) => a.name.localeCompare(b.name));
-      }
-      if (!state.introRunning && !state.introDone && !state.songActive && state.queue.length === 0) {
-        iniciarLoopIntroCarregamento();
-      }
     };
 
     window.onNativeFolderLoaded = async function(entries) {
@@ -1872,6 +1868,7 @@
       iniciarLoopIntroCarregamento();
       atualizarIndicadorLoad('load');
 
+      try {
       const novosSongs = {};
       const novaLista = [];
       const novasCapas = {};
@@ -1977,7 +1974,7 @@
       }
       iniciarRotacaoFundo();
 
-      novosIntros.sort((a, b) => a.name.localeCompare(b.name));
+      novasIntros.sort((a, b) => a.name.localeCompare(b.name));
       novaLista.sort((a, b) => a.title.localeCompare(b.title));
       novosRockSlides.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
 
@@ -2002,16 +1999,22 @@
         splashImg.src = state.logoUrl;
       }
 
-      state.loadingSongs = false;
-      atualizarFilaVsk();
+      } catch (erroCarregamento) {
+        console.error('[VIDEOKE SHOW] Falha ao carregar a pasta:', erroCarregamento);
+      } finally {
+        // Nunca deixa o indicador preso em CARREGANDO por causa de uma exceção.
+        state.loadingSongs = false;
+        atualizarFilaVsk();
 
-      if (state.introRunning && !state.songActive && state.queue.length === 0) {
-        atualizarIndicadorLoad('ok');
-        if (video.ended || video.paused || video.readyState === 0) {
-          finalizarIntroQuandoPronto();
+        if (state.introRunning && !state.songActive && state.queue.length === 0) {
+          atualizarIndicadorLoad('ok');
+          // Se a intro já terminou ou não conseguiu iniciar, libera o palco agora.
+          if (video.ended || video.paused || video.readyState === 0) {
+            finalizarIntroQuandoPronto();
+          }
+        } else {
+          atualizarIndicadorLoad(null);
         }
-      } else {
-        atualizarIndicadorLoad(null);
       }
     }
 
