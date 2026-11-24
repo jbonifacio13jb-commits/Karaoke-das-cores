@@ -76,6 +76,53 @@
       pointer-events: none !important;
     }
 
+    @keyframes vskSpinDiscreto {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #vsk-load-status {
+      position: fixed;
+      top: 10px;
+      left: 12px;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(7, 9, 19, 0.22);
+      color: rgba(248, 250, 252, 0.72);
+      opacity: 0.28;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    #vsk-load-status.visible {
+      display: inline-flex;
+    }
+
+    #vsk-load-spinner {
+      width: 10px;
+      height: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      border-top-color: rgba(255, 255, 255, 0.85);
+      border-radius: 50%;
+      animation: vskSpinDiscreto 0.9s linear infinite;
+    }
+
+    #vsk-load-status.ready #vsk-load-spinner {
+      display: none;
+    }
+
+    #vsk-load-status.ready {
+      opacity: 0.34;
+      color: rgba(134, 239, 172, 0.85);
+    }
+
     #vsk-hud {
       position: fixed;
       inset: 0;
@@ -891,6 +938,11 @@
   <div id="vsk-bg"></div>
   <video id="vsk-video" playsinline preload="auto" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></video>
 
+  <div id="vsk-load-status" aria-hidden="true">
+    <span id="vsk-load-spinner"></span>
+    <span id="vsk-load-label">LOAD</span>
+  </div>
+
   <div id="tornado-layer">
     <div id="bg-singer-layer-rock"></div>
     <div id="ceu-rockdoido"></div>
@@ -1039,6 +1091,23 @@
     let rockRaioInterval = null;
     let rockRaioMultiploInterval = null;
     let encerrarIntroAtual = null;
+
+    function atualizarIndicadorLoad(modo) {
+      const box = document.getElementById('vsk-load-status');
+      const label = document.getElementById('vsk-load-label');
+      if (!box || !label) return;
+      if (modo === 'load') {
+        label.textContent = 'LOAD';
+        box.classList.remove('ready');
+        box.classList.add('visible');
+      } else if (modo === 'ok') {
+        label.textContent = 'OK';
+        box.classList.add('ready');
+        box.classList.add('visible');
+      } else {
+        box.classList.remove('visible', 'ready');
+      }
+    }
 
     async function forcarTelaCheiaPaisagemIntro() {
       try { if (window.AndroidHost && AndroidHost.setOrientation) AndroidHost.setOrientation(0); } catch (_) {}
@@ -1419,6 +1488,7 @@
       state.songActive = false;
       state.introRunning = false;
       state.introDone = true;
+      atualizarIndicadorLoad(null);
       aplicarEstadoTelaIntro();
       video.pause();
       video.loop = false;
@@ -1505,6 +1575,7 @@
       } else if (state.introRunning && !state.songActive && state.queue.length === 0) {
         state.introRunning = false;
         state.introDone = true;
+        atualizarIndicadorLoad(null);
         aplicarEstadoTelaIntro();
         video.loop = false;
         video.pause();
@@ -1517,6 +1588,7 @@
     function iniciarLoopIntroCarregamento() {
       if (state.rockdoidoActive || state.introRunning || state.introDone || state.songActive || state.queue.length > 0) return;
       state.introRunning = true;
+      atualizarIndicadorLoad(state.loadingSongs ? 'load' : 'ok');
       aplicarEstadoTelaIntro();
       forcarTelaCheiaPaisagemIntro();
 
@@ -1526,7 +1598,7 @@
 
       video.classList.remove('song-mode');
       video.style.display = 'block';
-      video.loop = true;
+      video.loop = !state.loadingSongs ? false : true;
       video.src = srcUrl;
 
       let checkFinishInterval = null;
@@ -1546,6 +1618,7 @@
         }
         state.introRunning = false;
         state.introDone = true;
+        atualizarIndicadorLoad(null);
         aplicarEstadoTelaIntro();
         video.loop = false;
         video.removeEventListener('ended', onEndedCycle);
@@ -1579,18 +1652,21 @@
       checkFinishInterval = setInterval(() => {
         if (!state.loadingSongs && state.introRunning && !state.songActive && state.queue.length === 0) {
           video.loop = false;
+          atualizarIndicadorLoad('ok');
           if (video.ended || video.paused || video.readyState === 0) {
             encerrarIntro();
           } else if (!finishFallbackTimer) {
             const restanteMs = (Number.isFinite(video.duration) && Number.isFinite(video.currentTime))
-              ? Math.max(150, Math.min(1200, Math.ceil((video.duration - video.currentTime) * 1000) + 150))
-              : 400;
+              ? Math.max(150, Math.min(8000, Math.ceil((video.duration - video.currentTime) * 1000) + 250))
+              : 1500;
             finishFallbackTimer = setTimeout(() => {
               if (!state.loadingSongs && state.introRunning && !state.songActive && state.queue.length === 0) {
                 encerrarIntro();
               }
             }, restanteMs);
           }
+        } else if (state.loadingSongs && state.introRunning) {
+          atualizarIndicadorLoad('load');
         }
       }, 150);
 
@@ -1762,6 +1838,7 @@
     async function carregarArquivosVsk(files) {
       state.loadingSongs = true;
       iniciarLoopIntroCarregamento();
+      atualizarIndicadorLoad('load');
 
       const novosSongs = {};
       const novaLista = [];
@@ -1891,7 +1968,12 @@
 
       if (state.introRunning && !state.songActive && state.queue.length === 0) {
         video.loop = false;
-        finalizarIntroQuandoPronto();
+        atualizarIndicadorLoad('ok');
+        if (video.ended || video.paused || video.readyState === 0) {
+          finalizarIntroQuandoPronto();
+        }
+      } else {
+        atualizarIndicadorLoad(null);
       }
     }
 
@@ -2175,6 +2257,7 @@
       state.songActive = true;
       state.introDone = true;
       state.introRunning = false;
+      atualizarIndicadorLoad(null);
       aplicarEstadoTelaIntro();
       video.loop = false;
       video.pause();
