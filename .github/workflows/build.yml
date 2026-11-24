@@ -306,7 +306,7 @@ jobs:
                           o.put("path", curPath);
                           o.put("uri", f.getUri().toString());
                           out.put(o);
-                          if (!silent && (name.equalsIgnoreCase("intro.mp4") || name.toLowerCase().matches("^intro[1-5]\.mp4$"))) {
+                          if (!silent && (name.equalsIgnoreCase("intro.mp4") || name.toLowerCase().matches("^intro[1-5]\\.mp4$"))) {
                               final String introUri = f.getUri().toString();
                               runOnUiThread(() -> webView.evaluateJavascript("if(window.onIntroFoundDuringScan) window.onIntroFoundDuringScan(" + JSONObject.quote(introUri) + ");", null));
                           }
