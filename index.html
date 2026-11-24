@@ -70,6 +70,7 @@
       flex-direction: column;
       justify-content: space-between;
       padding: 8px 10px;
+      transition: opacity 0.2s ease;
     }
 
     .hud-interactive {
@@ -119,6 +120,78 @@
     .btn-clear  { border-color: var(--purple); color: var(--purple); }
     .btn-queue  { border-color: var(--blue);   color: var(--blue); flex: 1.45 1 0; }
     .btn-exit   { border-color: var(--red);    color: var(--red); flex: 0 0 36px; width: 36px; padding: 0; font-size: 16px; }
+
+    #vsk-dots-btn {
+      position: fixed;
+      top: 10px;
+      right: 12px;
+      z-index: 35;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      border: 2px solid rgba(255, 212, 59, 0.75);
+      background: rgba(10, 14, 28, 0.72);
+      color: var(--gold);
+      font-family: inherit;
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1;
+      cursor: pointer;
+      pointer-events: auto;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.65);
+    }
+
+    #vsk-dots-btn.visible {
+      display: inline-flex;
+    }
+
+    #vsk-dots-btn:hover, #vsk-dots-btn:focus {
+      outline: 2px solid #fff;
+      background: rgba(18, 25, 48, 0.92);
+    }
+
+    #vsk-dots-menu {
+      position: fixed;
+      top: 54px;
+      right: 12px;
+      z-index: 36;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 190px;
+      padding: 8px;
+      border-radius: 10px;
+      background: rgba(10, 14, 28, 0.95);
+      border: 2px solid var(--gold);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.85);
+      pointer-events: auto;
+    }
+
+    #vsk-dots-menu.open {
+      display: flex;
+    }
+
+    #vsk-dots-menu .btn {
+      flex: none;
+      width: 100%;
+      justify-content: flex-start;
+      padding: 0 12px;
+      height: 34px;
+    }
+
+    body.hud-collapsed .top-bar,
+    body.hud-collapsed .bottom-bar {
+      display: none;
+    }
+
+    body.hud-collapsed #vsk-queue-dropdown {
+      top: 54px;
+      right: 206px;
+      z-index: 37;
+    }
 
     #vsk-queue-dropdown {
       display: none;
@@ -189,6 +262,7 @@
       position: relative;
       display: flex;
       align-items: center;
+      justify-content: center;
       width: 100%;
       min-height: 30px;
       background: transparent;
@@ -200,6 +274,7 @@
       flex: 1;
       overflow: hidden;
       white-space: nowrap;
+      text-align: center;
       background: transparent;
       border: none;
       padding: 4px 8px;
@@ -207,6 +282,8 @@
 
     #vsk-marquee {
       display: inline-block;
+      margin: 0 auto;
+      text-align: center;
       font-size: 13px;
       font-weight: bold;
       color: var(--gold);
@@ -238,16 +315,14 @@
       z-index: 20;
       display: none;
       flex-direction: column;
-      align-items: flex-end;
+      align-items: center;
       justify-content: center;
-      background: transparent;
-      text-align: right;
-      padding: 16px 6vw 16px 16px;
+      background: rgba(5, 8, 18, 0.52);
+      text-align: center;
+      padding: 16px 24px;
     }
 
     #vsk-logo-splash {
-      align-items: center;
-      text-align: center;
       background: rgba(5, 8, 18, 0.92);
     }
 
@@ -257,60 +332,72 @@
 
     @keyframes vskCountPulse {
       0% {
-        transform: scale(0.72) translateX(14px);
-        opacity: 0;
-        filter: drop-shadow(0 0 0 rgba(56, 189, 248, 0));
+        transform: scale(0.84);
+        opacity: 0.65;
+        filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.35));
       }
-      35% {
-        transform: scale(1.06) translateX(0);
+      50% {
+        transform: scale(1.16);
         opacity: 1;
-        filter: drop-shadow(0 0 18px rgba(56, 189, 248, 0.65));
-      }
-      80% {
-        transform: scale(1) translateX(0);
-        opacity: 1;
-        filter: drop-shadow(0 0 10px rgba(255, 212, 59, 0.45));
+        filter: drop-shadow(0 0 26px rgba(56, 189, 248, 0.9));
       }
       100% {
-        transform: scale(0.92) translateX(-6px);
-        opacity: 0.15;
-        filter: drop-shadow(0 0 0 rgba(56, 189, 248, 0));
+        transform: scale(0.96);
+        opacity: 0.85;
+        filter: drop-shadow(0 0 12px rgba(255, 212, 59, 0.55));
+      }
+    }
+
+    @keyframes vskCoverPulse {
+      0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.85));
+      }
+      50% {
+        transform: scale(1.03);
+        filter: drop-shadow(0 14px 36px rgba(56, 189, 248, 0.45));
       }
     }
 
     #vsk-artist-cover {
-      width: 118px;
-      height: 118px;
-      object-fit: cover;
+      width: auto;
+      height: auto;
+      max-width: min(76vw, 540px);
+      max-height: min(46vh, 360px);
+      object-fit: contain;
       border-radius: 14px;
       border: 2px solid var(--gold);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75);
-      margin-bottom: 10px;
+      background: rgba(7, 9, 19, 0.85);
+      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.8);
+      margin-bottom: 14px;
       display: none;
+      animation: vskCoverPulse 1.4s ease-in-out infinite;
     }
 
     #vsk-count-num {
       font-family: "Segoe UI", Roboto, "Arial Black", sans-serif;
-      font-size: clamp(38px, 6.5vw, 58px);
+      font-size: clamp(74px, 16vw, 148px);
       font-weight: 900;
       font-variant-numeric: tabular-nums;
       color: var(--cyan);
       line-height: 1;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9), 0 0 18px rgba(56, 189, 248, 0.45);
+      text-align: center;
+      text-shadow: 0 4px 16px rgba(0, 0, 0, 0.95), 0 0 28px rgba(56, 189, 248, 0.65);
     }
 
     #vsk-count-num.ticking {
-      animation: vskCountPulse 0.96s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: vskCountPulse 0.96s ease-in-out infinite;
     }
 
     #vsk-count-info {
       font-family: "Segoe UI", Roboto, sans-serif;
-      font-size: 14px;
+      font-size: clamp(15px, 2.4vw, 22px);
       font-weight: 700;
-      margin-top: 8px;
+      margin-top: 12px;
       color: var(--text);
+      text-align: center;
       text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
-      max-width: 46vw;
+      max-width: 85vw;
     }
 
     @keyframes vskLogoZoomIn {
@@ -336,8 +423,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      max-width: 75vw;
-      max-height: 62vh;
+      max-width: 82vw;
+      max-height: 72vh;
     }
 
     .logo-wrap.animating #logo-target {
@@ -345,8 +432,8 @@
     }
 
     .logo-wrap.dissolving #logo-target {
-      opacity: 0;
-      transition: opacity 0.24s ease-out;
+      opacity: 0.92;
+      transition: opacity 0.2s ease-out;
     }
 
     #logo-target {
@@ -356,29 +443,15 @@
     }
 
     #vsk-splash-logo {
-      max-width: 68vw;
-      max-height: 58vh;
+      max-width: 78vw;
+      max-height: 68vh;
       object-fit: contain;
-    }
-
-    #vsk-dust-canvas {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 22;
-      display: none;
-    }
-
-    #vsk-dust-canvas.active {
-      display: block;
     }
 
     .modal {
       position: fixed;
       inset: 0;
-      z-index: 30;
+      z-index: 40;
       display: none;
       align-items: center;
       justify-content: center;
@@ -514,6 +587,49 @@
       gap: 8px;
     }
 
+    #vsk-rockdoido {
+      position: fixed;
+      inset: 0;
+      z-index: 28;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, rgba(168, 85, 247, 0.25), rgba(7, 9, 19, 0.94));
+      pointer-events: auto;
+      padding: 20px;
+      text-align: center;
+    }
+
+    #vsk-rockdoido.active {
+      display: flex;
+    }
+
+    @keyframes rockStrobe {
+      0%, 100% { box-shadow: inset 0 0 40px rgba(236, 72, 153, 0.45); border-color: var(--pink); color: var(--gold); transform: scale(1) rotate(-1deg); }
+      33% { box-shadow: inset 0 0 60px rgba(56, 189, 248, 0.55); border-color: var(--cyan); color: var(--cyan); transform: scale(1.04) rotate(1deg); }
+      66% { box-shadow: inset 0 0 60px rgba(34, 197, 94, 0.55); border-color: var(--green); color: var(--green); transform: scale(1.02) rotate(-0.5deg); }
+    }
+
+    .rock-badge {
+      padding: 10px 22px;
+      border-radius: 999px;
+      border: 3px solid var(--pink);
+      font-size: clamp(20px, 4vw, 34px);
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: rgba(10, 12, 24, 0.85);
+      animation: rockStrobe 0.65s infinite;
+      margin-bottom: 14px;
+    }
+
+    .rock-sub {
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 18px;
+      max-width: 520px;
+    }
+
     #vsk-folder-input { display: none; }
   </style>
 </head>
@@ -531,13 +647,6 @@
       <button class="btn btn-clear" onclick="vskClear()">LIMPAR</button>
       <button id="vsk-btn-queue" class="btn btn-queue" onclick="alternarFilaDropdown()">FILA (<span id="vsk-q-count">0</span>)</button>
       <button id="vsk-btn-exit" class="btn btn-exit" title="SAIR" aria-label="SAIR">⏻</button>
-
-      <div id="vsk-queue-dropdown">
-        <div id="vsk-queue-items"></div>
-        <div id="vsk-qr-box">
-          <img id="vsk-qr-img" alt="QR Lista" />
-        </div>
-      </div>
     </div>
 
     <div class="bottom-bar hud-interactive">
@@ -545,6 +654,23 @@
         <div id="vsk-marquee">★ VIDEOKE SHOW ★ AGUARDANDO SELEÇÃO DE MÚSICAS ★</div>
       </div>
       <div id="vsk-mini-count"></div>
+    </div>
+  </div>
+
+  <button id="vsk-dots-btn" type="button" title="Menu" aria-label="Menu" onclick="alternarMenuPontinhos(event)">⋮</button>
+  <div id="vsk-dots-menu" class="hud-interactive">
+    <button class="btn btn-code" type="button" onclick="acaoMenuPontinhos('codigo')">CÓDIGO</button>
+    <button class="btn btn-cat" type="button" onclick="acaoMenuPontinhos('catalogo')">CATÁLOGO</button>
+    <button class="btn btn-queue" type="button" onclick="acaoMenuPontinhos('fila')">VER FILA (<span id="vsk-dots-q-count">0</span>)</button>
+    <button class="btn btn-skip" type="button" onclick="acaoMenuPontinhos('pular')">PULAR</button>
+    <button class="btn btn-stop" type="button" onclick="acaoMenuPontinhos('parar')">PARAR</button>
+    <button class="btn btn-start" type="button" onclick="acaoMenuPontinhos('barra')">MOSTRAR BARRA</button>
+  </div>
+
+  <div id="vsk-queue-dropdown">
+    <div id="vsk-queue-items"></div>
+    <div id="vsk-qr-box">
+      <img id="vsk-qr-img" alt="QR Lista" />
     </div>
   </div>
 
@@ -557,12 +683,16 @@
   <div id="vsk-logo-splash">
     <div id="vsk-logo-wrap" class="logo-wrap">
       <div id="logo-target">
-        <img id="vsk-splash-logo" alt="" crossorigin="anonymous" />
+        <img id="vsk-splash-logo" alt="" />
       </div>
     </div>
   </div>
 
-  <canvas id="vsk-dust-canvas"></canvas>
+  <div id="vsk-rockdoido">
+    <div class="rock-badge">⚡ MODO ROCKDOIDO ATIVADO ⚡</div>
+    <div class="rock-sub">Código 1308801393 acionado! Luzes, batida e energia máxima no palco.</div>
+    <button class="btn btn-stop" type="button" style="flex:0 0 auto;padding:0 18px;" onclick="fecharModoRockdoido()">SAIR DO MODO ROCKDOIDO</button>
+  </div>
 
   <div id="modal-numpad" class="modal">
     <div class="modal-card">
@@ -605,17 +735,18 @@
   <input id="vsk-folder-input" type="file" webkitdirectory directory multiple />
 
   <script>
+    const ROCKDOIDO_CODE = '1308801393';
+
     const state = {
       songs: {}, list: [], queue: [], covers: {}, intros: [], txtMeta: {},
       defaultIntroUrl: 'intro.mp4',
       logoUrl: '', qrUrl: null, qrHidden: false,
       buffer: '', numpadBuffer: '', bufTimer: null,
       introRunning: false, introDone: false, folderPicking: false, loadingSongs: false,
-      songActive: false
+      songActive: false, hudCollapsed: false, rockdoidoActive: false
     };
+
     const video = document.getElementById('vsk-video');
-    const dustCanvas = document.getElementById('vsk-dust-canvas');
-    const dustCtx = dustCanvas.getContext('2d');
 
     function resolverLogoPadrao() {
       if (window.AndroidHost) {
@@ -629,6 +760,80 @@
         return 'file:///android_asset/intro.mp4';
       }
       return state.defaultIntroUrl || 'intro.mp4';
+    }
+
+    function aplicarEstadoBotoesHud() {
+      const dotsBtn = document.getElementById('vsk-dots-btn');
+      const dotsMenu = document.getElementById('vsk-dots-menu');
+      if (state.hudCollapsed) {
+        document.body.classList.add('hud-collapsed');
+        dotsBtn.classList.add('visible');
+      } else {
+        document.body.classList.remove('hud-collapsed');
+        dotsBtn.classList.remove('visible');
+        dotsMenu.classList.remove('open');
+      }
+    }
+
+    function recolherBotoesParaPontinhos() {
+      state.hudCollapsed = true;
+      aplicarEstadoBotoesHud();
+    }
+
+    function restaurarBarraCompleta() {
+      state.hudCollapsed = false;
+      document.getElementById('vsk-queue-dropdown').classList.remove('open');
+      aplicarEstadoBotoesHud();
+    }
+
+    function alternarMenuPontinhos(ev) {
+      if (ev) ev.stopPropagation();
+      document.getElementById('vsk-dots-menu').classList.toggle('open');
+    }
+
+    function acaoMenuPontinhos(acao) {
+      document.getElementById('vsk-dots-menu').classList.remove('open');
+      if (acao === 'codigo') {
+        abrirTecladoCodigo();
+      } else if (acao === 'catalogo') {
+        abrirCatalogoVsk();
+      } else if (acao === 'fila') {
+        alternarFilaDropdown();
+      } else if (acao === 'pular') {
+        vskSkip();
+      } else if (acao === 'parar') {
+        vskStop();
+        restaurarBarraCompleta();
+      } else if (acao === 'barra') {
+        restaurarBarraCompleta();
+      }
+    }
+
+    function abrirModoRockdoido() {
+      state.rockdoidoActive = true;
+      document.getElementById('vsk-rockdoido').classList.add('active');
+      document.getElementById('vsk-marquee').textContent = '⚡ MODO ROCKDOIDO ATIVADO (1308801393) ⚡';
+    }
+
+    function fecharModoRockdoido() {
+      state.rockdoidoActive = false;
+      document.getElementById('vsk-rockdoido').classList.remove('active');
+      atualizarFilaVsk();
+    }
+
+    function processarCodigoEspecial(digits) {
+      const clean = (digits || '').trim();
+      if (!clean) return false;
+      if (clean === ROCKDOIDO_CODE) {
+        abrirModoRockdoido();
+        return true;
+      }
+      if (clean === '999999999') {
+        state.qrHidden = !state.qrHidden;
+        atualizarFilaVsk();
+        return true;
+      }
+      return false;
     }
 
     function iniciarLoopIntroCarregamento() {
@@ -845,7 +1050,7 @@
       for (const f of files) {
         const name = f.name || '';
         const low = name.toLowerCase();
-        const pathUpper = (f.webkitRelativePath || name).toUpperCase().replace(/\\/g, '/');
+        const relPathUpper = (f.webkitRelativePath || f.path || name).toUpperCase().replace(/\\/g, '/');
         const srcUrl = f.contentUri || (f instanceof File ? URL.createObjectURL(f) : '');
 
         if (low === 'logo.png' || low === 'logo.jpg') {
@@ -860,7 +1065,7 @@
           document.getElementById('vsk-bg').style.backgroundImage = `url("${srcUrl}")`;
         }
 
-        if (pathUpper.includes('/CAPAS/') && /\.(png|jpg|jpeg|webp)$/i.test(low)) {
+        if (/(^|\/)CAPAS?(\/|$)/i.test(relPathUpper) && /\.(jpe?g|png|webp)$/i.test(low)) {
           novasCapas[normalizarChave(name)] = srcUrl;
         }
 
@@ -907,167 +1112,27 @@
       }
     }
 
-    function criarParticulasDoLogo(imgEl) {
-      dustCanvas.width = window.innerWidth;
-      dustCanvas.height = window.innerHeight;
-      dustCtx.clearRect(0, 0, dustCanvas.width, dustCanvas.height);
-
-      const rect = imgEl.getBoundingClientRect();
-      if (rect.width <= 0 || rect.height <= 0) return [];
-
-      const tempCanvas = document.createElement('canvas');
-      const sampleW = 148;
-      const sampleH = Math.max(44, Math.round(148 * (rect.height / rect.width)));
-      tempCanvas.width = sampleW;
-      tempCanvas.height = sampleH;
-      const tCtx = tempCanvas.getContext('2d');
-
-      let imgData = null;
-      try {
-        tCtx.drawImage(imgEl, 0, 0, sampleW, sampleH);
-        imgData = tCtx.getImageData(0, 0, sampleW, sampleH).data;
-      } catch (_) {
-        imgData = null;
-      }
-
-      const particles = [];
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const stepX = 3;
-      const stepY = 3;
-
-      for (let y = 0; y < sampleH; y += stepY) {
-        for (let x = 0; x < sampleW; x += stepX) {
-          let color = null;
-          if (imgData) {
-            const idx = (y * sampleW + x) * 4;
-            const r = imgData[idx];
-            const g = imgData[idx + 1];
-            const b = imgData[idx + 2];
-            const a = imgData[idx + 3];
-            if (a > 40) {
-              color = `rgba(${r}, ${g}, ${b}, 1)`;
-            }
-          } else if (Math.random() > 0.42) {
-            color = Math.random() > 0.5 ? 'rgba(255, 212, 59, 1)' : 'rgba(56, 189, 248, 1)';
-          }
-
-          if (!color) continue;
-
-          const px = rect.left + (x / sampleW) * rect.width;
-          const py = rect.top + (y / sampleH) * rect.height;
-          const dx = px - cx;
-          const dy = py - cy;
-          const dist = Math.hypot(dx, dy) || 1;
-          const nx = dx / dist;
-          const ny = dy / dist;
-
-          const speed = 0.65 + Math.random() * 2.15;
-          particles.push({
-            x: px,
-            y: py,
-            vx: nx * speed + (Math.random() - 0.5) * 1.1,
-            vy: ny * speed + (Math.random() - 0.5) * 1.1 - 0.25,
-            size: 1.4 + Math.random() * 2.6,
-            color,
-            phase: Math.random() * Math.PI * 2,
-            wobble: 0.25 + Math.random() * 0.45
-          });
-        }
-      }
-
-      return particles;
-    }
-
-    function rodarZoomEPulverizarLogo(splashEl, wrapEl, imgEl) {
+    function rodarZoomLogo(splashEl, wrapEl, imgEl) {
       return new Promise((resolve) => {
-        const MAX_TOTAL_MS = 3000;
         const zoomMs = 1050;
-        const dispersaoMs = 1850;
         let done = false;
-        let zoomTimer = null;
-        let capTimer = null;
-        let raf = null;
 
         const finish = () => {
           if (done) return;
           done = true;
-          clearTimeout(zoomTimer);
-          clearTimeout(capTimer);
-          cancelAnimationFrame(raf);
-          dustCtx.clearRect(0, 0, dustCanvas.width, dustCanvas.height);
-          dustCanvas.classList.remove('active');
           wrapEl.classList.remove('animating', 'dissolving');
           splashEl.classList.remove('active');
           resolve();
         };
 
-        const startDust = (remainingMs) => {
-          if (done) return;
-          const particles = criarParticulasDoLogo(imgEl);
-          wrapEl.classList.add('dissolving');
-          const budget = Math.max(250, Math.min(dispersaoMs, remainingMs));
-
-          if (!particles.length) {
-            capTimer = setTimeout(finish, Math.min(250, budget));
-            return;
-          }
-
-          dustCanvas.classList.add('active');
-          const t0 = performance.now();
-
-          const step = (now) => {
-            if (done) return;
-            const elapsed = now - t0;
-            const progress = Math.min(1, elapsed / budget);
-            const slowEase = progress < 0.72
-              ? progress * 0.55
-              : 0.396 + Math.pow((progress - 0.72) / 0.28, 1.7) * 0.604;
-
-            dustCtx.clearRect(0, 0, dustCanvas.width, dustCanvas.height);
-            const burstFactor = progress > 0.68 ? 1 + ((progress - 0.68) / 0.32) * 1.85 : 1;
-
-            for (let i = 0; i < particles.length; i++) {
-              const p = particles[i];
-              const driftX = Math.cos(now * 0.004 + p.phase) * p.wobble;
-              const driftY = Math.sin(now * 0.0045 + p.phase) * p.wobble;
-
-              p.x += (p.vx * 0.42 * burstFactor) + driftX * 0.25;
-              p.y += (p.vy * 0.42 * burstFactor) + driftY * 0.25;
-
-              const alpha = Math.max(0, 1 - Math.pow(slowEase, 1.15));
-              const drawSize = p.size * (progress > 0.75 ? 1 + (progress - 0.75) * 1.6 : 1);
-
-              if (alpha > 0.01) {
-                dustCtx.globalAlpha = alpha;
-                dustCtx.fillStyle = p.color;
-                dustCtx.beginPath();
-                dustCtx.arc(p.x, p.y, drawSize, 0, Math.PI * 2);
-                dustCtx.fill();
-              }
-            }
-            dustCtx.globalAlpha = 1;
-
-            if (progress < 1) {
-              raf = requestAnimationFrame(step);
-            } else {
-              finish();
-            }
-          };
-
-          raf = requestAnimationFrame(step);
-        };
-
-        const startTime = performance.now();
-        capTimer = setTimeout(finish, MAX_TOTAL_MS);
         splashEl.classList.add('active');
         wrapEl.classList.remove('animating', 'dissolving');
         void wrapEl.offsetWidth;
         wrapEl.classList.add('animating');
 
-        zoomTimer = setTimeout(() => {
-          const spent = performance.now() - startTime;
-          startDust(MAX_TOTAL_MS - spent);
+        setTimeout(() => {
+          wrapEl.classList.add('dissolving');
+          setTimeout(finish, 200);
         }, zoomMs);
       });
     }
@@ -1092,7 +1157,7 @@
     }
 
     function teclaNumpad(digito) {
-      if (state.numpadBuffer.length >= 6) return;
+      if (state.numpadBuffer.length >= 12) return;
       state.numpadBuffer += digito;
       atualizarNumpadDisplay();
     }
@@ -1125,9 +1190,18 @@
 
     function atualizarNumpadDisplay() {
       const digits = state.numpadBuffer;
-      document.getElementById('numpad-code').textContent = digits ? digits.padEnd(4, '-') : '----';
+      const displayCode = document.getElementById('numpad-code');
+      const previewEl = document.getElementById('numpad-preview');
+
+      if (digits === ROCKDOIDO_CODE) {
+        displayCode.textContent = digits;
+        previewEl.textContent = '⚡ CÓDIGO MODO ROCKDOIDO RECONHECIDO';
+        return;
+      }
+
+      displayCode.textContent = digits ? (digits.length <= 4 ? digits.padEnd(4, '-') : digits) : '----';
       const s = buscarMusicaPorCodigo(digits);
-      document.getElementById('numpad-preview').textContent = s
+      previewEl.textContent = s
         ? formatarLinhaFila(s)
         : (digits ? `Código ${digits.padStart(4, '0')} não encontrado` : 'Digite os números do código');
     }
@@ -1135,15 +1209,10 @@
     function confirmarNumpad() {
       const val = state.numpadBuffer.trim();
       if (!val) return;
-      if (val === '999999999') {
-        state.qrHidden = !state.qrHidden;
-        fecharTecladoCodigo();
-        atualizarFilaVsk();
-        return;
-      }
+      fecharTecladoCodigo();
+      if (processarCodigoEspecial(val)) return;
       const s = buscarMusicaPorCodigo(val);
       if (s) {
-        fecharTecladoCodigo();
         adicionarMusicaNaFila(s);
       } else {
         document.getElementById('numpad-preview').textContent = `Código ${val.padStart(4, '0')} não encontrado`;
@@ -1151,6 +1220,10 @@
     }
 
     function atualizarOsd(digits) {
+      if (digits === ROCKDOIDO_CODE) {
+        document.getElementById('vsk-marquee').textContent = '⚡ MODO ROCKDOIDO (1308801393) ⚡';
+        return;
+      }
       const s = buscarMusicaPorCodigo(digits);
       document.getElementById('vsk-marquee').textContent = s
         ? `CÓDIGO: ${formatarLinhaFila(s)}`
@@ -1214,12 +1287,18 @@
 
       if (key >= '0' && key <= '9') {
         state.buffer += key;
+        if (state.buffer === ROCKDOIDO_CODE) {
+          clearTimeout(state.bufTimer);
+          state.buffer = '';
+          abrirModoRockdoido();
+          return;
+        }
         atualizarOsd(state.buffer);
         clearTimeout(state.bufTimer);
         state.bufTimer = setTimeout(() => {
           const val = state.buffer;
           state.buffer = '';
-          if (val === '999999999') { state.qrHidden = !state.qrHidden; atualizarFilaVsk(); return; }
+          if (processarCodigoEspecial(val)) return;
           const s = buscarMusicaPorCodigo(val);
           if (s) adicionarMusicaNaFila(s);
         }, 1400);
@@ -1249,6 +1328,20 @@
         fecharTecladoCodigo();
         fecharCatalogoVsk();
         document.getElementById('vsk-queue-dropdown').classList.remove('open');
+        document.getElementById('vsk-dots-menu').classList.remove('open');
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      const dotsBtn = document.getElementById('vsk-dots-btn');
+      const dotsMenu = document.getElementById('vsk-dots-menu');
+      const qDrop = document.getElementById('vsk-queue-dropdown');
+      const qBtn = document.getElementById('vsk-btn-queue');
+      if (dotsMenu && dotsBtn && !dotsMenu.contains(e.target) && !dotsBtn.contains(e.target)) {
+        dotsMenu.classList.remove('open');
+      }
+      if (qDrop && !qDrop.contains(e.target) && (!qBtn || !qBtn.contains(e.target)) && !e.target.closest('#vsk-dots-menu')) {
+        qDrop.classList.remove('open');
       }
     });
 
@@ -1272,6 +1365,8 @@
       const itemsBox = document.getElementById('vsk-queue-items');
       const qrBox = document.getElementById('vsk-qr-box');
       document.getElementById('vsk-q-count').textContent = state.queue.length;
+      const dotsCount = document.getElementById('vsk-dots-q-count');
+      if (dotsCount) dotsCount.textContent = state.queue.length;
 
       itemsBox.innerHTML = '';
       if (state.queue.length === 0) {
@@ -1280,7 +1375,9 @@
           document.getElementById('vsk-qr-img').src = state.qrUrl;
           qrBox.classList.add('visible');
         } else qrBox.classList.remove('visible');
-        document.getElementById('vsk-marquee').textContent = '★ VIDEOKE SHOW ★ AGUARDANDO SELEÇÃO DE MÚSICAS ★';
+        if (!state.rockdoidoActive) {
+          document.getElementById('vsk-marquee').textContent = '★ VIDEOKE SHOW ★ AGUARDANDO SELEÇÃO DE MÚSICAS ★';
+        }
         return;
       }
       qrBox.classList.remove('visible');
@@ -1291,7 +1388,9 @@
         itemsBox.appendChild(div);
       });
       const cur = state.queue[0];
-      document.getElementById('vsk-marquee').textContent = `▶ TOCANDO AGORA: ${formatarLinhaFila(cur)}`;
+      if (!state.rockdoidoActive) {
+        document.getElementById('vsk-marquee').textContent = `▶ TOCANDO AGORA: ${formatarLinhaFila(cur)}`;
+      }
     }
 
     async function vskStart() {
@@ -1303,6 +1402,8 @@
       video.pause();
       video.style.display = 'none';
 
+      recolherBotoesParaPontinhos();
+
       const cur = state.queue[0];
       const cd = document.getElementById('vsk-countdown');
       const countNumEl = document.getElementById('vsk-count-num');
@@ -1312,8 +1413,13 @@
       const coverImg = document.getElementById('vsk-artist-cover');
 
       const coverUrl = buscarCapaArtista(cur.artist);
-      if (coverUrl) { coverImg.src = coverUrl; coverImg.style.display = 'block'; }
-      else coverImg.style.display = 'none';
+      if (coverUrl) {
+        coverImg.src = coverUrl;
+        coverImg.style.display = 'block';
+      } else {
+        coverImg.removeAttribute('src');
+        coverImg.style.display = 'none';
+      }
 
       document.getElementById('vsk-count-info').textContent = formatarLinhaFila(cur);
       cd.classList.add('active');
@@ -1337,7 +1443,7 @@
       const logoSrc = state.logoUrl || resolverLogoPadrao();
       if (logoSrc && splashImg) {
         splashImg.src = logoSrc;
-        await rodarZoomEPulverizarLogo(splash, wrap, splashImg);
+        await rodarZoomLogo(splash, wrap, splashImg);
       }
 
       if (!state.songActive) return;
@@ -1367,13 +1473,18 @@
       video.load();
       state.queue.shift();
       atualizarFilaVsk();
-      if (state.queue.length > 0) vskStart();
+      if (state.queue.length > 0) {
+        vskStart();
+      } else {
+        restaurarBarraCompleta();
+      }
     };
 
     function vskStop() {
       state.songActive = false;
       atualizarMiniContagem('');
       document.getElementById('vsk-countdown').classList.remove('active');
+      document.getElementById('vsk-logo-splash').classList.remove('active');
       video.pause();
       video.loop = false;
       video.style.display = 'none';
@@ -1383,6 +1494,7 @@
         state.queue.shift();
       }
       atualizarFilaVsk();
+      restaurarBarraCompleta();
     }
     function vskSkip() {
       if (state.songActive && state.queue.length) {
@@ -1413,11 +1525,6 @@
     }
     function selecionarDoCat(code) { fecharCatalogoVsk(); const s = buscarMusicaPorCodigo(code); if (s) adicionarMusicaNaFila(s); }
     document.getElementById('vsk-btn-exit').onclick = () => { if (window.AndroidHost && AndroidHost.exitApp) AndroidHost.exitApp(); else window.close(); };
-
-    window.addEventListener('resize', () => {
-      dustCanvas.width = window.innerWidth;
-      dustCanvas.height = window.innerHeight;
-    });
 
     window.addEventListener('load', () => {
       state.logoUrl = resolverLogoPadrao();
