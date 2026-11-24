@@ -7,13 +7,20 @@
   <style>
     :root {
       --bg-dark: #070913;
-      --panel-bg: rgba(12, 16, 32, 0.9);
+      --panel-bg: rgba(12, 16, 32, 0.92);
       --gold: #ffd43b;
       --cyan: #38bdf8;
       --green: #22c55e;
+      --orange: #f97316;
+      --pink: #ec4899;
+      --purple: #a855f7;
+      --blue: #3b82f6;
       --red: #ef4444;
       --text: #f8fafc;
       --muted: #94a3b8;
+      --zoom-duration: 1.05s;
+      --zoom-start: 0.44;
+      --zoom-end: 1.05;
     }
 
     * {
@@ -62,7 +69,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 10px 12px;
+      padding: 8px 10px;
     }
 
     .hud-interactive {
@@ -73,7 +80,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 6px;
+      gap: 5px;
       width: 100%;
       position: relative;
     }
@@ -81,59 +88,54 @@
     .btn {
       background: var(--panel-bg);
       color: var(--text);
-      border: 1px solid rgba(255, 255, 255, 0.24);
+      border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 8px;
       height: 36px;
-      padding: 0 10px;
+      padding: 0 6px;
       font-family: inherit;
-      font-size: 11px;
+      font-size: clamp(9px, 1.35vw, 12px);
       font-weight: bold;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       flex: 1 1 0;
       min-width: 0;
     }
 
     .btn:hover, .btn:focus {
-      outline: 2px solid var(--cyan);
-      border-color: var(--cyan);
+      outline: 2px solid #fff;
+      filter: brightness(1.15);
     }
 
-    .btn-gold { border-color: var(--gold); color: var(--gold); }
-    .btn-green { border-color: var(--green); color: var(--green); }
-    .btn-cyan { border-color: var(--cyan); color: var(--cyan); }
-    .btn-red { border-color: var(--red); color: var(--red); }
-
-    .btn-queue {
-      flex: 1.6 1 0;
-    }
-
-    .btn-exit-icon {
-      flex: 0 0 36px;
-      width: 36px;
-      padding: 0;
-      font-size: 15px;
-    }
+    .btn-code   { border-color: var(--green);  color: var(--green); }
+    .btn-cat    { border-color: var(--cyan);   color: var(--cyan); }
+    .btn-start  { border-color: var(--gold);   color: var(--gold); }
+    .btn-skip   { border-color: var(--orange); color: var(--orange); }
+    .btn-stop   { border-color: var(--pink);   color: var(--pink); }
+    .btn-clear  { border-color: var(--purple); color: var(--purple); }
+    .btn-queue  { border-color: var(--blue);   color: var(--blue); flex: 1.45 1 0; }
+    .btn-exit   { border-color: var(--red);    color: var(--red); flex: 0 0 36px; width: 36px; padding: 0; font-size: 16px; }
 
     #vsk-queue-dropdown {
       display: none;
       position: absolute;
       top: 42px;
-      right: 42px;
-      width: 360px;
-      max-width: 75vw;
-      max-height: 55vh;
+      right: 40px;
+      width: 400px;
+      max-width: 82vw;
+      max-height: 58vh;
       overflow-y: auto;
       background: var(--panel-bg);
-      border: 1px solid var(--cyan);
+      border: 2px solid var(--blue);
       border-radius: 10px;
       padding: 8px;
       z-index: 25;
       pointer-events: auto;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
     }
 
     #vsk-queue-dropdown.open {
@@ -141,8 +143,8 @@
     }
 
     .q-item {
-      background: rgba(255, 255, 255, 0.05);
-      border-left: 3px solid var(--cyan);
+      background: rgba(255, 255, 255, 0.06);
+      border-left: 3px solid var(--blue);
       border-radius: 6px;
       padding: 6px 8px;
       margin-bottom: 5px;
@@ -154,7 +156,7 @@
 
     .q-item.playing {
       border-left-color: var(--gold);
-      background: rgba(255, 212, 59, 0.14);
+      background: rgba(255, 212, 59, 0.16);
       color: var(--gold);
       font-weight: bold;
     }
@@ -175,8 +177,8 @@
     #vsk-qr-box.visible { display: block; }
 
     #vsk-qr-img {
-      width: 96px;
-      height: 96px;
+      width: 92px;
+      height: 92px;
       object-fit: contain;
       border-radius: 8px;
       background: #fff;
@@ -236,7 +238,7 @@
       color: var(--gold);
     }
 
-    #vsk-countdown, #vsk-score-overlay {
+    #vsk-countdown, #vsk-logo-splash {
       position: fixed;
       inset: 0;
       z-index: 20;
@@ -244,19 +246,13 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: rgba(5, 8, 18, 0.9);
+      background: rgba(5, 8, 18, 0.94);
       text-align: center;
-      padding: 20px;
+      padding: 16px;
     }
 
-    #vsk-countdown.active, #vsk-score-overlay.active { display: flex; }
-
-    #vsk-default-logo {
-      max-width: 240px;
-      max-height: 120px;
-      object-fit: contain;
-      margin-bottom: 12px;
-      display: none;
+    #vsk-countdown.active, #vsk-logo-splash.active {
+      display: flex;
     }
 
     #vsk-artist-cover {
@@ -269,17 +265,80 @@
       display: none;
     }
 
-    #vsk-count-num, #score-number {
+    #vsk-count-num {
       font-size: 76px;
       font-weight: bold;
       color: var(--gold);
       line-height: 1;
     }
 
-    #vsk-count-info, #score-msg {
-      font-size: 18px;
+    #vsk-count-info {
+      font-size: 16px;
       margin-top: 10px;
       color: var(--text);
+      max-width: 90vw;
+    }
+
+    @keyframes vskLogoZoomIn {
+      0% {
+        transform: scale(var(--zoom-start));
+        opacity: 0;
+        filter: drop-shadow(0 0 0 rgba(255, 212, 59, 0));
+      }
+      78% {
+        transform: scale(var(--zoom-end));
+        opacity: 1;
+        filter: drop-shadow(0 0 22px rgba(56, 189, 248, 0.42));
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+        filter: drop-shadow(0 0 12px rgba(255, 212, 59, 0.25));
+      }
+    }
+
+    .logo-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 75vw;
+      max-height: 62vh;
+    }
+
+    .logo-wrap.animating #logo-target {
+      animation: vskLogoZoomIn var(--zoom-duration) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .logo-wrap.dissolving #logo-target {
+      opacity: 0;
+      transition: opacity 0.24s ease-out;
+    }
+
+    #logo-target {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #vsk-splash-logo {
+      max-width: 68vw;
+      max-height: 58vh;
+      object-fit: contain;
+    }
+
+    #vsk-dust-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 22;
+      display: none;
+    }
+
+    #vsk-dust-canvas.active {
+      display: block;
     }
 
     .modal {
@@ -289,53 +348,56 @@
       display: none;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.8);
-      padding: 16px;
+      background: rgba(0, 0, 0, 0.82);
+      padding: 8px;
     }
 
     .modal.active { display: flex; }
 
     .modal-card {
       width: 100%;
-      max-width: 540px;
-      max-height: 86vh;
+      max-width: 520px;
+      max-height: 94vh;
       overflow: hidden;
       display: flex;
       flex-direction: column;
       background: #0d1326;
       border: 2px solid var(--cyan);
-      border-radius: 14px;
-      padding: 16px;
-      gap: 12px;
+      border-radius: 12px;
+      padding: 10px 12px;
+      gap: 8px;
     }
 
     .modal-title {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: bold;
       color: var(--gold);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .numpad-display {
       background: #060913;
-      border: 1px solid var(--gold);
+      border: 1px solid var(--green);
       border-radius: 8px;
-      padding: 10px 12px;
+      padding: 6px 10px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
     }
 
     .numpad-code {
-      font-size: 28px;
+      font-size: clamp(20px, 4.5vh, 26px);
       font-weight: bold;
       color: var(--gold);
       letter-spacing: 3px;
     }
 
     .numpad-preview {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--cyan);
-      min-height: 16px;
+      min-height: 15px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -344,17 +406,17 @@
     .numpad-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+      gap: 6px;
     }
 
     .numpad-key {
-      height: 46px;
+      height: clamp(32px, 8.8vh, 44px);
       border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.24);
       background: #121b34;
       color: var(--text);
       font-family: inherit;
-      font-size: 18px;
+      font-size: clamp(13px, 2.8vh, 17px);
       font-weight: bold;
       cursor: pointer;
     }
@@ -367,13 +429,13 @@
 
     .input {
       width: 100%;
-      padding: 10px 12px;
+      padding: 9px 10px;
       border-radius: 8px;
       border: 1px solid rgba(255, 255, 255, 0.25);
       background: #060913;
       color: var(--text);
       font-family: inherit;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .input:focus {
@@ -385,8 +447,8 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      max-height: 52vh;
+      gap: 5px;
+      max-height: 55vh;
     }
 
     .cat-row {
@@ -399,10 +461,10 @@
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid transparent;
       border-radius: 8px;
-      padding: 8px 10px;
+      padding: 7px 9px;
       color: var(--text);
       font-family: inherit;
-      font-size: 13px;
+      font-size: 12px;
       cursor: pointer;
     }
 
@@ -423,18 +485,18 @@
 </head>
 <body>
   <div id="vsk-bg"></div>
-  <video id="vsk-video" playsinline></video>
+  <video id="vsk-video" playsinline preload="auto" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></video>
 
   <div id="vsk-hud">
     <div class="top-bar hud-interactive">
-      <button class="btn btn-gold" onclick="abrirTecladoCodigo()">CODIGO</button>
-      <button class="btn" onclick="abrirCatalogoVsk()">CATÁLOGO</button>
-      <button class="btn btn-green" onclick="vskStart()">INICIAR</button>
-      <button class="btn" onclick="vskSkip()">PULAR</button>
-      <button class="btn" onclick="vskStop()">PARAR</button>
-      <button class="btn" onclick="vskClear()">LIMPAR FILA</button>
-      <button id="vsk-btn-queue" class="btn btn-cyan btn-queue" onclick="alternarFilaDropdown()">FILA DE MÚSICAS (<span id="vsk-q-count">0</span>)</button>
-      <button id="vsk-btn-exit" class="btn btn-red btn-exit-icon" title="SAIR" aria-label="SAIR">⏻</button>
+      <button class="btn btn-code" onclick="abrirTecladoCodigo()">CÓDIGO</button>
+      <button class="btn btn-cat" onclick="abrirCatalogoVsk()">CATÁLOGO</button>
+      <button class="btn btn-start" onclick="vskStart()">INICIAR</button>
+      <button class="btn btn-skip" onclick="vskSkip()">PULAR</button>
+      <button class="btn btn-stop" onclick="vskStop()">PARAR</button>
+      <button class="btn btn-clear" onclick="vskClear()">LIMPAR</button>
+      <button id="vsk-btn-queue" class="btn btn-queue" onclick="alternarFilaDropdown()">FILA (<span id="vsk-q-count">0</span>)</button>
+      <button id="vsk-btn-exit" class="btn btn-exit" title="SAIR" aria-label="SAIR">⏻</button>
 
       <div id="vsk-queue-dropdown">
         <div id="vsk-queue-items"></div>
@@ -458,20 +520,27 @@
   </div>
 
   <div id="vsk-countdown">
-    <img id="vsk-default-logo" src="logo.png" alt="Logo" />
     <img id="vsk-artist-cover" alt="Capa do Artista" />
     <div id="vsk-count-num">5</div>
     <div id="vsk-count-info"></div>
   </div>
 
-  <div id="vsk-score-overlay">
-    <div id="score-number">95</div>
-    <div id="score-msg">MUITO BOM! PARABÉNS PELA APRESENTAÇÃO!</div>
+  <div id="vsk-logo-splash">
+    <div id="vsk-logo-wrap" class="logo-wrap">
+      <div id="logo-target">
+        <img id="vsk-splash-logo" src="logo.png" alt="Logo" crossorigin="anonymous" />
+      </div>
+    </div>
   </div>
+
+  <canvas id="vsk-dust-canvas"></canvas>
 
   <div id="modal-numpad" class="modal">
     <div class="modal-card">
-      <div class="modal-title">DIGITAR CÓDIGO</div>
+      <div class="modal-title">
+        <span>DIGITAR CÓDIGO</span>
+        <button class="btn btn-stop" style="flex:0 0 auto;height:28px;padding:0 10px;" onclick="fecharTecladoCodigo()">FECHAR</button>
+      </div>
       <div class="numpad-display">
         <div id="numpad-code" class="numpad-code">----</div>
         <div id="numpad-preview" class="numpad-preview">Digite os números do código</div>
@@ -486,12 +555,9 @@
         <button class="numpad-key" onclick="teclaNumpad('7')">7</button>
         <button class="numpad-key" onclick="teclaNumpad('8')">8</button>
         <button class="numpad-key" onclick="teclaNumpad('9')">9</button>
-        <button class="numpad-key" onclick="limparNumpad()">LIMPAR</button>
+        <button class="numpad-key" style="color:var(--orange);border-color:var(--orange)" onclick="limparNumpad()">LIMPAR</button>
         <button class="numpad-key" onclick="teclaNumpad('0')">0</button>
         <button class="numpad-key" style="color:var(--green);border-color:var(--green)" onclick="confirmarNumpad()">OK</button>
-      </div>
-      <div class="modal-actions">
-        <button class="btn" onclick="fecharTecladoCodigo()">FECHAR</button>
       </div>
     </div>
   </div>
@@ -499,11 +565,11 @@
   <div id="modal-singer" class="modal">
     <div class="modal-card">
       <div class="modal-title">NOME DO CANTOR</div>
-      <div id="singer-song-title" style="color: var(--cyan); font-size: 14px;"></div>
+      <div id="singer-song-title" style="color: var(--cyan); font-size: 13px;"></div>
       <input id="singer-name-input" class="input" type="text" placeholder="Digite o nome do cantor (ou deixe em branco)" maxlength="40" />
       <div class="modal-actions">
-        <button class="btn" onclick="fecharModalCantorVsk()">CANCELAR</button>
-        <button class="btn btn-green" onclick="confirmarCantorVsk()">CONFIRMAR</button>
+        <button class="btn btn-stop" style="flex:0 0 auto;padding:0 14px;" onclick="fecharModalCantorVsk()">CANCELAR</button>
+        <button class="btn btn-code" style="flex:0 0 auto;padding:0 14px;" onclick="confirmarCantorVsk()">CONFIRMAR</button>
       </div>
     </div>
   </div>
@@ -511,10 +577,10 @@
   <div id="modal-cat" class="modal">
     <div class="modal-card">
       <div class="modal-title">CATÁLOGO DE MÚSICAS</div>
-      <input id="cat-search" class="input" type="text" placeholder="Buscar por código, música ou cantor..." oninput="filtrarCatalogoVsk(this.value)" />
+      <input id="cat-search" class="input" type="text" placeholder="Buscar por código, música ou artista..." oninput="filtrarCatalogoVsk(this.value)" />
       <div id="cat-results"></div>
       <div class="modal-actions">
-        <button class="btn" onclick="fecharCatalogoVsk()">FECHAR</button>
+        <button class="btn btn-stop" style="flex:0 0 auto;padding:0 14px;" onclick="fecharCatalogoVsk()">FECHAR</button>
       </div>
     </div>
   </div>
@@ -523,12 +589,84 @@
 
   <script>
     const state = {
-      songs: {}, list: [], queue: [], covers: {}, intros: [],
+      songs: {}, list: [], queue: [], covers: {}, intros: [], txtMeta: {},
+      defaultIntroUrl: 'intro.mp4',
       logoUrl: 'logo.png', qrUrl: null, qrHidden: false,
       buffer: '', numpadBuffer: '', bufTimer: null, pendingSong: null,
-      introRunning: false, introDone: false, folderPicking: false, loadingSongs: false
+      introRunning: false, introDone: false, folderPicking: false, loadingSongs: false,
+      songActive: false
     };
     const video = document.getElementById('vsk-video');
+    const dustCanvas = document.getElementById('vsk-dust-canvas');
+    const dustCtx = dustCanvas.getContext('2d');
+
+    function resolverUrlIntroPadrao() {
+      if (window.AndroidHost) {
+        return 'file:///android_asset/intro.mp4';
+      }
+      return state.defaultIntroUrl || 'intro.mp4';
+    }
+
+    function iniciarLoopIntroCarregamento() {
+      if (state.introRunning || state.introDone || state.songActive || state.queue.length > 0) return;
+      state.introRunning = true;
+
+      const srcUrl = (state.intros && state.intros.length > 0 && state.intros[0].url)
+        ? state.intros[0].url
+        : resolverUrlIntroPadrao();
+
+      video.style.display = 'block';
+      video.loop = true;
+      video.src = srcUrl;
+
+      const onEndedCycle = () => {
+        if (!state.loadingSongs && !state.songActive && state.queue.length === 0) {
+          state.introRunning = false;
+          state.introDone = true;
+          video.loop = false;
+          video.removeEventListener('ended', onEndedCycle);
+          video.pause();
+          video.style.display = 'none';
+          video.removeAttribute('src');
+          video.load();
+        }
+      };
+
+      const onErrorFallback = () => {
+        if (video.src !== state.defaultIntroUrl && state.defaultIntroUrl) {
+          video.src = state.defaultIntroUrl;
+          video.play().catch(() => {});
+          return;
+        }
+        state.introRunning = false;
+        state.introDone = true;
+        video.loop = false;
+        video.removeEventListener('ended', onEndedCycle);
+        video.removeEventListener('error', onErrorFallback);
+        video.pause();
+        video.style.display = 'none';
+        video.removeAttribute('src');
+        video.load();
+      };
+
+      video.addEventListener('ended', onEndedCycle);
+      video.addEventListener('error', onErrorFallback);
+
+      const checkFinishInterval = setInterval(() => {
+        if (!state.loadingSongs && state.introRunning && !state.songActive && state.queue.length === 0) {
+          clearInterval(checkFinishInterval);
+          video.loop = false;
+          if (video.ended || video.paused || video.readyState === 0) {
+            onEndedCycle();
+          }
+        }
+      }, 250);
+
+      video.play().catch(() => {
+        video.muted = true;
+        video.play().catch(() => {});
+      });
+    }
 
     function abrirPastaVsk() {
       if (state.folderPicking) return;
@@ -541,19 +679,18 @@
       setTimeout(() => { state.folderPicking = false; }, 1500);
     }
 
-    document.getElementById('vsk-folder-input').addEventListener('change', (e) => {
+    document.getElementById('vsk-folder-input').addEventListener('change', async (e) => {
       state.folderPicking = false;
+      state.loadingSongs = true;
+      iniciarLoopIntroCarregamento();
       const files = Array.from(e.target.files || []);
-      const introsAchadas = files
-        .filter(f => /^intro[1-5]?\.mp4$/i.test(f.name || ''))
-        .sort((a, b) => (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase()))
-        .map(f => ({ name: (f.name || '').toLowerCase(), url: URL.createObjectURL(f) }));
-      if (introsAchadas.length) {
-        state.intros = introsAchadas;
-        tocarSequenciaIntros();
-      }
-      carregarArquivosVsk(files);
+      await carregarArquivosVsk(files);
     });
+
+    window.onFolderScanStarted = function() {
+      state.loadingSongs = true;
+      iniciarLoopIntroCarregamento();
+    };
 
     window.onIntroFoundDuringScan = function(introUri) {
       if (!introUri) return;
@@ -562,46 +699,122 @@
         state.intros.push({ name: 'intro.mp4', url: introUri });
         state.intros.sort((a, b) => a.name.localeCompare(b.name));
       }
-      if (!state.introRunning && !state.introDone && state.queue.length === 0) {
-        tocarSequenciaIntros();
+      if (!state.introRunning && !state.introDone && !state.songActive && state.queue.length === 0) {
+        iniciarLoopIntroCarregamento();
       }
     };
 
-    window.onNativeFolderLoaded = function(entries) {
+    window.onNativeFolderLoaded = async function(entries) {
       state.folderPicking = false;
+      state.loadingSongs = true;
+      iniciarLoopIntroCarregamento();
       const files = (entries || []).map(it => ({
         name: it.name,
         webkitRelativePath: it.path || it.name,
         contentUri: it.uri
       }));
-      carregarArquivosVsk(files);
+      await carregarArquivosVsk(files);
     };
 
     function normalizarChave(str) {
       return (str || '')
         .replace(/\.[^.]+$/, '')
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/[^A-Za-z0-9 ]/g, ' ')
+        .replace(/\s+/g, ' ')
         .toUpperCase()
         .trim();
     }
 
-    function carregarArquivosVsk(files) {
+    function limparTextoExibicao(str) {
+      return (str || '')
+        .replace(/_/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toUpperCase();
+    }
+
+    function parseLinhaCatalogo(rawName) {
+      const semExt = (rawName || '').replace(/\.mp4$/i, '').trim();
+      const m = semExt.match(/^(\d{1,6})\s*[-–—]\s*(.+)$/);
+      if (!m) return null;
+
+      const code = m[1].padStart(4, '0');
+      const resto = m[2].trim();
+      const partes = resto.split(/\s*[-–—]\s*/).map(p => p.trim()).filter(Boolean);
+
+      let artist = '';
+      let title = '';
+
+      if (partes.length >= 2) {
+        if (/^karaok[eê]$/i.test(partes[1]) && partes.length >= 3) {
+          artist = partes[0];
+          title = partes.slice(2).join(' - ');
+        } else {
+          artist = partes[0];
+          title = partes.slice(1).join(' - ');
+        }
+      } else {
+        title = partes[0] || resto;
+      }
+
+      if (/^artista desconhecido$/i.test(artist)) artist = '';
+      title = limparTextoExibicao(title);
+      artist = limparTextoExibicao(artist);
+
+      return { code, title: title || code, artist };
+    }
+
+    function processarTextoLista(texto) {
+      const linhas = (texto || '').split(/
+?
+/);
+      for (const l of linhas) {
+        const clean = l.replace(/[​-‍﻿]/g, '').trim();
+        if (!clean || clean.startsWith('===') || /^LISTA DE M/i.test(clean)) continue;
+        const parsed = parseLinhaCatalogo(clean);
+        if (parsed) {
+          state.txtMeta[parsed.code] = parsed;
+        }
+      }
+    }
+
+    async function carregarArquivosVsk(files) {
       state.loadingSongs = true;
+      iniciarLoopIntroCarregamento();
+
       const novosSongs = {};
       const novaLista = [];
       const novasCapas = {};
       const novasIntros = [];
+      state.txtMeta = {};
 
       for (const f of files) {
         const name = f.name || '';
         const low = name.toLowerCase();
-        const pathUpper = (f.webkitRelativePath || name).toUpperCase().replace(/\\/g, '/');
-        const srcUrl = f.contentUri || URL.createObjectURL(f);
+        if (low.endsWith('.txt')) {
+          try {
+            let txt = '';
+            if (f.contentUri && window.AndroidHost && AndroidHost.readText) {
+              txt = AndroidHost.readText(f.contentUri) || '';
+            } else if (f.text) {
+              txt = await f.text();
+            }
+            if (txt) processarTextoLista(txt);
+          } catch (_) {}
+        }
+      }
+
+      for (const f of files) {
+        const name = f.name || '';
+        const low = name.toLowerCase();
+        const pathUpper = (f.webkitRelativePath || name).toUpperCase().replace(/\/g, '/');
+        const srcUrl = f.contentUri || (f instanceof File ? URL.createObjectURL(f) : '');
 
         if (low === 'logo.png' || low === 'logo.jpg') {
           state.logoUrl = srcUrl;
-          document.getElementById('vsk-default-logo').src = srcUrl;
+          document.getElementById('vsk-splash-logo').src = srcUrl;
         }
 
         if (low === 'qrlista.png') {
@@ -622,12 +835,14 @@
         }
 
         if (low.endsWith('.mp4')) {
-          const m = name.match(/^(\d{1,6})\s*[-–—]?\s*(.+)\.mp4$/i);
-          if (m) {
-            const code = m[1].padStart(4, '0');
-            const parts = m[2].split(/\s*[-–—]\s*/);
-            const title = (parts[0] || '').trim().toUpperCase();
-            const artist = (parts[1] || '').trim().toUpperCase();
+          const parsedFile = parseLinhaCatalogo(name);
+          const mOnlyCode = !parsedFile ? name.match(/^(\d{1,6})\.mp4$/i) : null;
+          const code = parsedFile ? parsedFile.code : (mOnlyCode ? mOnlyCode[1].padStart(4, '0') : null);
+
+          if (code) {
+            const fromTxt = state.txtMeta[code];
+            const title = (fromTxt && fromTxt.title) || (parsedFile && parsedFile.title) || code;
+            const artist = (fromTxt && fromTxt.artist) || (parsedFile && parsedFile.artist) || '';
             const item = { code, title, artist, file: f, url: srcUrl };
             novosSongs[code] = item;
             novaLista.push(item);
@@ -646,39 +861,174 @@
 
       atualizarFilaVsk();
 
-      if (!state.introRunning && !state.introDone && state.intros.length > 0 && state.queue.length === 0) {
-        tocarSequenciaIntros();
+      if (state.introRunning && !state.songActive && state.queue.length === 0) {
+        video.loop = false;
       }
     }
 
-    async function tocarSequenciaIntros() {
-      if (state.introRunning || state.introDone || !state.intros.length) return;
-      state.introRunning = true;
+    function criarParticulasDoLogo(imgEl) {
+      dustCanvas.width = window.innerWidth;
+      dustCanvas.height = window.innerHeight;
+      dustCtx.clearRect(0, 0, dustCanvas.width, dustCanvas.height);
 
-      for (const item of state.intros) {
-        if (state.queue.length > 0) break;
-        await new Promise((resolve) => {
-          video.style.display = 'block';
-          video.src = item.url;
-          const onDone = () => {
-            video.removeEventListener('ended', onDone);
-            video.removeEventListener('error', onDone);
-            resolve();
+      const rect = imgEl.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return [];
+
+      const tempCanvas = document.createElement('canvas');
+      const sampleW = 148;
+      const sampleH = Math.max(44, Math.round(148 * (rect.height / rect.width)));
+      tempCanvas.width = sampleW;
+      tempCanvas.height = sampleH;
+      const tCtx = tempCanvas.getContext('2d');
+
+      let imgData = null;
+      try {
+        tCtx.drawImage(imgEl, 0, 0, sampleW, sampleH);
+        imgData = tCtx.getImageData(0, 0, sampleW, sampleH).data;
+      } catch (_) {
+        imgData = null;
+      }
+
+      const particles = [];
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const stepX = 3;
+      const stepY = 3;
+
+      for (let y = 0; y < sampleH; y += stepY) {
+        for (let x = 0; x < sampleW; x += stepX) {
+          let color = null;
+          if (imgData) {
+            const idx = (y * sampleW + x) * 4;
+            const r = imgData[idx];
+            const g = imgData[idx + 1];
+            const b = imgData[idx + 2];
+            const a = imgData[idx + 3];
+            if (a > 40) {
+              color = `rgba(${r}, ${g}, ${b}, 1)`;
+            }
+          } else if (Math.random() > 0.42) {
+            color = Math.random() > 0.5 ? 'rgba(255, 212, 59, 1)' : 'rgba(56, 189, 248, 1)';
+          }
+
+          if (!color) continue;
+
+          const px = rect.left + (x / sampleW) * rect.width;
+          const py = rect.top + (y / sampleH) * rect.height;
+          const dx = px - cx;
+          const dy = py - cy;
+          const dist = Math.hypot(dx, dy) || 1;
+          const nx = dx / dist;
+          const ny = dy / dist;
+
+          const speed = 0.65 + Math.random() * 2.15;
+          particles.push({
+            x: px,
+            y: py,
+            vx: nx * speed + (Math.random() - 0.5) * 1.1,
+            vy: ny * speed + (Math.random() - 0.5) * 1.1 - 0.25,
+            size: 1.4 + Math.random() * 2.6,
+            color,
+            phase: Math.random() * Math.PI * 2,
+            wobble: 0.25 + Math.random() * 0.45
+          });
+        }
+      }
+
+      return particles;
+    }
+
+    function rodarZoomEPulverizarLogo(splashEl, wrapEl, imgEl) {
+      return new Promise((resolve) => {
+        const MAX_TOTAL_MS = 3000;
+        const zoomMs = 1050;
+        const dispersaoMs = 1850;
+        let done = false;
+        let zoomTimer = null;
+        let capTimer = null;
+        let raf = null;
+
+        const finish = () => {
+          if (done) return;
+          done = true;
+          clearTimeout(zoomTimer);
+          clearTimeout(capTimer);
+          cancelAnimationFrame(raf);
+          dustCtx.clearRect(0, 0, dustCanvas.width, dustCanvas.height);
+          dustCanvas.classList.remove('active');
+          wrapEl.classList.remove('animating', 'dissolving');
+          splashEl.classList.remove('active');
+          resolve();
+        };
+
+        const startDust = (remainingMs) => {
+          if (done) return;
+          const particles = criarParticulasDoLogo(imgEl);
+          wrapEl.classList.add('dissolving');
+          const budget = Math.max(250, Math.min(dispersaoMs, remainingMs));
+
+          if (!particles.length) {
+            capTimer = setTimeout(finish, Math.min(250, budget));
+            return;
+          }
+
+          dustCanvas.classList.add('active');
+          const t0 = performance.now();
+
+          const step = (now) => {
+            if (done) return;
+            const elapsed = now - t0;
+            const progress = Math.min(1, elapsed / budget);
+            const slowEase = progress < 0.72
+              ? progress * 0.55
+              : 0.396 + Math.pow((progress - 0.72) / 0.28, 1.7) * 0.604;
+
+            dustCtx.clearRect(0, 0, dustCanvas.width, dustCanvas.height);
+            const burstFactor = progress > 0.68 ? 1 + ((progress - 0.68) / 0.32) * 1.85 : 1;
+
+            for (let i = 0; i < particles.length; i++) {
+              const p = particles[i];
+              const driftX = Math.cos(now * 0.004 + p.phase) * p.wobble;
+              const driftY = Math.sin(now * 0.0045 + p.phase) * p.wobble;
+
+              p.x += (p.vx * 0.42 * burstFactor) + driftX * 0.25;
+              p.y += (p.vy * 0.42 * burstFactor) + driftY * 0.25;
+
+              const alpha = Math.max(0, 1 - Math.pow(slowEase, 1.15));
+              const drawSize = p.size * (progress > 0.75 ? 1 + (progress - 0.75) * 1.6 : 1);
+
+              if (alpha > 0.01) {
+                dustCtx.globalAlpha = alpha;
+                dustCtx.fillStyle = p.color;
+                dustCtx.beginPath();
+                dustCtx.arc(p.x, p.y, drawSize, 0, Math.PI * 2);
+                dustCtx.fill();
+              }
+            }
+            dustCtx.globalAlpha = 1;
+
+            if (progress < 1) {
+              raf = requestAnimationFrame(step);
+            } else {
+              finish();
+            }
           };
-          video.addEventListener('ended', onDone);
-          video.addEventListener('error', onDone);
-          video.play().catch(onDone);
-        });
-      }
 
-      state.introRunning = false;
-      state.introDone = true;
+          raf = requestAnimationFrame(step);
+        };
 
-      if (state.queue.length === 0) {
-        video.pause();
-        video.style.display = 'none';
-        video.src = '';
-      }
+        const startTime = performance.now();
+        capTimer = setTimeout(finish, MAX_TOTAL_MS);
+        splashEl.classList.add('active');
+        wrapEl.classList.remove('animating', 'dissolving');
+        void wrapEl.offsetWidth;
+        wrapEl.classList.add('animating');
+
+        zoomTimer = setTimeout(() => {
+          const spent = performance.now() - startTime;
+          startDust(MAX_TOTAL_MS - spent);
+        }, zoomMs);
+      });
     }
 
     function alternarFilaDropdown() {
@@ -706,14 +1056,20 @@
       atualizarNumpadDisplay();
     }
 
+    function buscarMusicaPorCodigo(rawDigits) {
+      const clean = (rawDigits || '').trim();
+      if (!clean) return null;
+      const padded = clean.padStart(4, '0');
+      return state.songs[padded] || state.songs[clean] || null;
+    }
+
     function atualizarNumpadDisplay() {
       const digits = state.numpadBuffer;
       document.getElementById('numpad-code').textContent = digits ? digits.padEnd(4, '-') : '----';
-      const code = digits.padStart(4, '0');
-      const s = state.songs[code];
+      const s = buscarMusicaPorCodigo(digits);
       document.getElementById('numpad-preview').textContent = s
-        ? `#${s.code} - ${s.title}${s.artist ? ' - ' + s.artist : ''}`
-        : (digits ? 'Código não encontrado' : 'Digite os números do código');
+        ? formatarLinhaFila(s)
+        : (digits ? `Código ${digits.padStart(4, '0')} não encontrado` : 'Digite os números do código');
     }
 
     function confirmarNumpad() {
@@ -725,20 +1081,19 @@
         atualizarFilaVsk();
         return;
       }
-      const code = val.padStart(4, '0');
-      if (state.songs[code]) {
+      const s = buscarMusicaPorCodigo(val);
+      if (s) {
         fecharTecladoCodigo();
-        abrirModalCantorVsk(state.songs[code]);
+        abrirModalCantorVsk(s);
       } else {
-        document.getElementById('numpad-preview').textContent = `Código ${code} não encontrado`;
+        document.getElementById('numpad-preview').textContent = `Código ${val.padStart(4, '0')} não encontrado`;
       }
     }
 
     function atualizarOsd(digits) {
-      const code = digits.padStart(4, '0');
-      const s = state.songs[code];
+      const s = buscarMusicaPorCodigo(digits);
       document.getElementById('vsk-marquee').textContent = s
-        ? `CÓDIGO ${digits}: ${s.code} - ${s.title}${s.artist ? ' - ' + s.artist : ''}`
+        ? `CÓDIGO: ${formatarLinhaFila(s)}`
         : `DIGITANDO CÓDIGO: ${digits}`;
     }
 
@@ -823,8 +1178,8 @@
           const val = state.buffer;
           state.buffer = '';
           if (val === '999999999') { state.qrHidden = !state.qrHidden; atualizarFilaVsk(); return; }
-          const code = val.padStart(4, '0');
-          if (state.songs[code]) abrirModalCantorVsk(state.songs[code]);
+          const s = buscarMusicaPorCodigo(val);
+          if (s) abrirModalCantorVsk(s);
         }, 1400);
         return;
       }
@@ -836,7 +1191,7 @@
         e.preventDefault();
         vskStop();
       } else if (key === 'MediaPlayPause' || key === ' ') {
-        if (video.style.display === 'block') {
+        if (state.songActive && video.style.display === 'block') {
           e.preventDefault();
           if (video.paused) video.play().catch(() => {});
           else video.pause();
@@ -858,7 +1213,7 @@
 
     function abrirModalCantorVsk(song) {
       state.pendingSong = song;
-      document.getElementById('singer-song-title').textContent = `#${song.code} - ${song.title}`;
+      document.getElementById('singer-song-title').textContent = formatarLinhaFila(song);
       const inp = document.getElementById('singer-name-input');
       inp.value = '';
       document.getElementById('modal-singer').classList.add('active');
@@ -871,7 +1226,7 @@
       state.queue.push({ ...state.pendingSong, singer });
       fecharModalCantorVsk();
       atualizarFilaVsk();
-      if (video.style.display !== 'block' && state.queue.length === 1) vskStart();
+      if (!state.songActive && state.queue.length === 1) vskStart();
     }
 
     function formatarLinhaFila(item) {
@@ -897,7 +1252,7 @@
       qrBox.classList.remove('visible');
       state.queue.forEach((item, i) => {
         const div = document.createElement('div');
-        div.className = 'q-item' + (i === 0 && video.style.display === 'block' ? ' playing' : '');
+        div.className = 'q-item' + (i === 0 && state.songActive ? ' playing' : '');
         div.textContent = formatarLinhaFila(item);
         itemsBox.appendChild(div);
       });
@@ -906,18 +1261,20 @@
     }
 
     async function vskStart() {
-      if (!state.queue.length || video.style.display === 'block') return;
+      if (!state.queue.length || state.songActive) return;
+      state.songActive = true;
       state.introDone = true;
+      state.introRunning = false;
+      video.loop = false;
+      video.pause();
+      video.style.display = 'none';
+
       const cur = state.queue[0];
       const cd = document.getElementById('vsk-countdown');
-      const logoImg = document.getElementById('vsk-default-logo');
+      const splash = document.getElementById('vsk-logo-splash');
+      const wrap = document.getElementById('vsk-logo-wrap');
+      const splashImg = document.getElementById('vsk-splash-logo');
       const coverImg = document.getElementById('vsk-artist-cover');
-
-      if (state.logoUrl) {
-        logoImg.src = state.logoUrl;
-        logoImg.style.display = 'block';
-        logoImg.onerror = () => { logoImg.style.display = 'none'; };
-      }
 
       const coverUrl = state.covers[normalizarChave(cur.artist)];
       if (coverUrl) { coverImg.src = coverUrl; coverImg.style.display = 'block'; }
@@ -930,8 +1287,13 @@
         await new Promise(r => setTimeout(r, 1000));
       }
       cd.classList.remove('active');
-      logoImg.style.display = 'none';
 
+      if (state.logoUrl) {
+        splashImg.src = state.logoUrl;
+        await rodarZoomEPulverizarLogo(splash, wrap, splashImg);
+      }
+
+      video.muted = false;
       video.src = cur.url || cur.file.contentUri || URL.createObjectURL(cur.file);
       video.style.display = 'block';
       await video.play().catch(() => {});
@@ -939,37 +1301,50 @@
     }
 
     video.ontimeupdate = () => {
-      if (!video.duration) return;
+      if (!video.duration || !state.songActive) return;
       document.getElementById('vsk-progress-fill').style.width = ((video.currentTime / video.duration) * 100) + '%';
       const rem = Math.max(0, Math.floor(video.duration - video.currentTime));
       document.getElementById('vsk-time').textContent = `-${String(Math.floor(rem / 60)).padStart(2,'0')}:${String(rem % 60).padStart(2,'0')}`;
     };
 
     document.getElementById('vsk-progress-bar').addEventListener('click', (e) => {
-      if (!video.duration) return;
+      if (!video.duration || !state.songActive) return;
       const r = e.currentTarget.getBoundingClientRect();
       video.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * video.duration;
     });
 
-    video.onended = async () => {
+    video.onended = () => {
+      if (!state.songActive) return;
+      state.songActive = false;
       video.style.display = 'none';
-      video.src = '';
-      const score = Math.floor(86 + Math.random() * 15);
-      const scOverlay = document.getElementById('vsk-score-overlay');
-      document.getElementById('score-number').textContent = score;
-      document.getElementById('score-msg').textContent = score >= 95 ? 'ESPETACULAR! NOTA MÁXIMA NO PALCO!' : 'MUITO BOM! PARABÉNS PELA APRESENTAÇÃO!';
-      scOverlay.classList.add('active');
-      await new Promise(r => setTimeout(r, 4000));
-      scOverlay.classList.remove('active');
-
+      video.removeAttribute('src');
+      video.load();
       state.queue.shift();
       atualizarFilaVsk();
       if (state.queue.length > 0) vskStart();
     };
 
-    function vskStop() { video.pause(); video.style.display = 'none'; video.src = ''; atualizarFilaVsk(); }
-    function vskSkip() { if (state.queue.length) video.dispatchEvent(new Event('ended')); }
-    function vskClear() { state.queue = video.style.display === 'block' ? state.queue.slice(0, 1) : []; atualizarFilaVsk(); }
+    function vskStop() {
+      state.songActive = false;
+      video.pause();
+      video.loop = false;
+      video.style.display = 'none';
+      video.removeAttribute('src');
+      video.load();
+      atualizarFilaVsk();
+    }
+    function vskSkip() {
+      if (state.songActive && state.queue.length) {
+        video.dispatchEvent(new Event('ended'));
+      } else if (state.queue.length) {
+        state.queue.shift();
+        atualizarFilaVsk();
+      }
+    }
+    function vskClear() {
+      state.queue = state.songActive ? state.queue.slice(0, 1) : [];
+      atualizarFilaVsk();
+    }
 
     function abrirCatalogoVsk() {
       document.getElementById('modal-cat').classList.add('active');
@@ -982,12 +1357,22 @@
       const res = state.list.filter(s => !term || s.code.includes(term) || s.title.toLowerCase().includes(term) || s.artist.toLowerCase().includes(term));
       const box = document.getElementById('cat-results');
       box.innerHTML = res.slice(0, 200).map((s, i) =>
-        `<button class="cat-row${i === 0 ? ' selected' : ''}" onclick='selecionarDoCat("${s.code}")'><span><b style="color:var(--gold)">#${s.code}</b> ${s.title}</span><small style="color:var(--cyan)">${s.artist}</small></button>`
+        `<button class="cat-row${i === 0 ? ' selected' : ''}" onclick='selecionarDoCat("${s.code}")'><span><b style="color:var(--gold)">${s.code}</b> - ${s.title}</span><small style="color:var(--cyan)">${s.artist}</small></button>`
       ).join('');
     }
     function selecionarDoCat(code) { fecharCatalogoVsk(); if (state.songs[code]) abrirModalCantorVsk(state.songs[code]); }
     document.getElementById('vsk-btn-exit').onclick = () => { if (window.AndroidHost && AndroidHost.exitApp) AndroidHost.exitApp(); else window.close(); };
-    window.addEventListener('load', abrirPastaVsk);
+
+    window.addEventListener('resize', () => {
+      dustCanvas.width = window.innerWidth;
+      dustCanvas.height = window.innerHeight;
+    });
+
+    window.addEventListener('load', () => {
+      if (!window.AndroidHost) {
+        abrirPastaVsk();
+      }
+    });
   </script>
 </body>
 </html>
