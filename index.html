@@ -720,7 +720,7 @@
       return (str || '')
         .replace(/\.[^.]+$/, '')
         .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
+        .replace(/[\u0300-\u036f]/g, '')
         .replace(/[^A-Za-z0-9 ]/g, ' ')
         .replace(/\s+/g, ' ')
         .toUpperCase()
@@ -767,11 +767,9 @@
     }
 
     function processarTextoLista(texto) {
-      const linhas = (texto || '').split(/
-?
-/);
+      const linhas = (texto || '').split(/\r?\n/);
       for (const l of linhas) {
-        const clean = l.replace(/[​-‍﻿]/g, '').trim();
+        const clean = l.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
         if (!clean || clean.startsWith('===') || /^LISTA DE M/i.test(clean)) continue;
         const parsed = parseLinhaCatalogo(clean);
         if (parsed) {
@@ -809,7 +807,7 @@
       for (const f of files) {
         const name = f.name || '';
         const low = name.toLowerCase();
-        const pathUpper = (f.webkitRelativePath || name).toUpperCase().replace(/\/g, '/');
+        const pathUpper = (f.webkitRelativePath || name).toUpperCase().replace(/\\/g, '/');
         const srcUrl = f.contentUri || (f instanceof File ? URL.createObjectURL(f) : '');
 
         if (low === 'logo.png' || low === 'logo.jpg') {
