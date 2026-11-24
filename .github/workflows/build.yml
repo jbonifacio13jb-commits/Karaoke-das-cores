@@ -44,6 +44,7 @@ jobs:
           [ -d fontes ] && cp -r fontes app/src/main/assets/ || true
           [ -f bgpadrao.jpg ] && cp bgpadrao.jpg app/src/main/assets/ || true
           [ -f logo.png ] && cp logo.png app/src/main/assets/ || true
+          [ -f intro.mp4 ] && cp intro.mp4 app/src/main/assets/intro.mp4 || true
 
           for d in mipmap-mdpi mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
             mkdir -p "app/src/main/res/$d"
@@ -81,8 +82,8 @@ jobs:
                   applicationId "br.com.ursoplayer.karaoke"
                   minSdk 21
                   targetSdk 34
-                  versionCode 3
-                  versionName "3.0"
+                  versionCode 5
+                  versionName "5.0"
               }
               buildTypes {
                   debug {
@@ -137,6 +138,7 @@ jobs:
           import android.content.SharedPreferences;
           import android.content.pm.ActivityInfo;
           import android.content.res.Configuration;
+          import android.graphics.Bitmap;
           import android.net.Uri;
           import android.os.Bundle;
           import android.util.Base64;
@@ -163,6 +165,7 @@ jobs:
               private WebView webView;
               private Uri rootTreeUri;
               private boolean rockDoidoActive = false;
+              private boolean initialLoaded = false;
 
               @Override
               protected void onCreate(Bundle savedInstanceState) {
@@ -181,19 +184,42 @@ jobs:
                   ws.setMediaPlaybackRequiresUserGesture(false);
                   ws.setCacheMode(WebSettings.LOAD_DEFAULT);
 
-                  webView.setWebChromeClient(new WebChromeClient());
+                  webView.setWebChromeClient(new WebChromeClient() {
+                      @Override
+                      public Bitmap getDefaultVideoPoster() {
+                          return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+                      }
+                  });
+
                   webView.setWebViewClient(new WebViewClient() {
                       @Override
                       public void onPageFinished(WebView view, String url) {
+                          if (initialLoaded) return;
+                          initialLoaded = true;
                           SharedPreferences prefs = getSharedPreferences("karaoke_prefs", MODE_PRIVATE);
                           String savedUri = prefs.getString("tree_uri", null);
                           if (savedUri != null) {
-                              rootTreeUri = Uri.parse(savedUri);
+                              Uri candidate = Uri.parse(savedUri);
+                              DocumentFile doc = DocumentFile.fromTreeUri(MainActivity.this, candidate);
+                              if (doc != null && doc.exists() && doc.canRead()) {
+                                  rootTreeUri = candidate;
+                                  scanFolderAsync(false);
+                                  return;
+                              }
                           }
+                          openFolderPicker();
                       }
                   });
                   webView.addJavascriptInterface(new HostBridge(), "AndroidHost");
                   webView.loadUrl("file:///android_asset/index.html");
+              }
+
+              private void openFolderPicker() {
+                  runOnUiThread(() -> {
+                      Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                      intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                      startActivityForResult(intent, REQ_FOLDER);
+                  });
               }
 
               private void hideSystemUI() {
@@ -227,7 +253,7 @@ jobs:
                       }
                       if (kc == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
                           webView.evaluateJavascript(
-                              "if(typeof video!=='undefined' && video.style.display==='block'){ if(video.paused) video.play(); else video.pause(); } else if(typeof vskStart==='function'){ vskStart(); }",
+                              "if(typeof state!=='undefined' && state.songActive && typeof video!=='undefined' && video.style.display==='block'){ if(video.paused) video.play(); else video.pause(); } else if(typeof vskStart==='function'){ vskStart(); }",
                               null
                           );
                           return true;
@@ -250,6 +276,9 @@ jobs:
 
               private void scanFolderAsync(final boolean silent) {
                   if (rootTreeUri == null) return;
+                  if (!silent) {
+                      runOnUiThread(() -> webView.evaluateJavascript("if(window.onFolderScanStarted) window.onFolderScanStarted();", null));
+                  }
                   new Thread(() -> {
                       try {
                           DocumentFile root = DocumentFile.fromTreeUri(this, rootTreeUri);
@@ -277,7 +306,7 @@ jobs:
                           o.put("path", curPath);
                           o.put("uri", f.getUri().toString());
                           out.put(o);
-                          if (!silent && (name.equalsIgnoreCase("intro.mp4") || name.toLowerCase().matches("^intro[1-5]\\.mp4$"))) {
+                          if (!silent && (name.equalsIgnoreCase("intro.mp4") || name.toLowerCase().matches("^intro[1-5]\.mp4$"))) {
                               final String introUri = f.getUri().toString();
                               runOnUiThread(() -> webView.evaluateJavascript("if(window.onIntroFoundDuringScan) window.onIntroFoundDuringScan(" + JSONObject.quote(introUri) + ");", null));
                           }
@@ -302,16 +331,10 @@ jobs:
                   }
 
                   @JavascriptInterface
-                  public void chooseFolder() {
-                      runOnUiThread(() -> {
-                          Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                          intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-                          startActivityForResult(intent, REQ_FOLDER);
-                      });
-                  }
+                  public void chooseFolder() { openFolderPicker(); }
 
                   @JavascriptInterface
-                  public void pickNewFolder() { chooseFolder(); }
+                  public void pickNewFolder() { openFolderPicker(); }
 
                   @JavascriptInterface
                   public void refreshFolder() { scanFolderAsync(true); }
